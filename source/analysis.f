@@ -211,7 +211,10 @@ c
       if (use_charge)  call echarge3
       if (use_chgdpl)  call echgdpl3
       if (use_dipole)  call edipole3
-      if (use_mpole .or. use_polar)  call empole3
+ccccccccccccccccccccccc
+      if (use_mpole)  call empole3
+      if (use_polar) call epolar3
+ccccccccccccccccccccccc
       if (use_rxnfld)  call erxnfld3
 c
 c     call any miscellaneous energy component routines

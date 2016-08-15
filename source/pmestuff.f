@@ -979,8 +979,12 @@ c
       real*8 tuv101,tuv011,tuv300,tuv030
       real*8 tuv003,tuv210,tuv201,tuv120
       real*8 tuv021,tuv102,tuv012,tuv111
-      real*8 fdip_phi1(10,*)
-      real*8 fdip_phi2(10,*)
+ccccccccccccccccccccccccccccccccccccccccccccccc
+c      real*8 fdip_phi1(10,*)
+c      real*8 fdip_phi2(10,*)
+      real*8 fdip_phi1(20,*)
+      real*8 fdip_phi2(20,*)
+cccccccccccccccccccccccccccccccccccccccccccccc
       real*8 fdip_sum_phi(20,*)
 c
 c
@@ -1342,8 +1346,26 @@ c
       implicit none
       integer i,j,k
       real*8 ftc(10,10)
-      real*8 cphi(10,*)
+      real*8 cphi(20,*)
       real*8 fphi(20,*)
+      real*8 cphi_test(20,npole)
+ccccccccccccccccccccc THIS IS A BIG PROBLEM TO USE ON DIPOLES
+c     must use 20 to get right permanent transformation
+c
+c      real*8 fphi(10,*)
+c      real*8 fphi(20,*)
+c     can't use assumed shape unless in interface or module
+c      real*8 cphi(:,:)
+c      real*8 fphi(:,:)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      real*8 T1XXX,T1XXY,T1XXZ,T1XYX,T1XYY,T1XYZ,T1XZX,T1XZY
+      real*8 T1XZZ,T1YXX,T1YXY,T1YXZ,T1YYX,T1YYY,T1YYZ,T1YZX
+      real*8 T1YZY,T1YZZ,T1ZXX,T1ZXY,T1ZXZ,T1ZYX,T1ZYY,T1ZYZ
+      real*8 T1ZZX,T1ZZY,T1ZZZ
+      real*8 T2XXX,T2XXY,T2XXZ,T2XYX,T2XYY,T2XYZ,T2XZX,T2XZY
+      real*8 T2XZZ,T2YXX,T2YXY,T2YXZ,T2YYX,T2YYY,T2YYZ,T2YZX
+      real*8 T2YZY,T2YZZ,T2ZXX,T2ZXY,T2ZXZ,T2ZYX,T2ZYY,T2ZYZ
+      real*8 T2ZZX,T2ZZY,T2ZZZ
 c
 c
 c     find the matrix to convert fractional to Cartesian
@@ -1366,7 +1388,117 @@ c
                cphi(j,i) = cphi(j,i) + ftc(j,k)*fphi(k,i)
             end do
          end do
+ccccccccccccccccccccccccccccccccccccccccccc
+c     rotate the field hessian from fractional to cartesian
+c     adapted from Frank Pickard: mp_rot_cart in mp_rot.src
+c     the U -> ftc conversion is correct
+         cphi_test(2,i) = ftc(2,2)*fphi(2,i) + ftc(2,3)*fphi(3,i) +
+     &        ftc(2,4)*fphi(4,i)
+         cphi_test(3,i) = ftc(3,2)*fphi(2,i) + ftc(3,3)*fphi(3,i) + 
+     &        ftc(3,4)*fphi(4,i)
+         cphi_test(4,i) = ftc(4,2)*fphi(2,i) + ftc(4,3)*fphi(3,i) + 
+     &        ftc(4,4)*fphi(4,i)
+c
+         T1XXX = ftc(2,2)*fphi(11,i) + ftc(2,3)*fphi(14,i) +
+     &        ftc(2,4)*fphi(15,i)
+         T1XXY = ftc(3,2)*fphi(11,i) + ftc(3,3)*fphi(14,i) +
+     &        ftc(3,4)*fphi(15,i)
+         T1XXZ = ftc(4,2)*fphi(11,i) + ftc(4,3)*fphi(14,i) +
+     &        ftc(4,4)*fphi(15,i)
+         T1XYX = ftc(2,2)*fphi(14,i) + ftc(2,3)*fphi(16,i) +
+     &        ftc(2,4)*fphi(20,i)
+         T1XYY = ftc(3,2)*fphi(14,i) + ftc(3,3)*fphi(16,i) +
+     &        ftc(3,4)*fphi(20,i)
+         T1XYZ = ftc(4,2)*fphi(14,i) + ftc(4,3)*fphi(16,i) +
+     &        ftc(4,4)*fphi(20,i)
+         T1XZX = ftc(2,2)*fphi(15,i) + ftc(2,3)*fphi(20,i) +
+     &        ftc(2,4)*fphi(18,i)
+         T1XZY = ftc(3,2)*fphi(15,i) + ftc(3,3)*fphi(20,i) +
+     &        ftc(3,4)*fphi(18,i)
+         T1XZZ = ftc(4,2)*fphi(15,i) + ftc(4,3)*fphi(20,i) +
+     &        ftc(4,4)*fphi(18,i)
+         T1YXX = ftc(2,2)*fphi(14,i) + ftc(2,3)*fphi(16,i) +
+     &        ftc(2,4)*fphi(20,i)
+         T1YXY = ftc(3,2)*fphi(14,i) + ftc(3,3)*fphi(16,i) +
+     &        ftc(3,4)*fphi(20,i)
+         T1YXZ = ftc(4,2)*fphi(14,i) + ftc(4,3)*fphi(16,i) +
+     &        ftc(4,4)*fphi(20,i)
+         T1YYX = ftc(2,2)*fphi(16,i) + ftc(2,3)*fphi(12,i) +
+     &        ftc(2,4)*fphi(17,i)
+         T1YYY = ftc(3,2)*fphi(16,i) + ftc(3,3)*fphi(12,i) +
+     &        ftc(3,4)*fphi(17,i)
+         T1YYZ = ftc(4,2)*fphi(16,i) + ftc(4,3)*fphi(12,i) +
+     &        ftc(4,4)*fphi(17,i)
+         T1YZX = ftc(2,2)*fphi(20,i) + ftc(2,3)*fphi(17,i) +
+     &        ftc(2,4)*fphi(19,i)
+         T1YZY = ftc(3,2)*fphi(20,i) + ftc(3,3)*fphi(17,i) +
+     &        ftc(3,4)*fphi(19,i)
+         T1YZZ = ftc(4,2)*fphi(20,i) + ftc(4,3)*fphi(17,i) +
+     &        ftc(4,4)*fphi(19,i)
+         T1ZXX = ftc(2,2)*fphi(15,i) + ftc(2,3)*fphi(20,i) +
+     &        ftc(2,4)*fphi(18,i)
+         T1ZXY = ftc(3,2)*fphi(15,i) + ftc(3,3)*fphi(20,i) +
+     &        ftc(3,4)*fphi(18,i)
+         T1ZXZ = ftc(4,2)*fphi(15,i) + ftc(4,3)*fphi(20,i) +
+     &        ftc(4,4)*fphi(18,i)
+         T1ZYX = ftc(2,2)*fphi(20,i) + ftc(2,3)*fphi(17,i) +
+     &        ftc(2,4)*fphi(19,i)
+         T1ZYY = ftc(3,2)*fphi(20,i) + ftc(3,3)*fphi(17,i) +
+     &        ftc(3,4)*fphi(19,i)
+         T1ZYZ = ftc(4,2)*fphi(20,i) + ftc(4,3)*fphi(17,i) +
+     &        ftc(4,4)*fphi(19,i)
+         T1ZZX = ftc(2,2)*fphi(18,i) + ftc(2,3)*fphi(19,i) +
+     &        ftc(2,4)*fphi(13,i)
+         T1ZZY = ftc(3,2)*fphi(18,i) + ftc(3,3)*fphi(19,i) +
+     &        ftc(3,4)*fphi(13,i)
+         T1ZZZ = ftc(4,2)*fphi(18,i) + ftc(4,3)*fphi(19,i) +
+     &        ftc(4,4)*fphi(13,i)
+         T2XXX = ftc(2,2)*T1XXX + ftc(2,3)*T1XYX + ftc(2,4)*T1XZX
+         T2XXY = ftc(2,2)*T1XXY + ftc(2,3)*T1XYY + ftc(2,4)*T1XZY
+         T2XXZ = ftc(2,2)*T1XXZ + ftc(2,3)*T1XYZ + ftc(2,4)*T1XZZ
+         T2XYX = ftc(3,2)*T1XXX + ftc(3,3)*T1XYX + ftc(3,4)*T1XZX
+         T2XYY = ftc(3,2)*T1XXY + ftc(3,3)*T1XYY + ftc(3,4)*T1XZY
+         T2XYZ = ftc(3,2)*T1XXZ + ftc(3,3)*T1XYZ + ftc(3,4)*T1XZZ
+         T2XZX = ftc(4,2)*T1XXX + ftc(4,3)*T1XYX + ftc(4,4)*T1XZX
+         T2XZY = ftc(4,2)*T1XXY + ftc(4,3)*T1XYY + ftc(4,4)*T1XZY
+         T2XZZ = ftc(4,2)*T1XXZ + ftc(4,3)*T1XYZ + ftc(4,4)*T1XZZ
+         T2YXX = ftc(2,2)*T1YXX + ftc(2,3)*T1YYX + ftc(2,4)*T1YZX
+         T2YXY = ftc(2,2)*T1YXY + ftc(2,3)*T1YYY + ftc(2,4)*T1YZY
+         T2YXZ = ftc(2,2)*T1YXZ + ftc(2,3)*T1YYZ + ftc(2,4)*T1YZZ
+         T2YYX = ftc(3,2)*T1YXX + ftc(3,3)*T1YYX + ftc(3,4)*T1YZX
+         T2YYY = ftc(3,2)*T1YXY + ftc(3,3)*T1YYY + ftc(3,4)*T1YZY
+         T2YYZ = ftc(3,2)*T1YXZ + ftc(3,3)*T1YYZ + ftc(3,4)*T1YZZ
+         T2YZX = ftc(4,2)*T1YXX + ftc(4,3)*T1YYX + ftc(4,4)*T1YZX
+         T2YZY = ftc(4,2)*T1YXY + ftc(4,3)*T1YYY + ftc(4,4)*T1YZY
+         T2YZZ = ftc(4,2)*T1YXZ + ftc(4,3)*T1YYZ + ftc(4,4)*T1YZZ
+         T2ZXX = ftc(2,2)*T1ZXX + ftc(2,3)*T1ZYX + ftc(2,4)*T1ZZX
+         T2ZXY = ftc(2,2)*T1ZXY + ftc(2,3)*T1ZYY + ftc(2,4)*T1ZZY
+         T2ZXZ = ftc(2,2)*T1ZXZ + ftc(2,3)*T1ZYZ + ftc(2,4)*T1ZZZ
+         T2ZYX = ftc(3,2)*T1ZXX + ftc(3,3)*T1ZYX + ftc(3,4)*T1ZZX
+         T2ZYY = ftc(3,2)*T1ZXY + ftc(3,3)*T1ZYY + ftc(3,4)*T1ZZY
+         T2ZYZ = ftc(3,2)*T1ZXZ + ftc(3,3)*T1ZYZ + ftc(3,4)*T1ZZZ
+         T2ZZX = ftc(4,2)*T1ZXX + ftc(4,3)*T1ZYX + ftc(4,4)*T1ZZX
+         T2ZZY = ftc(4,2)*T1ZXY + ftc(4,3)*T1ZYY + ftc(4,4)*T1ZZY
+         T2ZZZ = ftc(4,2)*T1ZXZ + ftc(4,3)*T1ZYZ + ftc(4,4)*T1ZZZ
+         cphi(11,i) = ftc(2,2)*T2XXX + ftc(2,3)*T2YXX + ftc(2,4)*T2ZXX
+         cphi(14,i) = ftc(2,2)*T2XXY + ftc(2,3)*T2YXY + ftc(2,4)*T2ZXY
+         cphi(15,i) = ftc(2,2)*T2XXZ + ftc(2,3)*T2YXZ + ftc(2,4)*T2ZXZ
+         cphi(16,i) = ftc(2,2)*T2XYY + ftc(2,3)*T2YYY + ftc(2,4)*T2ZYY
+         cphi(20,i) = ftc(2,2)*T2XYZ + ftc(2,3)*T2YYZ + ftc(2,4)*T2ZYZ
+         cphi(18,i) = ftc(2,2)*T2XZZ + ftc(2,3)*T2YZZ + ftc(2,4)*T2ZZZ
+         cphi(12,i) = ftc(3,2)*T2XYY + ftc(3,3)*T2YYY + ftc(3,4)*T2ZYY
+         cphi(17,i) = ftc(3,2)*T2XYZ + ftc(3,3)*T2YYZ + ftc(3,4)*T2ZYZ
+         cphi(19,i) = ftc(3,2)*T2XZZ + ftc(3,3)*T2YZZ + ftc(3,4)*T2ZZZ
+         cphi(13,i) = ftc(4,2)*T2XZZ + ftc(4,3)*T2YZZ + ftc(4,4)*T2ZZZ
+cccccccccccccccccccccccccccccccccccccccccccccc
       end do
+c      do i = 1, npole
+c         do j = 1, 20
+c            print *,"fphi",j,i,fphi(j,i)
+c            print *,"cphi",j,i,cphi(j,i)
+c            print *,"cphi_test",j,i,cphi_test(j,i)
+c         end do
+c      end do
       return
       end
 c

@@ -111,7 +111,13 @@ c
       if (use_charge)  call echarge
       if (use_chgdpl)  call echgdpl
       if (use_dipole)  call edipole
-      if (use_mpole .or. use_polar)  call empole
+c      if (use_mpole .or. use_polar) call empole
+ccccccccccccccccccccccccccccccccccccc hack
+      print *,"using empole3 and epolar3 in energy.f"
+      if (use_mpole)  call empole3
+      if (use_polar)  call epolar3
+      print *,"got em and ep"
+ccccccccccccccccccccccccccccccccccccc
       if (use_rxnfld)  call erxnfld
 c
 c     call any miscellaneous energy component routines
