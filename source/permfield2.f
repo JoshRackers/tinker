@@ -126,7 +126,6 @@ c
 c
 c     zero out the value of the field at each site
 c
-      print *,"in permfield2a"
       do i = 1, npole
          pot(i) = 0.0d0
          potm(i) = 0.0d0
@@ -165,7 +164,6 @@ c
       do i = 1, rorder
          scale(i) = 0.0d0
       end do
-      print *,"allocated scale"
 c
 c     set arrays needed to scale connected atom interactions
 c
@@ -326,8 +324,6 @@ c     thole damping
 c
                   if (damp_thole) then
                      call dampthole(i,k,rorder,r,scale)
-c                     print *,"permfield2 scale",i,k,scale(1),scale(3),
-c     &                    scale(5),scale(7),scale(9)
                      t0 = t0rr1*scale(1)
                      t1 = t1rr3*scale(3)
                      t2 = t2rr3*scale(3) + t2rr5*scale(5)

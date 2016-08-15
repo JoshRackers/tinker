@@ -31,7 +31,6 @@ c
 c     perform dynamic allocation of global arrays
 c
       if (.not.allocated(field_self)) allocate (field_self(3,npole))
-c      allocate (field_self(3,npole))
 c
 c     zero out the value of the field at each site
 c
@@ -46,7 +45,6 @@ c
       term = (4.0d0/3.0d0) * aewald**3 / sqrtpi
       do i = 1, npole
          do j = 1, 3
-c     changed + to -
             field_self(j,i) = field_self(j,i) - term*rpole(j+1,i)
          end do
       end do
@@ -66,7 +64,6 @@ c
          term = (4.0d0/3.0d0) * pi/volbox
          do i = 1, npole
             do j = 1, 3
-c     changed - to +
                field_self(j,i) = field_self(j,i) + term*ucell(j)
             end do
          end do

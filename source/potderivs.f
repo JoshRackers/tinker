@@ -103,7 +103,6 @@ c
       real*8, allocatable :: udfieldd_thole(:,:)
       real*8, allocatable :: udgradfieldd_thole(:,:,:)
       real*8, allocatable :: udhessfieldd_thole(:,:,:,:)
-ccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 c     reciprocal space field quantities
 c

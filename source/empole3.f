@@ -109,7 +109,6 @@ c
 c
 c     zero out multipole and polarization energy and partitioning
 c
-      print *,"in empole3a"
       nem = 0
       em = 0.0d0
       do i = 1, n
@@ -140,7 +139,6 @@ c     compute the permanent electric potential,
 c     field and field gradient at each multipole site
 c
       call permfield2
-      print *,"done with permfield2"
 c
 c     set conversion factor, cutoff and switching coefficients
 c

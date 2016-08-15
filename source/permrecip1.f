@@ -69,7 +69,6 @@ c
       allocate (cmp(10,npole))
       allocate (fmp(10,npole))
       allocate (cphi(20,npole))
-c      allocate (cphi(10,npole))
       allocate (fphi(20,npole))
 c
 c     copy multipole moments and coordinates to local storage
@@ -176,7 +175,7 @@ c     increment the field at each multipole site
 c
       do i = 1, npole
          pot_recip(i) = pot_recip(i) + cphi(1,i)
-c     changed - to +
+c
          field_recip(1,i) = field_recip(1,i) + cphi(2,i)
          field_recip(2,i) = field_recip(2,i) + cphi(3,i)
          field_recip(3,i) = field_recip(3,i) + cphi(4,i)
@@ -199,16 +198,6 @@ c
          hessfield_recip(2,3,3,i) = hessfield_recip(2,3,3,i) +cphi(19,i)
          hessfield_recip(1,2,3,i) = hessfield_recip(1,2,3,i) +cphi(20,i)
       end do
-      print *,"hessfield_recip"
-      do i = 1, npole
-         do j = 1, 3
-            do k = 1, 3
-               do l = 1, 3
-                  print *,i,j,k,l,hessfield_recip(j,k,l,i)
-               end do
-            end do
-         end do
-      end do      
 c
 c     perform deallocation of some local arrays
 c

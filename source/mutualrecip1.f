@@ -32,11 +32,6 @@ c
       real*8, allocatable :: cphid(:,:)
       real*8, allocatable :: cphip(:,:)
       real*8, allocatable :: cphidp(:,:)
-cccccccccccccccccccccccccccccccccccccccccccccc
-      real*8, allocatable :: dipfield1(:,:)
-      real*8, allocatable :: dipfield2(:,:)
-ccccccccccccccccccccccccccccccccccccccccccccccc
-c
 c
 c     return if the Ewald coefficient is zero
 c
@@ -78,23 +73,15 @@ c     perform dynamic allocation of some local arrays
 c
       allocate (fuind(3,npole))
       allocate (fuinp(3,npole))
-c     p dipoles
-      allocate (fphid(20,npole))
-c      allocate (fphid(20,npole))
 c     d dipoles
+      allocate (fphid(20,npole))
+c     p dipoles
       allocate (fphip(20,npole))
-c      allocate (fphip(20,npole))
 c     p+d dipoles
       allocate (fphidp(20,npole))
-c      allocate (cphid(10,npole))
       allocate (cphid(20,npole))
-c      allocate (cphip(10,npole))
       allocate (cphip(20,npole))
       allocate (cphidp(20,npole))
-ccccccccccccccccccccccccccccccccccccccccc
-      allocate (dipfield1(3,npole))
-      allocate (dipfield2(3,npole))
-cccccccccccccccccccccccccccccccccccccccccc
 c
 c     convert Cartesian dipoles to fractional coordinates
 c
@@ -136,47 +123,12 @@ c
 c
 c     convert the dipole fields from fractional to Cartesian
 c
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       call fphi_to_cphi (fphid,cphid)
       call fphi_to_cphi (fphip,cphip)
       call fphi_to_cphi (fphidp,cphidp)
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-c      do i = 1, 3
-c         a(i,1) = dble(nfft1) * recip(i,1)
-c         a(i,2) = dble(nfft2) * recip(i,2)
-c         a(i,3) = dble(nfft3) * recip(i,3)
-c      end do
-c      do i = 1, npole
-c         do k = 1, 3
-c            cphid(k,i) = a(k,1)*fphid(2,i)
-c     &                          + a(k,2)*fphid(3,i)
-c     &                          + a(k,3)*fphid(4,i)
-c            cphip(k,i) = a(k,1)*fphip(2,i)
-c     &                          + a(k,2)*fphip(3,i)
-c     &                          + a(k,3)*fphip(4,i)
-c            dipfield1(k,i) = a(k,1)*fphid(2,i)
-c     &                          + a(k,2)*fphid(3,i)
-c     &                          + a(k,3)*fphid(4,i)
-c            dipfield2(k,i) = a(k,1)*fphip(2,i)
-c     &                          + a(k,2)*fphip(3,i)
-c     &                          + a(k,3)*fphip(4,i)
-c         end do
-c      end do
 c
-c     increment the field at each multipole site
+c     accumulate mutual cartesian reciprocal fields
 c
-c      do i = 1, npole
-c         do k = 2, 4
-c     changed - to +
-c            udfield_recip(k-1,i) = udfield_recip(k-1,i) + cphid(k,i)
-c            upfield_recip(k-1,i) = upfield_recip(k-1,i) + cphip(k,i)
-c            upfield_recip(k-1,i)=upfield_recip(k-1,i)+0.5d0*cphidp(k,i)
-c            udfield_recip(k-1,i) = udfield_recip(k-1,i) + cphid(k-1,i)
-c            upfield_recip(k-1,i) = upfield_recip(k-1,i) + cphip(k-1,i)
-c            udfield_recip(k-1,i) = udfield_recip(k-1,i)+dipfield1(k-1,i)
-c            upfield_recip(k-1,i) = upfield_recip(k-1,i)+dipfield2(k-1,i)
-c         end do
-c      end do
       do i = 1, npole
          udfield_recip(1,i) = udfield_recip(1,i) + cphid(2,i)
          udfield_recip(2,i) = udfield_recip(2,i) + cphid(3,i)

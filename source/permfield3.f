@@ -13,7 +13,7 @@ c     ##                                                          ##
 c     ##############################################################
 c
 c
-c     "permfield2" computes the electric potential, field,
+c     "permfield3" computes the electric potential, field,
 c     field gradient and field hessian for use in energy and gradient
 c     routines as well as for use in computing induced dipoles
 c
@@ -174,7 +174,7 @@ c
       allocate (pscale(n))
 c
 c     set highest order rr and damping terms needed
-c     2 = up to field gradient (rr9)
+c     3 = up to field hessian (rr11)
 c
       order = 3
       rorder = order*2 + 5

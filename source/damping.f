@@ -121,7 +121,6 @@ c
             if (rorder.ge.7) then
             scale(7) = 1.0d0 - (1.0d0 + damp + 0.6d0*damp**2)*expdamp
             end if
-c     double check scale(9)
             if (rorder.ge.9) then
                scale(9) = 1.0d0 - (1.0d0 + damp + 
      &              (18.0d0/35.0d0)*damp**2 + (9.0d0/35.0d0)*damp**3)*

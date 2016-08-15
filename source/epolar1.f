@@ -217,9 +217,6 @@ c     dipoles
      &        diy*upgradfieldp_thole(2,3,ii) +
      &        diz*upgradfieldp_thole(3,3,ii)
 c     quadrupoles
-         fxold = fx
-         fyold = fy
-         fzold = fz
          fx = fx + qixx*uphessfieldp_thole(1,1,1,ii) +
      &        qixy*uphessfieldp_thole(1,1,2,ii) +
      &        qixz*uphessfieldp_thole(1,1,3,ii) + 

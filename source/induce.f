@@ -27,9 +27,7 @@ c
       use limits
       use mpole
       use polar
-c
       use potderivs
-c
       use potent
       use solute
       use units
@@ -184,9 +182,7 @@ c
       use mpole
       use polar
       use polpot
-c
       use potderivs
-c
       use potent
       use units
       use uprior
@@ -316,7 +312,6 @@ c
             uinp(j,i) = udirp(j,i)
          end do
       end do
-c      print *,"have direct induced dipoles"
 c
 c     set tolerances for computation of mutual induced dipoles
 c
@@ -378,14 +373,8 @@ c
      &           upfield + upfield_thole + upfield_self
          else
             call mutualfield1
-            do i = 1, npole
-               do j = 1, 3
-                  udfield_tot(j,i) = udfield_thole(j,i)
-                  upfield_tot(j,i) = upfield_thole(j,i)
-               end do
-            end do
-c            udfield_tot = udfield_thole
-c            upfield_tot = upfield_thole
+            udfield_tot = udfield_thole
+            upfield_tot = upfield_thole
          end if
 c
 c     set initial conjugate gradient residual and conjugate vector
@@ -400,11 +389,6 @@ c
             end do
          end do
          mode = 'BUILD'
-cccccccccccccccccccccccccccc what should i do about these?
-cccccccccccccccccccccccccccc they have thole damping in them
-c
-cccccccccccccccccccccccccccc i can just insert the "damping" routine
-cccccccccccccccccccccccccccc into existing uscales?
          if (use_mlist) then
             call uscale0b (mode,rsd,rsdp,zrsd,zrsdp)
             mode = 'APPLY'
@@ -414,7 +398,6 @@ cccccccccccccccccccccccccccc into existing uscales?
             mode = 'APPLY'
             call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
          end if
-ccccccccccccccccccccccccccccccccccccc
          do i = 1, npole
             do j = 1, 3
                conj(j,i) = zrsd(j,i)
@@ -453,14 +436,8 @@ c
      &              upfield + upfield_thole + upfield_self
             else
                call mutualfield1
-               do i = 1, npole
-                  do j = 1, 3
-                     udfield_tot(j,i) = udfield_thole(j,i)
-                     upfield_tot(j,i) = upfield_thole(j,i)
-                  end do
-               end do
-c                     udfield_tot = udfield_thole
-c                     upfield_tot = upfield_thole
+               udfield_tot = udfield_thole
+               upfield_tot = upfield_thole
             end if
             do i = 1, npole
                do j = 1, 3
@@ -492,13 +469,11 @@ c                     upfield_tot = upfield_thole
                   rsdp(j,i) = rsdp(j,i) - ap*vecp(j,i)
                end do
             end do
-ccccccccccccccccccccccccccc
             if (use_mlist) then
                call uscale0b (mode,rsd,rsdp,zrsd,zrsdp)
             else
                call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
             end if
-ccccccccccccccccccccccccccc
             b = 0.0d0
             bp = 0.0d0
             do i = 1, npole
@@ -535,7 +510,6 @@ c
                write (iout,20)  iter,eps
    20          format (i8,7x,f16.10)
             end if
-            print *,'checking if done'
             if (eps .lt. poleps)  done = .true.
             if (eps .gt. epsold)  done = .true.
             if (iter .ge. politer)  done = .true.
@@ -543,25 +517,15 @@ c
 c
 c     perform deallocation of some local arrays
 c     
-         print *,"induce deallocating 1"
          deallocate (poli)
-         print *,"poli"
          deallocate (rsd)
-         print *,"rsd"
          deallocate (rsdp)
-         print *,"rsdp"
          deallocate (zrsd)
-         print *,"zrsd"
          deallocate (zrsdp)
-         print *,"zrsdp"
          deallocate (conj)
-         print *,"conj"
          deallocate (conjp)
-         print *,"conjp"
          deallocate (vec)
-         print *,"vec"
          deallocate (vecp)
-         print *,"done deallocating 1"
 c
 c     print the results from the conjugate gradient iteration
 c
@@ -590,7 +554,6 @@ c
       deallocate (upfield_tot)
       deallocate (udir)
       deallocate (udirp)
-      print *,"exiting induce0a"
       return
       end
 c

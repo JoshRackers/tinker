@@ -7,17 +7,17 @@ c     #############################################################
 c
 c     #############################################################
 c     ##                                                         ##
-c     ##  subroutine empole3  --  mpole/polar energy & analysis  ##
+c     ##  subroutine empole  --  mpole/polar energy & analysis  ##
 c     ##                                                         ##
 c     #############################################################
 c
 c
-c     "empole3" calculates the electrostatic energy due to
+c     "empole0" calculates the electrostatic energy due to
 c     atomic multipole and dipole polarizability interactions,
 c     and partitions the energy among the atoms
 c
 c
-      subroutine empole3
+      subroutine empole
       use sizes
       use analyz
       use energi
@@ -31,9 +31,9 @@ c
 c     choose the method for summing over multipole interactions
 c
       if (use_ewald) then
-         call empole3b
+         call empole0b
       else
-         call empole3a
+         call empole0a
       end if
 c
 c
@@ -41,10 +41,6 @@ c     zero out energy terms and analysis which are not in use
 c
       if (.not. use_mpole) then
          em = 0.0d0
-         do i = 1, npole
-            ii = ipole(i)
-            aem(ii) = 0.0d0
-         end do
       end if
       return
       end
@@ -52,17 +48,17 @@ c
 c
 c     ###############################################################
 c     ##                                                           ##
-c     ##  subroutine empole3a  --  nonewald multipole analysis     ##
+c     ##  subroutine empole0a  --  nonewald multipole analysis     ##
 c     ##                                                           ##
 c     ###############################################################
 c
 c
-c     "empole3a" calculates the atomic multipole and dipole           
+c     "empole0a" calculates the atomic multipole and dipole           
 c     polarizability interaction energy and partitions the 
 c     energy among the atoms
 c
 c
-      subroutine empole3a
+      subroutine empole0a
       use sizes
       use action
       use analyz
@@ -109,12 +105,7 @@ c
 c
 c     zero out multipole and polarization energy and partitioning
 c
-      print *,"in empole3a"
-      nem = 0
       em = 0.0d0
-      do i = 1, n
-         aem(i) = 0.0d0
-      end do
       header = .true.
       if (npole .eq. 0)  return
 c
@@ -140,7 +131,6 @@ c     compute the permanent electric potential,
 c     field and field gradient at each multipole site
 c
       call permfield2
-      print *,"done with permfield2"
 c
 c     set conversion factor, cutoff and switching coefficients
 c
@@ -189,8 +179,6 @@ c
 c     increment the overall multipole and polarization energies
 c
          em = em + e
-         nem = nem + 1
-         aem(ii) = aem(ii) + e
       end do
       return
       end
@@ -198,17 +186,17 @@ c
 c
 c     ###################################################################
 c     ##                                                               ##
-c     ##  subroutine empole3b  --  ewald summation multipole analysis  ##
+c     ##  subroutine empole0b  --  ewald summation multipole analysis  ##
 c     ##                                                               ##
 c     ###################################################################
 c
 c
-c     "empole3b" calculates the atomic multipole and dipole 
+c     "empole0b" calculates the atomic multipole and dipole 
 c     polarizability interaction energy using a particle mesh
 c     Ewald summation
 c
 c
-      subroutine empole3b
+      subroutine empole0b
       use sizes
       use action
       use analyz
@@ -240,13 +228,7 @@ c
 c
 c     zero out the multipole and polarization energies
 c
-      nem = 0
-      nep = 0
       em = 0.0d0
-      ep = 0.0d0
-      do i = 1, n
-         aem(i) = 0.0d0
-      end do
       if (npole .eq. 0)  return
 c
 c     set the energy unit conversion factor
@@ -368,8 +350,6 @@ c
 c     increment the overall multipole energy
 c
          em = em + ereal + eself - efix + erecip
-         nem = nem + 1
-         aem(i) = aem(i) + e
       end do
 c
 c     compute the cell dipole boundary correction term
@@ -397,7 +377,6 @@ c
             zu = zu + uiz
          end do
          term = (2.0d0/3.0d0) * f * (pi/volbox)
-         nem = nem + 1
          em = em + term*(xd*xd+yd*yd+zd*zd)
       end if
       return

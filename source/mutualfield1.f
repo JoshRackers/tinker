@@ -7,22 +7,22 @@ c     #############################################################
 c
 c     ###############################################################
 c     ##                                                           ##
-c     ##  subroutine mutualfield3  --  electric field gradient     ##
-c     ##                       and hessian from induce dipoles     ##
+c     ##  subroutine mutualfield1  --  electric field from induced ##
+c     ##                               dipoles                     ##
 c     ##                                                           ##
 c     ###############################################################
 c
 c
-c     "mutualfield3" computes the electric field gradient and hessian
+c     "mutualfield1" computes the electric field
 c     from the induced dipoles
 c
-c     (the 3 stands for field hessian)
+c     (the 1 stands for field)
 c
 c     assumes multipole components have already been rotated into
 c     the global coordinate frame
 c
 c
-      subroutine mutualfield3
+      subroutine mutualfield1
       use sizes
       use atoms
       use limits
@@ -37,62 +37,24 @@ c     perform dynamic allocation of global arrays
 c
       if (.not.allocated(udfield)) allocate (udfield(3,npole))
       if (.not.allocated(upfield)) allocate (upfield(3,npole))
-      if (.not.allocated(udgradfield)) allocate (udgradfield(3,3,npole))
-      if (.not.allocated(upgradfield)) allocate (upgradfield(3,3,npole))
-      if (.not.allocated(udhessfield)) 
-     &     allocate (udhessfield(3,3,3,npole))
-      if (.not.allocated(uphessfield)) 
-     &     allocate (uphessfield(3,3,3,npole))
 c
-      if (.not.allocated(udfield_ewald))
+      if (.not.allocated(udfield_ewald)) 
      &     allocate (udfield_ewald(3,npole))
-      if (.not.allocated(upfield_ewald))
+      if (.not.allocated(upfield_ewald)) 
      &     allocate (upfield_ewald(3,npole))
-      if (.not.allocated(udgradfield_ewald)) 
-     &     allocate (udgradfield_ewald(3,3,npole))
-      if (.not.allocated(upgradfield_ewald)) 
-     &     allocate (upgradfield_ewald(3,3,npole))
-      if (.not.allocated(udhessfield_ewald))
-     &     allocate (udhessfield_ewald(3,3,3,npole))
-      if (.not.allocated(uphessfield_ewald))
-     &     allocate (uphessfield_ewald(3,3,3,npole))
 c
-      if (.not.allocated(udfield_thole))
+      if (.not.allocated(udfield_thole)) 
      &     allocate (udfield_thole(3,npole))
-      if (.not.allocated(upfield_thole))
+      if (.not.allocated(upfield_thole)) 
      &     allocate (upfield_thole(3,npole))
-      if (.not.allocated(udgradfield_thole)) 
-     &     allocate (udgradfield_thole(3,3,npole))
-      if (.not.allocated(upgradfield_thole)) 
-     &     allocate (upgradfield_thole(3,3,npole))
-      if (.not.allocated(udhessfield_thole))
-     &     allocate (udhessfield_thole(3,3,3,npole))
-      if (.not.allocated(uphessfield_thole))
-     &     allocate (uphessfield_thole(3,3,3,npole))
-c
-      if (.not.allocated(udfieldd_thole))
-     &     allocate (udfieldd_thole(3,npole))
-      if (.not.allocated(udgradfieldd_thole))
-     &     allocate (udgradfieldd_thole(3,3,npole))
-      if (.not.allocated(udhessfieldd_thole))
-     &     allocate (udhessfieldd_thole(3,3,3,npole))
-c
-      if (.not.allocated(upfieldp_thole))
-     &     allocate (upfieldp_thole(3,npole))
-      if (.not.allocated(upgradfieldp_thole))
-     &     allocate (upgradfieldp_thole(3,3,npole))
-      if (.not.allocated(uphessfieldp_thole))
-     &     allocate (uphessfieldp_thole(3,3,3,npole))
-
-
 c
 c     get the electrostatic potential, field and field gradient
 c     due to the induced dipoles
 c
       if (use_mlist) then
-         call mutualfield3b
+         call mutualfield1b
       else
-         call mutualfield3a
+         call mutualfield1a
       end if
       return
       end
@@ -100,17 +62,17 @@ c
 c
 c     ################################################################
 c     ##                                                            ##
-c     ##  subroutine mutualfield3a  --  mutual field                ##
-c     ##                                gradient via double loop    ##
+c     ##  subroutine mutualfield1a  --  mutual field via a double   ##
+c     ##                                loop                        ##
 c     ##                                                            ##
 c     ################################################################
 c
 c
-c     "mutualfield3a" computes the mutual 
-c     field gradient due to induced dipoles via a double loop
+c     "mutualfield1a" computes the mutual electrostatic field 
+c     due to induced dipoles via a double loop
 c
 c
-      subroutine mutualfield3a 
+      subroutine mutualfield1a 
       use sizes
       use atoms
       use bound
@@ -126,27 +88,23 @@ c
       use shunt
       use usage
       implicit none
-      integer i,j,k,l,m,h
+      integer i,j,k,l,m
       integer ii,kk
       integer ix,iy,iz
       integer kx,ky,kz
       integer order,rorder
       real*8 xr,yr,zr
       real*8 fgrp,r,r2
-      real*8 rr1,rr3,rr5,rr7,rr9
-      real*8 t2(3,3),t3(3,3,3),t4(3,3,3,3)
+      real*8 rr1,rr3,rr5,rr7
+      real*8 t0,t1(3),t2(3,3),t3(3,3,3)
+      real*8 t0rr1,t1rr3(3)
       real*8 t2rr3(3,3),t2rr5(3,3)
       real*8 t3rr5(3,3,3),t3rr7(3,3,3)
-      real*8 t4rr5(3,3,3,3),t4rr7(3,3,3,3),t4rr9(3,3,3,3)
+      real*8 potid,potkd,potip,potkp
       real*8 fieldid(3),fieldkd(3)
       real*8 fieldip(3),fieldkp(3)
-      real*8 gradfieldid(3,3),gradfieldkd(3,3)
-      real*8 gradfieldip(3,3),gradfieldkp(3,3)
-      real*8 hessfieldid(3,3,3),hessfieldkd(3,3,3)
-      real*8 hessfieldip(3,3,3),hessfieldkp(3,3,3)
-      real*8, allocatable :: scale(:)
-      real*8, allocatable :: dscale(:)
       real*8, allocatable :: pscale(:)
+      real*8, allocatable :: scale(:)
       logical proceed
       logical usei,usek
       character*6 mode
@@ -161,28 +119,6 @@ c
             upfield_ewald(j,i) = 0.0d0
             udfield_thole(j,i) = 0.0d0
             upfield_thole(j,i) = 0.0d0
-            udfieldd_thole(j,i) = 0.0d0
-            upfieldp_thole(j,i) = 0.0d0
-            do k = 1, 3
-               udgradfield(k,j,i) = 0.0d0
-               upgradfield(k,j,i) = 0.0d0
-               udgradfield_ewald(k,j,i) = 0.0d0
-               upgradfield_ewald(k,j,i) = 0.0d0
-               udgradfield_thole(k,j,i) = 0.0d0
-               upgradfield_thole(k,j,i) = 0.0d0
-               udgradfieldd_thole(k,j,i) = 0.0d0
-               upgradfieldp_thole(k,j,i) = 0.0d0
-               do l = 1, 3
-                  udhessfield(l,k,j,i) = 0.0d0
-                  uphessfield(l,k,j,i) = 0.0d0
-                  udhessfield_ewald(l,k,j,i) = 0.0d0
-                  uphessfield_ewald(l,k,j,i) = 0.0d0
-                  udhessfield_thole(l,k,j,i) = 0.0d0
-                  uphessfield_thole(l,k,j,i) = 0.0d0
-                  udhessfieldd_thole(l,k,j,i) = 0.0d0
-                  uphessfieldp_thole(l,k,j,i) = 0.0d0
-               end do
-            end do
          end do
       end do
 c
@@ -193,13 +129,12 @@ c
 c
 c     perform dynamic allocation of some local arrays
 c
-      allocate (dscale(n))
       allocate (pscale(n))
 c
 c     set highest order rr and damping terms needed
-c     3 = up to field hessian (rr9 for induced dipoles)
+c     1 = up to field (rr5 for induced dipoles)
 c
-      order = 3
+      order = 1
       rorder = order*2 + 3
       allocate (scale(rorder))
       do i = 1,rorder
@@ -214,41 +149,6 @@ c
          iz = zaxis(i)
          ix = xaxis(i)
          iy = yaxis(i)
-c
-c     set d and p exclusion rules
-c
-         do j = i+1, npole
-            dscale(ipole(j)) = 1.0d0
-            pscale(ipole(j)) = 1.0d0
-         end do
-         do j = 1, n12(ii)
-            pscale(i12(j,ii)) = p2scale
-         end do
-         do j = 1, n13(ii)
-            pscale(i13(j,ii)) = p3scale
-         end do
-         do j = 1, n14(ii)
-            pscale(i14(j,ii)) = p4scale
-            do k = 1, np11(ii)
-               if (i14(j,ii) .eq. ip11(k,ii))
-     &            pscale(i14(j,ii)) = p4scale * p41scale
-            end do
-         end do
-         do j = 1, n15(ii)
-            pscale(i15(j,ii)) = p5scale
-         end do
-         do j = 1, np11(ii)
-            dscale(ip11(j,ii)) = d1scale
-         end do
-         do j = 1, np12(ii)
-            dscale(ip12(j,ii)) = d2scale
-         end do
-         do j = 1, np13(ii)
-            dscale(ip13(j,ii)) = d3scale
-         end do
-         do j = 1, np14(ii)
-            dscale(ip14(j,ii)) = d4scale
-         end do
          do k = i+1, npole
             kk = ipole(k)
             proceed = .true.
@@ -265,57 +165,21 @@ c
                   rr3 = rr1 / r2
                   rr5 = 3.0d0 * rr3 / r2
                   rr7 = 5.0d0 * rr5 / r2
-                  rr9 = 7.0d0 * rr7 / r2
                   call t2matrixrr3(xr,yr,zr,rr3,t2rr3)
                   call t2matrixrr5(xr,yr,zr,rr5,t2rr5)
-                  call t3matrixrr5(xr,yr,zr,rr5,t3rr5)
-                  call t3matrixrr7(xr,yr,zr,rr7,t3rr7)
-                  call t4matrixrr5(xr,yr,zr,rr5,t4rr5)
-                  call t4matrixrr7(xr,yr,zr,rr7,t4rr7)
-                  call t4matrixrr9(xr,yr,zr,rr9,t4rr9)
 c
 c     call routines that produce potential, field, field gradient
 c     for types of damping
 c
                   if (damp_none) then
                      t2 = t2rr3 + t2rr5
-                     t3 = t3rr5 + t3rr7
-                     t4 = t4rr5 + t4rr7 + t4rr9
                      call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
      &                    fieldkp)
-                     call ugradfieldik(i,k,t3,gradfieldid,gradfieldkd,
-     &                    gradfieldip,gradfieldkp)
-                     call uhessfieldik(i,k,t4,hessfieldid,hessfieldkd,
-     &                    hessfieldip,hessfieldkp)
                      do j = 1, 3
                         udfield(j,i) = udfield(j,i) + fieldid(j)
                         udfield(j,k) = udfield(j,k) + fieldkd(j)
                         upfield(j,i) = upfield(j,i) + fieldip(j)
                         upfield(j,k) = upfield(j,k) + fieldkp(j)
-                        do l = 1, 3
-                           udgradfield(l,j,i) = udgradfield(l,j,i) + 
-     &                          gradfieldid(l,j)
-                           udgradfield(l,j,k) = udgradfield(l,j,k) + 
-     &                          gradfieldkd(l,j)
-                           upgradfield(l,j,i) = upgradfield(l,j,i) + 
-     &                          gradfieldip(l,j)
-                           upgradfield(l,j,k) = upgradfield(l,j,k) + 
-     &                          gradfieldkp(l,j)
-                           do h = 1, 3
-                              udhessfield(h,l,j,i) = 
-     &                             udhessfield(h,l,j,i) +
-     &                             hessfieldid(h,l,j)
-                              udhessfield(h,l,j,k) = 
-     &                             udhessfield(h,l,j,k) +
-     &                             hessfieldkd(h,l,j)
-                              uphessfield(h,l,j,i) = 
-     &                             uphessfield(h,l,j,i) +
-     &                             hessfieldip(h,l,j)
-                              uphessfield(h,l,j,k) = 
-     &                             uphessfield(h,l,j,k) +
-     &                             hessfieldkp(h,l,j)
-                           end do
-                        end do
                      end do
                   end if
 c
@@ -327,52 +191,17 @@ c
 c     the ewald damping factors already contain their powers of r (rrx)
 c
                      t2 = t2rr3*scale(3)/rr3 + t2rr5*scale(5)/rr5
-                     t3 = t3rr5*scale(5)/rr5 + t3rr7*scale(7)/rr7
-                     t4 = t4rr5*scale(5)/rr5 + t4rr7*scale(7)/rr7 +
-     &                    t4rr9*scale(9)/rr9
                      call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
      &                    fieldkp)
-                     call ugradfieldik(i,k,t3,gradfieldid,gradfieldkd,
-     &                    gradfieldip,gradfieldkp)
-                     call uhessfieldik(i,k,t4,hessfieldid,hessfieldkd,
-     &                    hessfieldip,hessfieldkp)
                      do j = 1, 3
-                        udfield_ewald(j,i) = udfield_ewald(j,i) +
+                        udfield_ewald(j,i) = udfield_ewald(j,i) + 
      &                       fieldid(j)
-                        udfield_ewald(j,k) = udfield_ewald(j,k) +
+                        udfield_ewald(j,k) = udfield_ewald(j,k) + 
      &                       fieldkd(j)
                         upfield_ewald(j,i) = upfield_ewald(j,i) +
      &                       fieldip(j)
                         upfield_ewald(j,k) = upfield_ewald(j,k) +
      &                       fieldkp(j)
-                        do l = 1, 3
-                           udgradfield_ewald(l,j,i) = 
-     &                          udgradfield_ewald(l,j,i) + 
-     &                          gradfieldid(l,j)
-                           udgradfield_ewald(l,j,k) = 
-     &                          udgradfield_ewald(l,j,k) + 
-     &                          gradfieldkd(l,j)
-                           upgradfield_ewald(l,j,i) = 
-     &                          upgradfield_ewald(l,j,i) +
-     &                          gradfieldip(l,j)
-                           upgradfield_ewald(l,j,k) = 
-     &                          upgradfield_ewald(l,j,k) +
-     &                          gradfieldkp(l,j)
-                           do h = 1, 3
-                              udhessfield_ewald(h,l,j,i) =
-     &                             udhessfield_ewald(h,l,j,i) +
-     &                             hessfieldid(h,l,j)
-                              udhessfield_ewald(h,l,j,k) =
-     &                             udhessfield_ewald(h,l,j,k) +
-     &                             hessfieldkd(h,l,j)
-                              uphessfield_ewald(h,l,j,i) =
-     &                             uphessfield_ewald(h,l,j,i) +
-     &                             hessfieldip(h,l,j)
-                              uphessfield_ewald(h,l,j,k) =
-     &                             uphessfield_ewald(h,l,j,k) +
-     &                             hessfieldkp(h,l,j)
-                           end do
-                        end do
                      end do
                   end if
 c
@@ -381,15 +210,8 @@ c
                   if (damp_thole) then
                      call dampthole(i,k,rorder,r,scale)
                      t2 = t2rr3*scale(3) + t2rr5*scale(5)
-                     t3 = t3rr5*scale(5) + t3rr7*scale(7)
-                     t4 = t4rr5*scale(5) + t4rr7*scale(7) +
-     &                    t4rr9*scale(9)
                      call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
      &                    fieldkp)
-                     call ugradfieldik(i,k,t3,gradfieldid,gradfieldkd,
-     &                    gradfieldip,gradfieldkp)
-                     call uhessfieldik(i,k,t4,hessfieldid,hessfieldkd,
-     &                    hessfieldip,hessfieldkp)
                      do j = 1, 3
                         udfield_thole(j,i) = udfield_thole(j,i) +
      &                       fieldid(j)
@@ -399,66 +221,6 @@ c
      &                       fieldip(j)
                         upfield_thole(j,k) = upfield_thole(j,k) +
      &                       fieldkp(j)
-                        udfieldd_thole(j,i) = udfieldd_thole(j,i) +
-     &                       fieldid(j)*dscale(kk)
-                        udfieldd_thole(j,k) = udfieldd_thole(j,k) +
-     &                       fieldkd(j)*dscale(kk)
-                        upfieldp_thole(j,i) = upfieldp_thole(j,i) +
-     &                       fieldip(j)*pscale(kk)
-                        upfieldp_thole(j,k) = upfieldp_thole(j,k) +
-     &                       fieldkp(j)*pscale(kk)
-                        do l = 1, 3
-                           udgradfield_thole(l,j,i) = 
-     &                          udgradfield_thole(l,j,i) +
-     &                          gradfieldid(l,j)
-                           udgradfield_thole(l,j,k) = 
-     &                          udgradfield_thole(l,j,k) +
-     &                          gradfieldkd(l,j)
-                           upgradfield_thole(l,j,i) = 
-     &                          upgradfield_thole(l,j,i) +
-     &                          gradfieldip(l,j)
-                           upgradfield_thole(l,j,k) = 
-     &                          upgradfield_thole(l,j,k) +
-     &                          gradfieldkp(l,j)
-                           udgradfieldd_thole(l,j,i) =
-     &                          udgradfieldd_thole(l,j,i) +
-     &                          gradfieldid(l,j)*dscale(kk)
-                           udgradfieldd_thole(l,j,k) =
-     &                          udgradfieldd_thole(l,j,k) +
-     &                          gradfieldkd(l,j)*dscale(kk)
-                           upgradfieldp_thole(l,j,i) =
-     &                          upgradfieldp_thole(l,j,i) +
-     &                          gradfieldip(l,j)*pscale(kk)
-                           upgradfieldp_thole(l,j,k) =
-     &                          upgradfieldp_thole(l,j,k) +
-     &                          gradfieldkp(l,j)*pscale(kk)
-                           do h = 1, 3
-                              udhessfield_thole(h,l,j,i) =
-     &                             udhessfield_thole(h,l,j,i) +
-     &                             hessfieldid(h,l,j)
-                              udhessfield_thole(h,l,j,k) =
-     &                             udhessfield_thole(h,l,j,k) +
-     &                             hessfieldkd(h,l,j)
-                              uphessfield_thole(h,l,j,i) =
-     &                             uphessfield_thole(h,l,j,i) +
-     &                             hessfieldip(h,l,j)
-                              uphessfield_thole(h,l,j,k) =
-     &                             uphessfield_thole(h,l,j,k) +
-     &                             hessfieldkp(h,l,j)
-                              udhessfieldd_thole(h,l,j,i) =
-     &                             udhessfieldd_thole(h,l,j,i) +
-     &                             hessfieldid(h,l,j)*dscale(kk)
-                              udhessfieldd_thole(h,l,j,k) =
-     &                             udhessfieldd_thole(h,l,j,k) +
-     &                             hessfieldkd(h,l,j)*dscale(kk)
-                              uphessfieldp_thole(h,l,j,i) =
-     &                             uphessfieldp_thole(h,l,j,i) +
-     &                             hessfieldip(h,l,j)*pscale(kk)
-                              uphessfieldp_thole(h,l,j,k) =
-     &                             uphessfieldp_thole(h,l,j,k) +
-     &                             hessfieldkp(h,l,j)*pscale(kk)
-                           end do
-                        end do
                      end do
                   end if
 c
@@ -702,10 +464,10 @@ c
                      rr3 = rr1 / r2
                      rr5 = 3.0d0 * rr3 / r2
                      rr7 = 5.0d0 * rr5 / r2
-c                     call t0matrixrr1(rr1,t0rr1)
-c                     call t1matrixrr3(xr,yr,zr,rr3,t1rr3)
-c                     call t2matrixrr3(xr,yr,zr,rr3,t2rr3)
-c                     call t2matrixrr5(xr,yr,zr,rr5,t2rr5)
+                     call t0matrixrr1(rr1,t0rr1)
+                     call t1matrixrr3(xr,yr,zr,rr3,t1rr3)
+                     call t2matrixrr3(xr,yr,zr,rr3,t2rr3)
+                     call t2matrixrr5(xr,yr,zr,rr5,t2rr5)
                      call t3matrixrr5(xr,yr,zr,rr5,t3rr5)
                      call t3matrixrr7(xr,yr,zr,rr7,t3rr7)
 c
@@ -716,20 +478,14 @@ c
 c     no damping
 c
                      if (damp_none) then
-                        t3 = t3rr5 + t3rr7
-                        call ugradfieldik(i,k,t3,gradfieldid,gradfieldkd
-     &                       ,gradfieldip,gradfieldkp)
+                        t2 = t2rr3 + t2rr5
+                        call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
+     &                       fieldkp)
                         do j = 1, 3
-                           do l = 1, 3
-                              udgradfield(l,j,i) = udgradfield(l,j,i) + 
-     &                             gradfieldid(l,j)
-                              udgradfield(l,j,k) = udgradfield(l,j,k) + 
-     &                             gradfieldkd(l,j)
-                              upgradfield(l,j,i) = upgradfield(l,j,i) + 
-     &                             gradfieldip(l,j)
-                              upgradfield(l,j,k) = upgradfield(l,j,k) + 
-     &                             gradfieldkp(l,j)
-                           end do
+                           udfield(j,i) = udfield(j,i) + fieldid(j)
+                           udfield(j,k) = udfield(j,k) + fieldkd(j)
+                           upfield(j,i) = upfield(j,i) + fieldip(j)
+                           upfield(j,k) = upfield(j,k) + fieldkp(j)
                         end do
                      end if
 c
@@ -740,24 +496,18 @@ c
 c     
 c     the ewald damping factors already contain their powers of r (rrx)
 c     
-                        t3 = t3rr5*scale(5)/rr5 + t3rr7*scale(7)/rr7
-                        call ugradfieldik(i,k,t3,gradfieldid,gradfieldkd
-     &                       ,gradfieldip,gradfieldkp)
+                        t2 = t2rr3*scale(3)/rr3 + t2rr5*scale(5)/rr5
+                        call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
+     &                       fieldkp)
                         do j = 1, 3
-                           do l = 1, 3
-                              udgradfield_ewald(l,j,i) = 
-     &                             udgradfield_ewald(l,j,i) + 
-     &                             gradfieldid(l,j)
-                              udgradfield_ewald(l,j,k) = 
-     &                             udgradfield_ewald(l,j,k) + 
-     &                             gradfieldkd(l,j)
-                              upgradfield_ewald(l,j,i) = 
-     &                             upgradfield_ewald(l,j,i) +
-     &                             gradfieldip(l,j)
-                              upgradfield_ewald(l,j,k) = 
-     &                             upgradfield_ewald(l,j,k) +
-     &                             gradfieldkp(l,j)
-                           end do
+                           udfield_ewald(j,i) = udfield_ewald(j,i) + 
+     &                          fieldid(j)
+                           udfield_ewald(j,k) = udfield_ewald(j,k) + 
+     &                          fieldkd(j)
+                           upfield_ewald(j,i) = upfield_ewald(j,i) +
+     &                          fieldip(j)
+                           upfield_ewald(j,k) = upfield_ewald(j,k) +
+     &                          fieldkp(j)
                         end do
                      end if
 c
@@ -765,24 +515,18 @@ c     thole damping
 c
                      if (damp_thole) then
                         call dampthole(i,k,rorder,r,scale)
-                        t3 = t3rr5*scale(5) + t3rr7*scale(7)
-                        call ugradfieldik(i,k,t3,gradfieldid,gradfieldkd
-     &                       ,gradfieldip,gradfieldkp)
+                        t2 = t2rr3*scale(3) + t2rr5*scale(5)
+                        call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
+     &                       fieldkp)
                         do j = 1, 3
-                           do l = 1, 3
-                              udgradfield_thole(l,j,i) = 
-     &                             udgradfield_thole(l,j,i) +
-     &                             gradfieldid(l,j)
-                              udgradfield_thole(l,j,k) = 
-     &                             udgradfield_thole(l,j,k) +
-     &                             gradfieldkd(l,j)
-                              upgradfield_thole(l,j,i) = 
-     &                             upgradfield_thole(l,j,i) +
-     &                             gradfieldip(l,j)
-                              upgradfield_thole(l,j,k) = 
-     &                             upgradfield_thole(l,j,k) +
-     &                             gradfieldkp(l,j)
-                           end do
+                           udfield_thole(j,i) = udfield_thole(j,i) +
+     &                          fieldid(j)
+                           udfield_thole(j,k) = udfield_thole(j,k) +
+     &                          fieldkd(j)
+                           upfield_thole(j,i) = upfield_thole(j,i) +
+     &                          fieldip(j)
+                           upfield_thole(j,k) = upfield_thole(j,k) +
+     &                          fieldkp(j)
                         end do
                      end if
                   end if
@@ -790,27 +534,23 @@ c
             end if
          end do
       end do
-c
-c     perform deallocation of some local arrays
-c
-      deallocate (scale)
       return
       end
 c
 c
 c     ################################################################
 c     ##                                                            ##
-c     ##  subroutine mutualfield3b  --  potential, field and field  ##
-c     ##                                gradient via neighbor list  ##
+c     ##  subroutine mutualfield1b  --  mutual electric field       ##
+c     ##                                via neighbor list           ##
 c     ##                                                            ##
 c     ################################################################
 c
 c
-c     "mutualfield3b" computes the direct electrostatic potential, field and 
-c     field gradient due to induced dipoles using a neighbor list
+c     "mutualfield1b" computes the electric field 
+c     due to induced dipoles using a neighbor list
 c
 c
-      subroutine mutualfield3b
+      subroutine mutualfield1b
       use sizes
       use atoms
       use bound
@@ -834,51 +574,55 @@ c
       integer order,rorder
       real*8 xr,yr,zr
       real*8 fgrp,r,r2
-      real*8 rr1,rr3,rr5,rr7
-      real*8 t3(3,3,3)
+      real*8 rr1,rr3,rr5,rr7,rr9,rr11
+      real*8 t0,t1(3),t2(3,3),t3(3,3,3),t4(3,3,3,3)
+      real*8 t0rr1,t1rr3(3)
+      real*8 t2rr3(3,3),t2rr5(3,3)
       real*8 t3rr5(3,3,3),t3rr7(3,3,3)
+      real*8 t4rr5(3,3,3,3),t4rr7(3,3,3,3),t4rr9(3,3,3,3)
+      real*8 potid,potkd,potip,potkp
+      real*8 fieldid(3),fieldkd(3)
+      real*8 fieldip(3),fieldkp(3)
       real*8 gradfieldid(3,3),gradfieldkd(3,3)
       real*8 gradfieldip(3,3),gradfieldkp(3,3)
       real*8 test
       real*8, allocatable :: scale(:)
-      real*8, allocatable :: udgradfieldo(:,:,:)
-      real*8, allocatable :: upgradfieldo(:,:,:)
-      real*8, allocatable :: udgradfield_ewaldo(:,:,:)
-      real*8, allocatable :: upgradfield_ewaldo(:,:,:)
-      real*8, allocatable :: udgradfield_tholeo(:,:,:)
-      real*8, allocatable :: upgradfield_tholeo(:,:,:)
+      real*8, allocatable :: udfieldo(:,:)
+      real*8, allocatable :: upfieldo(:,:)
+      real*8, allocatable :: udfield_ewaldo(:,:)
+      real*8, allocatable :: upfield_ewaldo(:,:)
+      real*8, allocatable :: udfield_tholeo(:,:)
+      real*8, allocatable :: upfield_tholeo(:,:)
       logical proceed
       logical usei,usek
       character*6 mode
 c
 c     perform dynamic allocation of some local arrays
 c
-      allocate (udgradfieldo(3,3,npole))
-      allocate (upgradfieldo(3,3,npole))
-      allocate (udgradfield_ewaldo(3,3,npole))
-      allocate (upgradfield_ewaldo(3,3,npole))
-      allocate (udgradfield_tholeo(3,3,npole))
-      allocate (upgradfield_tholeo(3,3,npole))
+      allocate (udfieldo(3,npole))
+      allocate (upfieldo(3,npole))
+      allocate (udfield_ewaldo(3,npole))
+      allocate (upfield_ewaldo(3,npole))
+      allocate (udfield_tholeo(3,npole))
+      allocate (upfield_tholeo(3,npole))
 c
-c     zero out the value of the gradfield at each site
+c     zero out the value of the field at each site
 c
       do i = 1, npole
          do j = 1, 3
-            do k = 1, 3
-               udgradfield(k,j,i) = 0.0d0
-               upgradfield(k,j,i) = 0.0d0
-               udgradfield_ewald(k,j,i) = 0.0d0
-               upgradfield_ewald(k,j,i) = 0.0d0
-               udgradfield_thole(k,j,i) = 0.0d0
-               upgradfield_thole(k,j,i) = 0.0d0
+            udfield(j,i) = 0.0d0
+            upfield(j,i) = 0.0d0
+            udfield_ewald(j,i) = 0.0d0
+            upfield_ewald(j,i) = 0.0d0
+            udfield_thole(j,i) = 0.0d0
+            upfield_thole(j,i) = 0.0d0
 c
-               udgradfieldo(k,j,i) = 0.0d0
-               upgradfieldo(k,j,i) = 0.0d0
-               udgradfield_ewaldo(k,j,i) = 0.0d0
-               upgradfield_ewaldo(k,j,i) = 0.0d0
-               udgradfield_tholeo(k,j,i) = 0.0d0
-               upgradfield_tholeo(k,j,i) = 0.0d0
-            end do
+            udfieldo(j,i) = 0.0d0
+            upfieldo(j,i) = 0.0d0
+            udfield_ewaldo(j,i) = 0.0d0
+            upfield_ewaldo(j,i) = 0.0d0
+            udfield_tholeo(j,i) = 0.0d0
+            upfield_tholeo(j,i) = 0.0d0
          end do
       end do
 c
@@ -890,6 +634,7 @@ c
 c     set highest order rr and damping terms needed
 c     2 = up to field gradient (rr9)
 c
+c      order = 1
       order = 2
       rorder = order*2 + 3
       allocate (scale(rorder))
@@ -902,12 +647,12 @@ c
 !$OMP PARALLEL default(shared)
 !$OMP& private(i,j,k,ii,ix,iy,iz,usei,kk,kx,ky,kz,usek,kkk,proceed,
 !$OMP& xr,yr,zr,r,r2,rr1,rr3,rr5,rr7,fgrp,
-!$OMP& gradfieldid,gradfieldkd,gradfieldip,gradfieldkp,
-!$OMP& t3rr5,t3rr7,
-!$OMP& t3,scale)
-!$OMP DO reduction(+:udgradfieldo,upgradfieldo,
-!$OMP& udgradfield_ewaldo,upgradfield_ewaldo,
-!$OMP& udgradfield_tholeo,upgradfield_tholeo)
+!$OMP& fieldid,fieldkd,fieldip,fieldkp,
+!$OMP& t0rr1,t1rr3,t2rr3,t2rr5,t3rr5,t3rr7,
+!$OMP& t0,t1,t2,t3,scale)
+!$OMP DO reduction(+:udfieldo,upfieldo,
+!$OMP& udfield_ewaldo,upfield_ewaldo,
+!$OMP& udfield_tholeo,upfield_tholeo)
 !$OMP& schedule(guided)
 c
 c     calculate the multipole interaction
@@ -946,29 +691,23 @@ c
                   rr7 = 5.0d0 * rr5 / r2
 c                  call t0matrixrr1(rr1,t0rr1)
 c                  call t1matrixrr3(xr,yr,zr,rr3,t1rr3)
-c                  call t2matrixrr3(xr,yr,zr,rr3,t2rr3)
-c                  call t2matrixrr5(xr,yr,zr,rr5,t2rr5)
-                  call t3matrixrr5(xr,yr,zr,rr5,t3rr5)
-                  call t3matrixrr7(xr,yr,zr,rr7,t3rr7)
+                  call t2matrixrr3(xr,yr,zr,rr3,t2rr3)
+                  call t2matrixrr5(xr,yr,zr,rr5,t2rr5)
+c                  call t3matrixrr5(xr,yr,zr,rr5,t3rr5)
+c                  call t3matrixrr7(xr,yr,zr,rr7,t3rr7)
 c
 c     call routines that produce potential, field, field gradient
 c     for types of damping
 c
                   if (damp_none) then
-                     t3 = t3rr5 + t3rr7
-                     call ugradfieldik(i,k,t3,gradfieldid,gradfieldkd,
-     &                    gradfieldip,gradfieldkp)
+                     t2 = t2rr3 + t2rr5
+                     call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
+     &                    fieldkp)
                      do j = 1, 3
-                        do l = 1, 3
-                           udgradfieldo(l,j,i) = udgradfieldo(l,j,i) + 
-     &                          gradfieldid(l,j)
-                           udgradfieldo(l,j,k) = udgradfieldo(l,j,k) + 
-     &                          gradfieldkd(l,j)
-                           upgradfieldo(l,j,i) = upgradfieldo(l,j,i) + 
-     &                          gradfieldip(l,j)
-                           upgradfieldo(l,j,k) = upgradfieldo(l,j,k) + 
-     &                          gradfieldkp(l,j)
-                        end do
+                        udfieldo(j,i) = udfieldo(j,i) + fieldid(j)
+                        udfieldo(j,k) = udfieldo(j,k) + fieldkd(j)
+                        upfieldo(j,i) = upfieldo(j,i) + fieldip(j)
+                        upfieldo(j,k) = upfieldo(j,k) + fieldkp(j)
                      end do
                   end if
 c
@@ -979,24 +718,18 @@ c
 c
 c     the ewald damping factors already contain their powers of r (rrx)
 c
-                     t3 = t3rr5*scale(5)/rr5 + t3rr7*scale(7)/rr7
-                     call ugradfieldik(i,k,t3,gradfieldid,gradfieldkd,
-     &                    gradfieldip,gradfieldkp)
+                     t2 = t2rr3*scale(3)/rr3 + t2rr5*scale(5)/rr5
+                     call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
+     &                    fieldkp)
                      do j = 1, 3
-                        do l = 1, 3
-                           udgradfield_ewaldo(l,j,i) = 
-     &                          udgradfield_ewaldo(l,j,i) + 
-     &                          gradfieldid(l,j)
-                           udgradfield_ewaldo(l,j,k) = 
-     &                          udgradfield_ewaldo(l,j,k) + 
-     &                          gradfieldkd(l,j)
-                           upgradfield_ewaldo(l,j,i) = 
-     &                          upgradfield_ewaldo(l,j,i) +
-     &                          gradfieldip(l,j)
-                           upgradfield_ewaldo(l,j,k) = 
-     &                          upgradfield_ewaldo(l,j,k) +
-     &                          gradfieldkp(l,j)
-                        end do
+                        udfield_ewaldo(j,i) = udfield_ewaldo(j,i) + 
+     &                       fieldid(j)
+                        udfield_ewaldo(j,k) = udfield_ewaldo(j,k) + 
+     &                       fieldkd(j)
+                        upfield_ewaldo(j,i) = upfield_ewaldo(j,i) +
+     &                       fieldip(j)
+                        upfield_ewaldo(j,k) = upfield_ewaldo(j,k) +
+     &                       fieldkp(j)
                      end do
                   end if
 c
@@ -1004,24 +737,18 @@ c     thole damping
 c
                   if (damp_thole) then
                      call dampthole(i,k,rorder,r,scale)
-                     t3 = t3rr5*scale(5) + t3rr7*scale(7)
-                     call ugradfieldik(i,k,t3,gradfieldid,gradfieldkd,
-     &                    gradfieldip,gradfieldkp)
+                     t2 = t2rr3*scale(3) + t2rr5*scale(5)
+                     call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
+     &                    fieldkp)
                      do j = 1, 3
-                        do l = 1, 3
-                           udgradfield_tholeo(l,j,i) = 
-     &                          udgradfield_tholeo(l,j,i) +
-     &                          gradfieldid(l,j)
-                           udgradfield_tholeo(l,j,k) = 
-     &                          udgradfield_tholeo(l,j,k) +
-     &                          gradfieldkd(l,j)
-                           upgradfield_tholeo(l,j,i) = 
-     &                          upgradfield_tholeo(l,j,i) +
-     &                          gradfieldip(l,j)
-                           upgradfield_tholeo(l,j,k) = 
-     &                          upgradfield_tholeo(l,j,k) +
-     &                          gradfieldkp(l,j)
-                        end do
+                        udfield_tholeo(j,i) = udfield_tholeo(j,i) +
+     &                       fieldid(j)
+                        udfield_tholeo(j,k) = udfield_tholeo(j,k) +
+     &                       fieldkd(j)
+                        upfield_tholeo(j,i) = upfield_tholeo(j,i) +
+     &                       fieldip(j)
+                        upfield_tholeo(j,k) = upfield_tholeo(j,k) +
+     &                       fieldkp(j)
                      end do
                   end if
                end if
@@ -1036,21 +763,21 @@ c
 c
 c     add local copies to global variables for OpenMP calculation
 c
-      udgradfield = udgradfieldo
-      upgradfield = upgradfieldo
-      udgradfield_ewald = udgradfield_ewaldo
-      upgradfield_ewald = upgradfield_ewaldo
-      udgradfield_thole = udgradfield_tholeo
-      upgradfield_thole = upgradfield_tholeo
+      udfield = udfieldo
+      upfield = upfieldo
+      udfield_ewald = udfield_ewaldo
+      upfield_ewald = upfield_ewaldo
+      udfield_thole = udfield_tholeo
+      upfield_thole = upfield_tholeo
 c
 c     perform deallocation of some local arrays
 c
       deallocate (scale)
-      deallocate (udgradfieldo)
-      deallocate (upgradfieldo)
-      deallocate (udgradfield_ewaldo)
-      deallocate (upgradfield_ewaldo)
-      deallocate (udgradfield_tholeo)
-      deallocate (upgradfield_tholeo)
+      deallocate (udfieldo)
+      deallocate (upfieldo)
+      deallocate (udfield_ewaldo)
+      deallocate (upfield_ewaldo)
+      deallocate (udfield_tholeo)
+      deallocate (upfield_tholeo)
       return
       end

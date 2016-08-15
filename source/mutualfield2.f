@@ -47,10 +47,6 @@ c
      &     allocate (udgradfield_thole(3,3,npole))
       if (.not.allocated(upgradfield_thole)) 
      &     allocate (upgradfield_thole(3,3,npole))
-ccccccccccccccccccccccccccccccccccccccccccc
-      if (.not.allocated(upgradfieldp_thole))
-     &     allocate (upgradfieldp_thole(3,3,npole))
-ccccccccccccccccccccccccccccccccccccccccccc
 c
 c     get the electrostatic potential, field and field gradient
 c     due to the induced dipoles
@@ -121,9 +117,6 @@ c
                upgradfield_ewald(k,j,i) = 0.0d0
                udgradfield_thole(k,j,i) = 0.0d0
                upgradfield_thole(k,j,i) = 0.0d0
-ccccccccccccccccccccc
-               upgradfieldp_thole(k,j,i) = 0.0d0
-ccccccccccccccccccccc
             end do
          end do
       end do
@@ -193,10 +186,6 @@ c
                   rr3 = rr1 / r2
                   rr5 = 3.0d0 * rr3 / r2
                   rr7 = 5.0d0 * rr5 / r2
-c                  call t0matrixrr1(rr1,t0rr1)
-c                  call t1matrixrr3(xr,yr,zr,rr3,t1rr3)
-c                  call t2matrixrr3(xr,yr,zr,rr3,t2rr3)
-c                  call t2matrixrr5(xr,yr,zr,rr5,t2rr5)
                   call t3matrixrr5(xr,yr,zr,rr5,t3rr5)
                   call t3matrixrr7(xr,yr,zr,rr7,t3rr7)
 c
@@ -254,7 +243,6 @@ c
                   if (damp_thole) then
                      call dampthole(i,k,rorder,r,scale)
                      t3 = t3rr5*scale(5) + t3rr7*scale(7)
-                     print *,"thole scales 5 & 7",scale(5),scale(7)
                      call ugradfieldik(i,k,t3,gradfieldid,gradfieldkd,
      &                    gradfieldip,gradfieldkp)
                      do j = 1, 3
@@ -271,21 +259,6 @@ c
                            upgradfield_thole(l,j,k) = 
      &                          upgradfield_thole(l,j,k) +
      &                          gradfieldkp(l,j)
-ccccccccccccccccccccccccccccccccccccc
-                           upgradfieldp_thole(l,j,i) =
-     &                          upgradfieldp_thole(l,j,i) +
-     &                          gradfieldip(l,j)*pscale(kk)
-                           upgradfieldp_thole(l,j,k) =
-     &                          upgradfieldp_thole(l,j,k) +
-     &                          gradfieldkp(l,j)*pscale(kk)
-cccccccccccccccccccccccccccccccccccccc
-c                           udgradfieldd_thole(l,j,i) =
-c     &                          udgradfieldd_thole(l,j,i) +
-c     &                          gradfieldid(l,j)*dscale(kk)
-c                           udgradfieldd_thole(l,j,k) =
-c     &                          udgradfieldd_thole(l,j,k) +
-c     &                          gradfieldkd(l,j)*dscale(kk)
-cccccccccccccccccccccccccccccccccccccc
                         end do
                      end do
                   end if

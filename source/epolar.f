@@ -16,7 +16,7 @@ c     "epolar" calculates the electrostatic energy due to
 c     dipole polarizability interactions
 c
 c
-      subroutine epolar3
+      subroutine epolar
       use sizes
       use analyz
       use energi
@@ -30,9 +30,9 @@ c
 c     choose the method for summing over multipole interactions
 c
       if (use_ewald) then
-         call epolar3b
+         call epolar0b
       else
-         call epolar3a
+         call epolar0a
       end if
 c
 c
@@ -42,7 +42,6 @@ c
          ep = 0.0d0
          do i = 1, npole
             ii = ipole(i)
-            aep(ii) = 0.0d0
          end do
       end if
       return
@@ -51,17 +50,17 @@ c
 c
 c     ###############################################################
 c     ##                                                           ##
-c     ##  subroutine epolar3a  --  double loop multipole analysis  ##
+c     ##  subroutine epolar0a  --  double loop multipole analysis  ##
 c     ##                                                           ##
 c     ###############################################################
 c
 c
-c     "epolar3a" calculates the total dipole           
+c     "epolar0a" calculates the total dipole           
 c     polarizability interaction energy and partitions the 
 c     energy among the atoms
 c
 c
-      subroutine epolar3a
+      subroutine epolar0a
       use sizes
       use action
       use analyz
@@ -105,11 +104,7 @@ c
 c
 c     zero out the polarization energy and partitioning
 c
-      nep = 0
       ep = 0.0d0
-      do i = 1, n
-         aep(i) = 0.0d0
-      end do
       header = .true.
       if (npole .eq. 0)  return
 c
@@ -143,8 +138,6 @@ c
 c     increment the overall polarization energy
 c
          ep = ep + ei
-         nep = nep + 1
-         aep(ii) = aep(ii) + ei
       end do
       return
       end
@@ -152,17 +145,17 @@ c
 c
 c     ###################################################################
 c     ##                                                               ##
-c     ##  subroutine epolar3b  --  ewald summation multipole analysis  ##
+c     ##  subroutine epolar0b  --  ewald summation multipole analysis  ##
 c     ##                                                               ##
 c     ###################################################################
 c
 c
-c     "epolar3b" calculates the atomic multipole and dipole 
+c     "epolar0b" calculates the atomic multipole and dipole 
 c     polarizability interaction energy using a particle mesh
 c     Ewald summation
 c
 c
-      subroutine epolar3b
+      subroutine epolar0b
       use sizes
       use action
       use analyz
@@ -194,11 +187,7 @@ c
 c
 c     zero out the polarization energy and partitioning
 c
-      nep = 0
       ep = 0.0d0
-      do i = 1, n
-         aep(i) = 0.0d0
-      end do
       if (npole .eq. 0)  return
 c
 c     set the energy unit conversion factor
@@ -263,9 +252,7 @@ c
 c
 c     increment the overall polarization energy
 c
-         nep = nep + 1
          ep = ep + ereal + eself - efix + erecip
-         aep(i) = aep(i) + ei
       end do
 c
 c     compute the cell dipole boundary correction term
@@ -290,7 +277,6 @@ c
             zu = zu + uiz
          end do
          term = (2.0d0/3.0d0) * f * (pi/volbox)
-         nep = nep + 1
          ep = ep + term*(xd*xu+yd*yu+zd*zu)
       end if
       return

@@ -103,7 +103,6 @@ c
 c
 c     zero out multipole energy and derivatives
 c
-      print *,"in empole1a"
       em = 0.0d0
       do i = 1, n
          do j = 1, 3
@@ -134,9 +133,7 @@ c     compute the permanent electric potential,
 c     field, field gradient and field hessian 
 c     at each multipole site
 c
-c      call permfield2
       call permfield3
-      print *,"got fields in empole1a"
 c
 c     set conversion factor, cutoff and switching coefficients
 c
@@ -335,16 +332,12 @@ c
       damp_gordontwo = .false.
       damp_piquemalone = .false.
       damp_piquemaltwo = .false.
-c      call permfield2
       call permfield3
-      print *,"got permanent fields"
 c
 c     get reciprocal space potential, field and field gradient
 c     and field hessian
 c
       call permrecip1
-      print *,"got reciprocal permanent fields"
-c      call permrecip3
 c
 c     compute the real space, reciprocal space and self-energy 
 c     parts of the Ewald summation
@@ -660,16 +653,6 @@ c
          trq(2,ii) = f * trq(2,ii)
          trq(3,ii) = f * trq(3,ii)
       end do
-cccccccccccccccccccccccccccccccccccccc
-      print *,"hessfield"
-      print *,hessfield
-      print *,"hessfieldm"
-      print *,hessfieldm
-      print *,"hessfield_ewald"
-      print *,hessfield_ewald
-      print *,"hessfield_recip"
-      print *,hessfield_recip
-ccccccccccccccccccccccccccccccccccccccccc
 c
 c     distribute torques into permanent multipole gradient
 c
@@ -678,7 +661,6 @@ c
          frc(2,i) = 0.0d0
          frc(3,i) = 0.0d0
       end do
-c      print *,"WARNING NO TORQUES"
       call torque2 (trq,frc)
       do i = 1, n
          dem(1,i) = dem(1,i) + frc(1,i)
@@ -689,7 +671,6 @@ c
 c     compute the cell dipole boundary correction term
 c
       if (boundary .eq. 'VACUUM') then
-         print *,"using vacuum correction"
          xd = 0.0d0
          yd = 0.0d0
          zd = 0.0d0
@@ -714,7 +695,6 @@ c
             trq(1,i) = rpole(3,i)*zdfield - rpole(4,i)*ydfield
             trq(2,i) = rpole(4,i)*xdfield - rpole(2,i)*zdfield
             trq(3,i) = rpole(2,i)*ydfield - rpole(3,i)*xdfield
-c            call torque (i,trq,trqi,frcx,frcy,frcz)
          end do
          do i = 1, n
             frc(1,i) = 0.0d0
@@ -728,6 +708,5 @@ c            call torque (i,trq,trqi,frcx,frcy,frcz)
             dem(3,i) = dem(3,i) + frc(3,i)
          end do
       end if
-      print *,"done with empole1b"
       return
       end
