@@ -31,10 +31,12 @@ c
       use mpole
       implicit none
       integer i,k
-      real*8 ci,dix,diy,diz
+      real*8 ci
+      real*8 dix,diy,diz
       real*8 qixx,qixy,qixz
       real*8 qiyy,qiyz,qizz
-      real*8 ck,dkx,dky,dkz
+      real*8 ck
+      real*8 dkx,dky,dkz
       real*8 qkxx,qkxy,qkxz
       real*8 qkyy,qkyz,qkzz
       real*8 t0,t1(3),t2(3,3)
@@ -78,6 +80,120 @@ c     from quadrupoles
       potk = potk + t2(1,1)*qixx + t2(1,2)*qixy +
      &     t2(1,3)*qixz + t2(2,2)*qiyy + 
      &     t2(2,3)*qiyz + t2(3,3)*qizz
+      return
+      end
+c
+c
+c     ####################################################
+c     ##                                                ##
+c     ##  subroutine cp_potik  --  electric potential   ##
+c     ##                                                ##
+c     ####################################################
+c
+c
+c     "cp_potik" computes the electric potential given two multipoles
+c     and damped or undamped tmatrix
+c
+      subroutine cp_potik(i,k,
+     &     t0,t1,t2,t0i,t1i,t2i,t0k,t1k,t2k,t0ik,t1ik,t2ik,
+     &     nucpoti,nucpotk,elepoti,elepotk)
+      use atomid
+      use chgpen
+      use mpole
+      implicit none
+      integer i,k
+      real*8 ci,zi,qi
+      real*8 dix,diy,diz
+      real*8 qixx,qixy,qixz
+      real*8 qiyy,qiyz,qizz
+      real*8 ck,zk,qk
+      real*8 dkx,dky,dkz
+      real*8 qkxx,qkxy,qkxz
+      real*8 qkyy,qkyz,qkzz
+      real*8 t0,t1(3),t2(3,3)
+      real*8 t0i,t1i(3),t2i(3,3)
+      real*8 t0k,t1k(3),t2k(3,3)
+      real*8 t0ik,t1ik(3),t2ik(3,3)
+      real*8 nucpoti,nucpotk
+      real*8 elepoti,elepotk
+c
+c     read in multipole values
+c
+      ci = rpole(1,i)
+      dix = rpole(2,i)
+      diy = rpole(3,i)
+      diz = rpole(4,i)
+      qixx = rpole(5,i)
+      qixy = rpole(6,i)*2.0d0
+      qixz = rpole(7,i)*2.0d0
+      qiyy = rpole(9,i)
+      qiyz = rpole(10,i)*2.0d0
+      qizz = rpole(13,i)
+      ck = rpole(1,k)
+      dkx = rpole(2,k)
+      dky = rpole(3,k)
+      dkz = rpole(4,k)
+      qkxx = rpole(5,k)
+      qkxy = rpole(6,k)*2.0d0
+      qkxz = rpole(7,k)*2.0d0
+      qkyy = rpole(9,k)
+      qkyz = rpole(10,k)*2.0d0
+      qkzz = rpole(13,k)
+c
+c     split nuclear and electronic charges
+c
+      zi = atomic(i)
+      zk = atomic(k)
+      if (num_ele .eq. "VALENCE") then
+         if (atomic(i) .gt. 2)  zi = zi - 2.0d0
+         if (atomic(i) .gt. 10)  zi = zi - 8.0d0
+         if (atomic(i) .gt. 18)  zi = zi - 8.0d0
+         if (atomic(i) .gt. 20)  zi = zi - 10.0d0
+         if (atomic(k) .gt. 2)  zk = zk - 2.0d0
+         if (atomic(k) .gt. 10)  zk = zk - 8.0d0
+         if (atomic(k) .gt. 18)  zk = zk - 8.0d0
+         if (atomic(k) .gt. 20)  zk = zk - 10.0d0
+      end if
+      qi = ci - zi
+      qk = ck - zk
+c
+c     calculate potential at nuclei
+c
+c     from nuclei
+      nucpoti = t0 * zk
+      nucpotk = t0 * zi
+c     from electrons
+      nucpoti = nucpoti + t0k * qk
+      nucpotk = nucpotk + t0i * qi
+c     from dipoles
+      nucpoti = nucpoti + t1k(1)*dkx + t1k(2)*dky + t1k(3)*dkz
+      nucpotk = nucpotk - t1i(1)*dix - t1i(2)*diy - t1i(3)*diz
+c     from quadrupoles
+      nucpoti = nucpoti + t2k(1,1)*qkxx + t2k(1,2)*qkxy +
+     &     t2k(1,3)*qkxz + t2k(2,2)*qkyy +
+     &     t2k(2,3)*qkyz + t2k(3,3)*qkzz
+      nucpotk = nucpotk + t2i(1,1)*qixx + t2i(1,2)*qixy +
+     &     t2i(1,3)*qixz + t2i(2,2)*qiyy +
+     &     t2i(2,3)*qiyz + t2i(3,3)*qizz
+c
+c     calculate potential at electrons
+c
+c     from nuclei
+      elepoti = t0i * zk
+      elepotk = t0k * zi
+c     from electrons
+      elepoti = elepoti + t0ik * qk
+      elepotk = elepotk + t0ik * qi
+c     from dipoles
+      elepoti = elepoti + t1ik(1)*dkx + t1ik(2)*dky + t1ik(3)*dkz
+      elepotk = elepotk - t1ik(1)*dix - t1ik(2)*diy - t1ik(3)*diz
+c     from quadrupoles
+      elepoti = elepoti + t2ik(1,1)*qkxx + t2ik(1,2)*qkxy + 
+     &     t2ik(1,3)*qkxz + t2ik(2,2)*qkyy + 
+     &     t2ik(2,3)*qkyz + t2ik(3,3)*qkzz
+      elepotk = elepotk + t2ik(1,1)*qixx + t2ik(1,2)*qixy +
+     &     t2ik(1,3)*qixz + t2ik(2,2)*qiyy + 
+     &     t2ik(2,3)*qiyz + t2ik(3,3)*qizz
       return
       end
 c
@@ -224,9 +340,191 @@ c
       end
 c
 c
+c     ####################################################
+c     ##                                                ##
+c     ##  subroutine cp_fieldik  --  electric field     ##
+c     ##                                                ##
+c     ####################################################
+c
+c
+c     "cp_fieldik" computes the electric potential given two multipoles
+c     and damped or undamped tmatrix
+c
+      subroutine cp_fieldik(i,k,
+     &     t1,t2,t3,t1i,t2i,t3i,t1k,t2k,t3k,t1ik,t2ik,t3ik,
+     &     nucfieldi,nucfieldk,elefieldi,elefieldk)
+      use atomid
+      use chgpen
+      use mpole
+      implicit none
+      integer i,k
+      real*8 ci,zi,qi
+      real*8 dix,diy,diz
+      real*8 qixx,qixy,qixz
+      real*8 qiyy,qiyz,qizz
+      real*8 ck,zk,qk
+      real*8 dkx,dky,dkz
+      real*8 qkxx,qkxy,qkxz
+      real*8 qkyy,qkyz,qkzz
+      real*8 t1(3),t2(3,3),t3(3,3,3)
+      real*8 t1i(3),t2i(3,3),t3i(3,3,3)
+      real*8 t1k(3),t2k(3,3),t3k(3,3,3)
+      real*8 t1ik(3),t2ik(3,3),t3ik(3,3,3)
+      real*8 nucfieldi(3),nucfieldk(3)
+      real*8 elefieldi(3),elefieldk(3)
+c
+c     read in multipole values
+c
+      ci = rpole(1,i)
+      dix = rpole(2,i)
+      diy = rpole(3,i)
+      diz = rpole(4,i)
+      qixx = rpole(5,i)
+      qixy = rpole(6,i)*2.0d0
+      qixz = rpole(7,i)*2.0d0
+      qiyy = rpole(9,i)
+      qiyz = rpole(10,i)*2.0d0
+      qizz = rpole(13,i)
+      ck = rpole(1,k)
+      dkx = rpole(2,k)
+      dky = rpole(3,k)
+      dkz = rpole(4,k)
+      qkxx = rpole(5,k)
+      qkxy = rpole(6,k)*2.0d0
+      qkxz = rpole(7,k)*2.0d0
+      qkyy = rpole(9,k)
+      qkyz = rpole(10,k)*2.0d0
+      qkzz = rpole(13,k)
+c
+c     split nuclear and electronic charges
+c
+      zi = atomic(i)
+      zk = atomic(k)
+      if (num_ele .eq. "VALENCE") then
+         if (atomic(i) .gt. 2)  zi = zi - 2.0d0
+         if (atomic(i) .gt. 10)  zi = zi - 8.0d0
+         if (atomic(i) .gt. 18)  zi = zi - 8.0d0
+         if (atomic(i) .gt. 20)  zi = zi - 10.0d0
+         if (atomic(k) .gt. 2)  zk = zk - 2.0d0
+         if (atomic(k) .gt. 10)  zk = zk - 8.0d0
+         if (atomic(k) .gt. 18)  zk = zk - 8.0d0
+         if (atomic(k) .gt. 20)  zk = zk - 10.0d0
+      end if
+      qi = ci - zi
+      qk = ck - zk
+c
+c     calculate the electric field at nuclei
+c     
+c     from nuclei
+      nucfieldi(1) = -t1(1)*zk
+      nucfieldi(2) = -t1(2)*zk
+      nucfieldi(3) = -t1(3)*zk
+c     
+      nucfieldk(1) = t1(1)*zi
+      nucfieldk(2) = t1(2)*zi
+      nucfieldk(3) = t1(3)*zi
+c     from electrons
+      nucfieldi(1) = nucfieldi(1) - t1k(1)*qk
+      nucfieldi(2) = nucfieldi(2) - t1k(2)*qk
+      nucfieldi(3) = nucfieldi(3) - t1k(3)*qk
+c
+      nucfieldk(1) = nucfieldk(1) + t1i(1)*qi
+      nucfieldk(2) = nucfieldk(2) + t1i(2)*qi
+      nucfieldk(3) = nucfieldk(3) + t1i(3)*qi
+c     from dipoles
+      nucfieldi(1) = nucfieldi(1) - t2k(1,1)*dkx - t2k(1,2)*dky - 
+     &     t2k(1,3)*dkz
+      nucfieldi(2) = nucfieldi(2) - t2k(2,1)*dkx - t2k(2,2)*dky - 
+     &     t2k(2,3)*dkz
+      nucfieldi(3) = nucfieldi(3) - t2k(3,1)*dkx - t2k(3,2)*dky -
+     &     t2k(3,3)*dkz
+c     
+      nucfieldk(1) = nucfieldk(1) - t2i(1,1)*dix - t2i(1,2)*diy -
+     &     t2i(1,3)*diz
+      nucfieldk(2) = nucfieldk(2) - t2i(2,1)*dix - t2i(2,2)*diy -
+     &     t2i(2,3)*diz
+      nucfieldk(3) = nucfieldk(3) - t2i(3,1)*dix - t2i(3,2)*diy -
+     &     t2i(3,3)*diz
+c     from quadrupoles
+      nucfieldi(1) = nucfieldi(1)- t3k(1,1,1)*qkxx - t3k(1,1,2)*qkxy
+     &     -t3k(1,1,3)*qkxz - t3k(1,2,2)*qkyy - t3k(1,2,3)*qkyz 
+     &     -t3k(1,3,3)*qkzz
+      nucfieldi(2) = nucfieldi(2)- t3k(2,1,1)*qkxx - t3k(2,1,2)*qkxy
+     &     -t3k(2,1,3)*qkxz - t3k(2,2,2)*qkyy - t3k(2,2,3)*qkyz
+     &     -t3k(2,3,3)*qkzz
+      nucfieldi(3) = nucfieldi(3)- t3k(3,1,1)*qkxx - t3k(3,1,2)*qkxy
+     &     -t3k(3,1,3)*qkxz - t3k(3,2,2)*qkyy - t3k(3,2,3)*qkyz
+     &     -t3k(3,3,3)*qkzz
+c     
+      nucfieldk(1) = nucfieldk(1)+ t3i(1,1,1)*qixx + t3i(1,1,2)*qixy
+     &     +t3i(1,1,3)*qixz + t3i(1,2,2)*qiyy + t3i(1,2,3)*qiyz
+     &     +t3i(1,3,3)*qizz
+      nucfieldk(2) = nucfieldk(2)+ t3i(2,1,1)*qixx + t3i(2,1,2)*qixy
+     &     +t3i(2,1,3)*qixz + t3i(2,2,2)*qiyy + t3i(2,2,3)*qiyz
+     &     +t3i(2,3,3)*qizz
+      nucfieldk(3) = nucfieldk(3)+ t3i(3,1,1)*qixx + t3i(3,1,2)*qixy
+     &     +t3i(3,1,3)*qixz + t3i(3,2,2)*qiyy + t3i(3,2,3)*qiyz
+     &     +t3i(3,3,3)*qizz
+c
+c     calculate the electric field at electrons
+c     
+c     from nuclei
+      elefieldi(1) = -t1i(1)*zk
+      elefieldi(2) = -t1i(2)*zk
+      elefieldi(3) = -t1i(3)*zk
+c     
+      elefieldk(1) = t1k(1)*zi
+      elefieldk(2) = t1k(2)*zi
+      elefieldk(3) = t1k(3)*zi
+c     from electrons
+      elefieldi(1) = elefieldi(1) - t1ik(1)*qk
+      elefieldi(2) = elefieldi(2) - t1ik(2)*qk
+      elefieldi(3) = elefieldi(3) - t1ik(3)*qk
+c
+      elefieldk(1) = elefieldk(1) + t1ik(1)*qi
+      elefieldk(2) = elefieldk(2) + t1ik(2)*qi
+      elefieldk(3) = elefieldk(3) + t1ik(3)*qi
+c     from dipoles
+      elefieldi(1) = elefieldi(1) - t2ik(1,1)*dkx - t2ik(1,2)*dky - 
+     &     t2ik(1,3)*dkz
+      elefieldi(2) = elefieldi(2) - t2ik(2,1)*dkx - t2ik(2,2)*dky - 
+     &     t2ik(2,3)*dkz
+      elefieldi(3) = elefieldi(3) - t2ik(3,1)*dkx - t2ik(3,2)*dky -
+     &     t2ik(3,3)*dkz
+c     
+      elefieldk(1) = elefieldk(1) - t2ik(1,1)*dix - t2ik(1,2)*diy -
+     &     t2ik(1,3)*diz
+      elefieldk(2) = elefieldk(2) - t2ik(2,1)*dix - t2ik(2,2)*diy -
+     &     t2ik(2,3)*diz
+      elefieldk(3) = elefieldk(3) - t2ik(3,1)*dix - t2ik(3,2)*diy -
+     &     t2ik(3,3)*diz
+c     from quadrupoles
+      elefieldi(1) = elefieldi(1)- t3ik(1,1,1)*qkxx - t3ik(1,1,2)*qkxy
+     &     -t3ik(1,1,3)*qkxz - t3ik(1,2,2)*qkyy - t3ik(1,2,3)*qkyz 
+     &     -t3ik(1,3,3)*qkzz
+      elefieldi(2) = elefieldi(2)- t3ik(2,1,1)*qkxx - t3ik(2,1,2)*qkxy
+     &     -t3ik(2,1,3)*qkxz - t3ik(2,2,2)*qkyy - t3ik(2,2,3)*qkyz
+     &     -t3ik(2,3,3)*qkzz
+      elefieldi(3) = elefieldi(3)- t3ik(3,1,1)*qkxx - t3ik(3,1,2)*qkxy
+     &     -t3ik(3,1,3)*qkxz - t3ik(3,2,2)*qkyy - t3ik(3,2,3)*qkyz
+     &     -t3ik(3,3,3)*qkzz
+c     
+      elefieldk(1) = elefieldk(1)+ t3ik(1,1,1)*qixx + t3ik(1,1,2)*qixy
+     &     +t3ik(1,1,3)*qixz + t3ik(1,2,2)*qiyy + t3ik(1,2,3)*qiyz
+     &     +t3ik(1,3,3)*qizz
+      elefieldk(2) = elefieldk(2)+ t3ik(2,1,1)*qixx + t3ik(2,1,2)*qixy
+     &     +t3ik(2,1,3)*qixz + t3ik(2,2,2)*qiyy + t3ik(2,2,3)*qiyz
+     &     +t3ik(2,3,3)*qizz
+      elefieldk(3) = elefieldk(3)+ t3ik(3,1,1)*qixx + t3ik(3,1,2)*qixy
+     &     +t3ik(3,1,3)*qixz + t3ik(3,2,2)*qiyy + t3ik(3,2,3)*qiyz
+     &     +t3ik(3,3,3)*qizz
+      return
+      end
+c
+c
 c     #################################################
 c     ##                                             ##
-c     ##  subroutine ufieldik  --  electric field     ##
+c     ##  subroutine ufieldik  --  electric field    ##
 c     ##                                             ##
 c     #################################################
 c
@@ -363,7 +661,6 @@ c
       gradfieldk(3,2) = t2(3,2)*ci
       gradfieldk(3,3) = t2(3,3)*ci
 c     from dipoles
-c     WHERE SHOULD THE NEGATIVES BE???
       gradfieldi(1,1) = gradfieldi(1,1) + t3(1,1,1)*dkx + 
      &     t3(1,1,2)*dky + t3(1,1,3)*dkz
       gradfieldi(1,2) = gradfieldi(1,2) + t3(1,2,1)*dkx +
@@ -402,8 +699,6 @@ c
       gradfieldk(3,3) = gradfieldk(3,3) - t3(3,3,1)*dix -
      &                        t3(3,3,2)*diy - t3(3,3,3)*diz
 c     from quadrupoles
-cccccccccccccc THESE ARE RIGHT. THIS MEANS THAT GRADFIELD SHOULD BE THE
-cccccccccccccc NEGATIVE DERIVATIVE OF FIELD.  (GRADFIELD = --dV/dxdx)
       gradfieldi(1,1) = gradfieldi(1,1) + t4(1,1,1,1)*qkxx +
      &     t4(1,1,1,2)*qkxy + t4(1,1,1,3)*qkxz + 
      &     t4(1,1,2,2)*qkyy + t4(1,1,2,3)*qkyz + 
@@ -477,6 +772,236 @@ c
      &     t4(3,3,1,2)*qixy + t4(3,3,1,3)*qixz +
      &     t4(3,3,2,2)*qiyy + t4(3,3,2,3)*qiyz +
      &     t4(3,3,3,3)*qizz
+      return
+      end
+c
+c
+c     #############################################################
+c     ##                                                         ##
+c     ##  subroutine cp_gradfieldik  --  electric field gradient ##
+c     ##                                                         ##
+c     #############################################################
+c
+c
+c     "cp_gradfieldik" computes the electric field gradient given two multipoles
+c     and damped or undamped tmatrix
+c
+      subroutine cp_gradfieldik(i,k,
+     &     t2,t3,t4,t2i,t3i,t4i,t2k,t3k,t4k,t2ik,t3ik,t4ik,
+     &     elegradfieldi,elegradfieldk)
+      use atomid
+      use chgpen
+      use mpole
+      implicit none
+      integer i,k
+      real*8 ci,zi,qi
+      real*8 dix,diy,diz
+      real*8 qixx,qixy,qixz
+      real*8 qiyy,qiyz,qizz
+      real*8 ck,zk,qk
+      real*8 dkx,dky,dkz
+      real*8 qkxx,qkxy,qkxz
+      real*8 qkyy,qkyz,qkzz
+      real*8 t2(3,3),t3(3,3,3),t4(3,3,3,3)
+      real*8 t2i(3,3),t3i(3,3,3),t4i(3,3,3,3)
+      real*8 t2k(3,3),t3k(3,3,3),t4k(3,3,3,3)
+      real*8 t2ik(3,3),t3ik(3,3,3),t4ik(3,3,3,3)
+      real*8 elegradfieldi(3,3),elegradfieldk(3,3)
+c
+c     read in multipole values
+c
+      ci = rpole(1,i)
+      dix = rpole(2,i)
+      diy = rpole(3,i)
+      diz = rpole(4,i)
+      qixx = rpole(5,i)
+      qixy = rpole(6,i)*2.0d0
+      qixz = rpole(7,i)*2.0d0
+      qiyy = rpole(9,i)
+      qiyz = rpole(10,i)*2.0d0
+      qizz = rpole(13,i)
+      ck = rpole(1,k)
+      dkx = rpole(2,k)
+      dky = rpole(3,k)
+      dkz = rpole(4,k)
+      qkxx = rpole(5,k)
+      qkxy = rpole(6,k)*2.0d0
+      qkxz = rpole(7,k)*2.0d0
+      qkyy = rpole(9,k)
+      qkyz = rpole(10,k)*2.0d0
+      qkzz = rpole(13,k)
+c
+c     split nuclear and electronic charges
+c
+      zi = atomic(i)
+      zk = atomic(k)
+      if (num_ele .eq. "VALENCE") then
+         if (atomic(i) .gt. 2)  zi = zi - 2.0d0
+         if (atomic(i) .gt. 10)  zi = zi - 8.0d0
+         if (atomic(i) .gt. 18)  zi = zi - 8.0d0
+         if (atomic(i) .gt. 20)  zi = zi - 10.0d0
+         if (atomic(k) .gt. 2)  zk = zk - 2.0d0
+         if (atomic(k) .gt. 10)  zk = zk - 8.0d0
+         if (atomic(k) .gt. 18)  zk = zk - 8.0d0
+         if (atomic(k) .gt. 20)  zk = zk - 10.0d0
+      end if
+      qi = ci - zi
+      qk = ck - zk
+c
+c     calculate electric field gradient at electrons
+c
+c     from nuclei
+      elegradfieldi(1,1) = t2i(1,1)*zk
+      elegradfieldi(1,2) = t2i(1,2)*zk
+      elegradfieldi(1,3) = t2i(1,3)*zk
+      elegradfieldi(2,1) = t2i(2,1)*zk
+      elegradfieldi(2,2) = t2i(2,2)*zk
+      elegradfieldi(2,3) = t2i(2,3)*zk
+      elegradfieldi(3,1) = t2i(3,1)*zk
+      elegradfieldi(3,2) = t2i(3,2)*zk
+      elegradfieldi(3,3) = t2i(3,3)*zk
+c     
+      elegradfieldk(1,1) = t2k(1,1)*zi
+      elegradfieldk(1,2) = t2k(1,2)*zi
+      elegradfieldk(1,3) = t2k(1,3)*zi
+      elegradfieldk(2,1) = t2k(2,1)*zi
+      elegradfieldk(2,2) = t2k(2,2)*zi
+      elegradfieldk(2,3) = t2k(2,3)*zi
+      elegradfieldk(3,1) = t2k(3,1)*zi
+      elegradfieldk(3,2) = t2k(3,2)*zi
+      elegradfieldk(3,3) = t2k(3,3)*zi
+c     from electrons
+      elegradfieldi(1,1) = elegradfieldi(1,1) + t2ik(1,1)*qk
+      elegradfieldi(1,2) = elegradfieldi(1,2) + t2ik(1,2)*qk
+      elegradfieldi(1,3) = elegradfieldi(1,3) + t2ik(1,3)*qk
+      elegradfieldi(2,1) = elegradfieldi(2,1) + t2ik(2,1)*qk
+      elegradfieldi(2,2) = elegradfieldi(2,2) + t2ik(2,2)*qk
+      elegradfieldi(2,3) = elegradfieldi(2,3) + t2ik(2,3)*qk
+      elegradfieldi(3,1) = elegradfieldi(3,1) + t2ik(3,1)*qk
+      elegradfieldi(3,2) = elegradfieldi(3,2) + t2ik(3,2)*qk
+      elegradfieldi(3,3) = elegradfieldi(3,3) + t2ik(3,3)*qk
+c
+      elegradfieldk(1,1) = elegradfieldk(1,1) + t2ik(1,1)*qi
+      elegradfieldk(1,2) = elegradfieldk(1,2) + t2ik(1,2)*qi
+      elegradfieldk(1,3) = elegradfieldk(1,3) + t2ik(1,3)*qi
+      elegradfieldk(2,1) = elegradfieldk(2,1) + t2ik(2,1)*qi
+      elegradfieldk(2,2) = elegradfieldk(2,2) + t2ik(2,2)*qi
+      elegradfieldk(2,3) = elegradfieldk(2,3) + t2ik(2,3)*qi
+      elegradfieldk(3,1) = elegradfieldk(3,1) + t2ik(3,1)*qi
+      elegradfieldk(3,2) = elegradfieldk(3,2) + t2ik(3,2)*qi
+      elegradfieldk(3,3) = elegradfieldk(3,3) + t2ik(3,3)*qi
+c     from dipoles
+      elegradfieldi(1,1) = elegradfieldi(1,1) + t3ik(1,1,1)*dkx + 
+     &     t3ik(1,1,2)*dky + t3ik(1,1,3)*dkz
+      elegradfieldi(1,2) = elegradfieldi(1,2) + t3ik(1,2,1)*dkx +
+     &     t3ik(1,2,2)*dky + t3ik(1,2,3)*dkz
+      elegradfieldi(1,3) = elegradfieldi(1,3) + t3ik(1,3,1)*dkx +
+     &     t3ik(1,3,2)*dky + t3ik(1,3,3)*dkz
+      elegradfieldi(2,1) = elegradfieldi(2,1) + t3ik(2,1,1)*dkx +
+     &     t3ik(2,1,2)*dky + t3ik(2,1,3)*dkz
+      elegradfieldi(2,2) = elegradfieldi(2,2) + t3ik(2,2,1)*dkx +
+     &     t3ik(2,2,2)*dky + t3ik(2,2,3)*dkz
+      elegradfieldi(2,3) = elegradfieldi(2,3) + t3ik(2,3,1)*dkx +
+     &     t3ik(2,3,2)*dky + t3ik(2,3,3)*dkz
+      elegradfieldi(3,1) = elegradfieldi(3,1) + t3ik(3,1,1)*dkx +
+     &     t3ik(3,1,2)*dky + t3ik(3,1,3)*dkz
+      elegradfieldi(3,2) = elegradfieldi(3,2) + t3ik(3,2,1)*dkx +
+     &     t3ik(3,2,2)*dky + t3ik(3,2,3)*dkz
+      elegradfieldi(3,3) = elegradfieldi(3,3) + t3ik(3,3,1)*dkx +
+     &     t3ik(3,3,2)*dky + t3ik(3,3,3)*dkz
+c     
+      elegradfieldk(1,1) = elegradfieldk(1,1) - t3ik(1,1,1)*dix -
+     &     t3ik(1,1,2)*diy - t3ik(1,1,3)*diz
+      elegradfieldk(1,2) = elegradfieldk(1,2) - t3ik(1,2,1)*dix -
+     &     t3ik(1,2,2)*diy - t3ik(1,2,3)*diz
+      elegradfieldk(1,3) = elegradfieldk(1,3) - t3ik(1,3,1)*dix -
+     &     t3ik(1,3,2)*diy - t3ik(1,3,3)*diz
+      elegradfieldk(2,1) = elegradfieldk(2,1) - t3ik(2,1,1)*dix -
+     &                 t3ik(2,1,2)*diy - t3ik(2,1,3)*diz
+      elegradfieldk(2,2) = elegradfieldk(2,2) - t3ik(2,2,1)*dix -
+     &     t3ik(2,2,2)*diy - t3ik(2,2,3)*diz
+      elegradfieldk(2,3) = elegradfieldk(2,3) - t3ik(2,3,1)*dix -
+     &     t3ik(2,3,2)*diy - t3ik(2,3,3)*diz
+      elegradfieldk(3,1) = elegradfieldk(3,1) - t3ik(3,1,1)*dix -
+     &     t3ik(3,1,2)*diy - t3ik(3,1,3)*diz
+      elegradfieldk(3,2) = elegradfieldk(3,2) - t3ik(3,2,1)*dix -
+     &     t3ik(3,2,2)*diy - t3ik(3,2,3)*diz
+      elegradfieldk(3,3) = elegradfieldk(3,3) - t3ik(3,3,1)*dix -
+     &                        t3ik(3,3,2)*diy - t3ik(3,3,3)*diz
+c     from quadrupoles
+      elegradfieldi(1,1) = elegradfieldi(1,1) + t4ik(1,1,1,1)*qkxx +
+     &     t4ik(1,1,1,2)*qkxy + t4ik(1,1,1,3)*qkxz + 
+     &     t4ik(1,1,2,2)*qkyy + t4ik(1,1,2,3)*qkyz + 
+     &     t4ik(1,1,3,3)*qkzz
+      elegradfieldi(1,2) = elegradfieldi(1,2) + t4ik(1,2,1,1)*qkxx +
+     &     t4ik(1,2,1,2)*qkxy + t4ik(1,2,1,3)*qkxz +
+     &     t4ik(1,2,2,2)*qkyy + t4ik(1,2,2,3)*qkyz +
+     &     t4ik(1,2,3,3)*qkzz
+      elegradfieldi(1,3) = elegradfieldi(1,3) + t4ik(1,3,1,1)*qkxx +
+     &     t4ik(1,3,1,2)*qkxy + t4ik(1,3,1,3)*qkxz +
+     &     t4ik(1,3,2,2)*qkyy + t4ik(1,3,2,3)*qkyz +
+     &     t4ik(1,3,3,3)*qkzz
+      elegradfieldi(2,1) = elegradfieldi(2,1) + t4ik(2,1,1,1)*qkxx +
+     &     t4ik(2,1,1,2)*qkxy + t4ik(2,1,1,3)*qkxz +
+     &     t4ik(2,1,2,2)*qkyy + t4ik(2,1,2,3)*qkyz +
+     &     t4ik(2,1,3,3)*qkzz
+      elegradfieldi(2,2) = elegradfieldi(2,2) + t4ik(2,2,1,1)*qkxx +
+     &     t4ik(2,2,1,2)*qkxy + t4ik(2,2,1,3)*qkxz +
+     &     t4ik(2,2,2,2)*qkyy + t4ik(2,2,2,3)*qkyz +
+     &     t4ik(2,2,3,3)*qkzz
+      elegradfieldi(2,3) = elegradfieldi(2,3) + t4ik(2,3,1,1)*qkxx +
+     &     t4ik(2,3,1,2)*qkxy + t4ik(2,3,1,3)*qkxz +
+     &     t4ik(2,3,2,2)*qkyy + t4ik(2,3,2,3)*qkyz +
+     &     t4ik(2,3,3,3)*qkzz
+      elegradfieldi(3,1) = elegradfieldi(3,1) + t4ik(3,1,1,1)*qkxx +
+     &     t4ik(3,1,1,2)*qkxy + t4ik(3,1,1,3)*qkxz +
+     &     t4ik(3,1,2,2)*qkyy + t4ik(3,1,2,3)*qkyz +
+     &     t4ik(3,1,3,3)*qkzz
+      elegradfieldi(3,2) = elegradfieldi(3,2) + t4ik(3,2,1,1)*qkxx +
+     &     t4ik(3,2,1,2)*qkxy + t4ik(3,2,1,3)*qkxz +
+     &     t4ik(3,2,2,2)*qkyy + t4ik(3,2,2,3)*qkyz +
+     &     t4ik(3,2,3,3)*qkzz
+      elegradfieldi(3,3) = elegradfieldi(3,3) + t4ik(3,3,1,1)*qkxx +
+     &     t4ik(3,3,1,2)*qkxy + t4ik(3,3,1,3)*qkxz +
+     &     t4ik(3,3,2,2)*qkyy + t4ik(3,3,2,3)*qkyz +
+     &     t4ik(3,3,3,3)*qkzz
+c     
+      elegradfieldk(1,1) = elegradfieldk(1,1) + t4ik(1,1,1,1)*qixx +
+     &     t4ik(1,1,1,2)*qixy + t4ik(1,1,1,3)*qixz +
+     &     t4ik(1,1,2,2)*qiyy + t4ik(1,1,2,3)*qiyz +
+     &     t4ik(1,1,3,3)*qizz
+      elegradfieldk(1,2) = elegradfieldk(1,2) + t4ik(1,2,1,1)*qixx +
+     &     t4ik(1,2,1,2)*qixy + t4ik(1,2,1,3)*qixz +
+     &     t4ik(1,2,2,2)*qiyy + t4ik(1,2,2,3)*qiyz +
+     &     t4ik(1,2,3,3)*qizz
+      elegradfieldk(1,3) = elegradfieldk(1,3) + t4ik(1,3,1,1)*qixx +
+     &     t4ik(1,3,1,2)*qixy + t4ik(1,3,1,3)*qixz +
+     &     t4ik(1,3,2,2)*qiyy + t4ik(1,3,2,3)*qiyz +
+     &     t4ik(1,3,3,3)*qizz
+      elegradfieldk(2,1) = elegradfieldk(2,1) + t4ik(2,1,1,1)*qixx +
+     &     t4ik(2,1,1,2)*qixy + t4ik(2,1,1,3)*qixz +
+     &     t4ik(2,1,2,2)*qiyy + t4ik(2,1,2,3)*qiyz +
+     &     t4ik(2,1,3,3)*qizz
+      elegradfieldk(2,2) = elegradfieldk(2,2) + t4ik(2,2,1,1)*qixx +
+     &     t4ik(2,2,1,2)*qixy + t4ik(2,2,1,3)*qixz +
+     &     t4ik(2,2,2,2)*qiyy + t4ik(2,2,2,3)*qiyz +
+     &     t4ik(2,2,3,3)*qizz
+      elegradfieldk(2,3) = elegradfieldk(2,3) + t4ik(2,3,1,1)*qixx +
+     &     t4ik(2,3,1,2)*qixy + t4ik(2,3,1,3)*qixz +
+     &     t4ik(2,3,2,2)*qiyy + t4ik(2,3,2,3)*qiyz +
+     &     t4ik(2,3,3,3)*qizz
+      elegradfieldk(3,1) = elegradfieldk(3,1) + t4ik(3,1,1,1)*qixx +
+     &     t4ik(3,1,1,2)*qixy + t4ik(3,1,1,3)*qixz +
+     &     t4ik(3,1,2,2)*qiyy + t4ik(3,1,2,3)*qiyz +
+     &     t4ik(3,1,3,3)*qizz
+      elegradfieldk(3,2) = elegradfieldk(3,2) + t4ik(3,2,1,1)*qixx +
+     &     t4ik(3,2,1,2)*qixy + t4ik(3,2,1,3)*qixz +
+     &     t4ik(3,2,2,2)*qiyy + t4ik(3,2,2,3)*qiyz +
+     &     t4ik(3,2,3,3)*qizz
+      elegradfieldk(3,3) = elegradfieldk(3,3) + t4ik(3,3,1,1)*qixx +
+     &     t4ik(3,3,1,2)*qixy + t4ik(3,3,1,3)*qixz +
+     &     t4ik(3,3,2,2)*qiyy + t4ik(3,3,2,3)*qiyz +
+     &     t4ik(3,3,3,3)*qizz
       return
       end
 c
@@ -649,9 +1174,6 @@ c
       qkzz = rpole(13,k)
 c
 c     calculate electric field hessian
-c
-c     
-c     everything here is negative (hessfield = ---dV/drdrdr)
 c
 c     from charges
       hessfieldi(1,1,1) = -t3(1,1,1)*ck
@@ -989,6 +1511,543 @@ c
      &     t5(3,3,3,2,3)*qiyz + t5(3,3,3,3,3)*qizz
       return
       end
+c
+c
+c     #############################################################
+c     ##                                                         ##
+c     ##  subroutine cp_hessfieldik  --  electric field hessian  ##
+c     ##                                                         ##
+c     #############################################################
+c
+c
+c     "cp_hessfieldik" computes the electric field hessian given two multipoles
+c     and damped or undamped tmatrix
+c
+      subroutine cp_hessfieldik(i,k,
+     &     t3,t4,t5,t3i,t4i,t5i,t3k,t4k,t5k,t3ik,t4ik,t5ik,
+     &     elehessfieldi,elehessfieldk)
+      use atomid
+      use chgpen
+      use mpole
+      implicit none
+      integer i,k
+      real*8 ci,zi,qi
+      real*8 dix,diy,diz
+      real*8 qixx,qixy,qixz
+      real*8 qiyy,qiyz,qizz
+      real*8 ck,zk,qk
+      real*8 dkx,dky,dkz
+      real*8 qkxx,qkxy,qkxz
+      real*8 qkyy,qkyz,qkzz
+      real*8 t3(3,3,3),t4(3,3,3,3),t5(3,3,3,3,3)
+      real*8 t3i(3,3,3),t4i(3,3,3,3),t5i(3,3,3,3,3)
+      real*8 t3k(3,3,3),t4k(3,3,3,3),t5k(3,3,3,3,3)
+      real*8 t3ik(3,3,3),t4ik(3,3,3,3),t5ik(3,3,3,3,3)
+      real*8 elehessfieldi(3,3,3),elehessfieldk(3,3,3)
+c
+c     read in multipole values
+c
+      ci = rpole(1,i)
+      dix = rpole(2,i)
+      diy = rpole(3,i)
+      diz = rpole(4,i)
+      qixx = rpole(5,i)
+      qixy = rpole(6,i)*2.0d0
+      qixz = rpole(7,i)*2.0d0
+      qiyy = rpole(9,i)
+      qiyz = rpole(10,i)*2.0d0
+      qizz = rpole(13,i)
+      ck = rpole(1,k)
+      dkx = rpole(2,k)
+      dky = rpole(3,k)
+      dkz = rpole(4,k)
+      qkxx = rpole(5,k)
+      qkxy = rpole(6,k)*2.0d0
+      qkxz = rpole(7,k)*2.0d0
+      qkyy = rpole(9,k)
+      qkyz = rpole(10,k)*2.0d0
+      qkzz = rpole(13,k)
+c
+c     split nuclear and electronic charges
+c
+      zi = atomic(i)
+      zk = atomic(k)
+      if (num_ele .eq. "VALENCE") then
+         if (atomic(i) .gt. 2)  zi = zi - 2.0d0
+         if (atomic(i) .gt. 10)  zi = zi - 8.0d0
+         if (atomic(i) .gt. 18)  zi = zi - 8.0d0
+         if (atomic(i) .gt. 20)  zi = zi - 10.0d0
+         if (atomic(k) .gt. 2)  zk = zk - 2.0d0
+         if (atomic(k) .gt. 10)  zk = zk - 8.0d0
+         if (atomic(k) .gt. 18)  zk = zk - 8.0d0
+         if (atomic(k) .gt. 20)  zk = zk - 10.0d0
+      end if
+      qi = ci - zi
+      qk = ck - zk
+c
+c     calculate electric field hessian at electrons
+c
+c     from nuclei
+      elehessfieldi(1,1,1) = -t3i(1,1,1)*zk
+      elehessfieldi(1,1,2) = -t3i(1,1,2)*zk
+      elehessfieldi(1,1,3) = -t3i(1,1,3)*zk      
+      elehessfieldi(1,2,1) = -t3i(1,2,1)*zk
+      elehessfieldi(1,2,2) = -t3i(1,2,2)*zk
+      elehessfieldi(1,2,3) = -t3i(1,2,3)*zk
+      elehessfieldi(1,3,1) = -t3i(1,3,1)*zk
+      elehessfieldi(1,3,2) = -t3i(1,3,2)*zk
+      elehessfieldi(1,3,3) = -t3i(1,3,3)*zk
+      elehessfieldi(2,1,1) = -t3i(2,1,1)*zk
+      elehessfieldi(2,1,2) = -t3i(2,1,2)*zk
+      elehessfieldi(2,1,3) = -t3i(2,1,3)*zk
+      elehessfieldi(2,2,1) = -t3i(2,2,1)*zk
+      elehessfieldi(2,2,2) = -t3i(2,2,2)*zk
+      elehessfieldi(2,2,3) = -t3i(2,2,3)*zk
+      elehessfieldi(2,3,1) = -t3i(2,3,1)*zk
+      elehessfieldi(2,3,2) = -t3i(2,3,2)*zk
+      elehessfieldi(2,3,3) = -t3i(2,3,3)*zk
+      elehessfieldi(3,1,1) = -t3i(3,1,1)*zk
+      elehessfieldi(3,1,2) = -t3i(3,1,2)*zk
+      elehessfieldi(3,1,3) = -t3i(3,1,3)*zk
+      elehessfieldi(3,2,1) = -t3i(3,2,1)*zk
+      elehessfieldi(3,2,2) = -t3i(3,2,2)*zk
+      elehessfieldi(3,2,3) = -t3i(3,2,3)*zk
+      elehessfieldi(3,3,1) = -t3i(3,3,1)*zk
+      elehessfieldi(3,3,2) = -t3i(3,3,2)*zk
+      elehessfieldi(3,3,3) = -t3i(3,3,3)*zk
+c
+      elehessfieldk(1,1,1) = t3k(1,1,1)*zi
+      elehessfieldk(1,1,2) = t3k(1,1,2)*zi
+      elehessfieldk(1,1,3) = t3k(1,1,3)*zi
+      elehessfieldk(1,2,1) = t3k(1,2,1)*zi
+      elehessfieldk(1,2,2) = t3k(1,2,2)*zi
+      elehessfieldk(1,2,3) = t3k(1,2,3)*zi
+      elehessfieldk(1,3,1) = t3k(1,3,1)*zi
+      elehessfieldk(1,3,2) = t3k(1,3,2)*zi
+      elehessfieldk(1,3,3) = t3k(1,3,3)*zi
+      elehessfieldk(2,1,1) = t3k(2,1,1)*zi
+      elehessfieldk(2,1,2) = t3k(2,1,2)*zi
+      elehessfieldk(2,1,3) = t3k(2,1,3)*zi
+      elehessfieldk(2,2,1) = t3k(2,2,1)*zi
+      elehessfieldk(2,2,2) = t3k(2,2,2)*zi
+      elehessfieldk(2,2,3) = t3k(2,2,3)*zi
+      elehessfieldk(2,3,1) = t3k(2,3,1)*zi
+      elehessfieldk(2,3,2) = t3k(2,3,2)*zi
+      elehessfieldk(2,3,3) = t3k(2,3,3)*zi
+      elehessfieldk(3,1,1) = t3k(3,1,1)*zi
+      elehessfieldk(3,1,2) = t3k(3,1,2)*zi
+      elehessfieldk(3,1,3) = t3k(3,1,3)*zi
+      elehessfieldk(3,2,1) = t3k(3,2,1)*zi
+      elehessfieldk(3,2,2) = t3k(3,2,2)*zi
+      elehessfieldk(3,2,3) = t3k(3,2,3)*zi
+      elehessfieldk(3,3,1) = t3k(3,3,1)*zi
+      elehessfieldk(3,3,2) = t3k(3,3,2)*zi
+      elehessfieldk(3,3,3) = t3k(3,3,3)*zi
+c
+c     from electrons
+c
+      elehessfieldi(1,1,1) = elehessfieldi(1,1,1) - t3ik(1,1,1)*qk
+      elehessfieldi(1,1,2) = elehessfieldi(1,1,2) - t3ik(1,1,2)*qk
+      elehessfieldi(1,1,3) = elehessfieldi(1,1,3) - t3ik(1,1,3)*qk      
+      elehessfieldi(1,2,1) = elehessfieldi(1,2,1) - t3ik(1,2,1)*qk
+      elehessfieldi(1,2,2) = elehessfieldi(1,2,2) - t3ik(1,2,2)*qk
+      elehessfieldi(1,2,3) = elehessfieldi(1,2,3) - t3ik(1,2,3)*qk
+      elehessfieldi(1,3,1) = elehessfieldi(1,3,1) - t3ik(1,3,1)*qk
+      elehessfieldi(1,3,2) = elehessfieldi(1,3,2) - t3ik(1,3,2)*qk
+      elehessfieldi(1,3,3) = elehessfieldi(1,3,3) - t3ik(1,3,3)*qk
+      elehessfieldi(2,1,1) = elehessfieldi(2,1,1) - t3ik(2,1,1)*qk
+      elehessfieldi(2,1,2) = elehessfieldi(2,1,2) - t3ik(2,1,2)*qk
+      elehessfieldi(2,1,3) = elehessfieldi(2,1,3) - t3ik(2,1,3)*qk
+      elehessfieldi(2,2,1) = elehessfieldi(2,2,1) - t3ik(2,2,1)*qk
+      elehessfieldi(2,2,2) = elehessfieldi(2,2,2) - t3ik(2,2,2)*qk
+      elehessfieldi(2,2,3) = elehessfieldi(2,2,3) - t3ik(2,2,3)*qk
+      elehessfieldi(2,3,1) = elehessfieldi(2,3,1) - t3ik(2,3,1)*qk
+      elehessfieldi(2,3,2) = elehessfieldi(2,3,2) - t3ik(2,3,2)*qk
+      elehessfieldi(2,3,3) = elehessfieldi(2,3,3) - t3ik(2,3,3)*qk
+      elehessfieldi(3,1,1) = elehessfieldi(3,1,1) - t3ik(3,1,1)*qk
+      elehessfieldi(3,1,2) = elehessfieldi(3,1,2) - t3ik(3,1,2)*qk
+      elehessfieldi(3,1,3) = elehessfieldi(3,1,3) - t3ik(3,1,3)*qk
+      elehessfieldi(3,2,1) = elehessfieldi(3,2,1) - t3ik(3,2,1)*qk
+      elehessfieldi(3,2,2) = elehessfieldi(3,2,2) - t3ik(3,2,2)*qk
+      elehessfieldi(3,2,3) = elehessfieldi(3,2,3) - t3ik(3,2,3)*qk
+      elehessfieldi(3,3,1) = elehessfieldi(3,3,1) - t3ik(3,3,1)*qk
+      elehessfieldi(3,3,2) = elehessfieldi(3,3,2) - t3ik(3,3,2)*qk
+      elehessfieldi(3,3,3) = elehessfieldi(3,3,3) - t3ik(3,3,3)*qk
+c
+      elehessfieldk(1,1,1) = elehessfieldk(1,1,1) + t3ik(1,1,1)*qi
+      elehessfieldk(1,1,2) = elehessfieldk(1,1,2) + t3ik(1,1,2)*qi
+      elehessfieldk(1,1,3) = elehessfieldk(1,1,3) + t3ik(1,1,3)*qi
+      elehessfieldk(1,2,1) = elehessfieldk(1,2,1) + t3ik(1,2,1)*qi
+      elehessfieldk(1,2,2) = elehessfieldk(1,2,2) + t3ik(1,2,2)*qi
+      elehessfieldk(1,2,3) = elehessfieldk(1,2,3) + t3ik(1,2,3)*qi
+      elehessfieldk(1,3,1) = elehessfieldk(1,3,1) + t3ik(1,3,1)*qi
+      elehessfieldk(1,3,2) = elehessfieldk(1,3,2) + t3ik(1,3,2)*qi
+      elehessfieldk(1,3,3) = elehessfieldk(1,3,3) + t3ik(1,3,3)*qi
+      elehessfieldk(2,1,1) = elehessfieldk(2,1,1) + t3ik(2,1,1)*qi
+      elehessfieldk(2,1,2) = elehessfieldk(2,1,2) + t3ik(2,1,2)*qi
+      elehessfieldk(2,1,3) = elehessfieldk(2,1,3) + t3ik(2,1,3)*qi
+      elehessfieldk(2,2,1) = elehessfieldk(2,2,1) + t3ik(2,2,1)*qi
+      elehessfieldk(2,2,2) = elehessfieldk(2,2,2) + t3ik(2,2,2)*qi
+      elehessfieldk(2,2,3) = elehessfieldk(2,2,3) + t3ik(2,2,3)*qi
+      elehessfieldk(2,3,1) = elehessfieldk(2,3,1) + t3ik(2,3,1)*qi
+      elehessfieldk(2,3,2) = elehessfieldk(2,3,2) + t3ik(2,3,2)*qi
+      elehessfieldk(2,3,3) = elehessfieldk(2,3,3) + t3ik(2,3,3)*qi
+      elehessfieldk(3,1,1) = elehessfieldk(3,1,1) + t3ik(3,1,1)*qi
+      elehessfieldk(3,1,2) = elehessfieldk(3,1,2) + t3ik(3,1,2)*qi
+      elehessfieldk(3,1,3) = elehessfieldk(3,1,3) + t3ik(3,1,3)*qi
+      elehessfieldk(3,2,1) = elehessfieldk(3,2,1) + t3ik(3,2,1)*qi
+      elehessfieldk(3,2,2) = elehessfieldk(3,2,2) + t3ik(3,2,2)*qi
+      elehessfieldk(3,2,3) = elehessfieldk(3,2,3) + t3ik(3,2,3)*qi
+      elehessfieldk(3,3,1) = elehessfieldk(3,3,1) + t3ik(3,3,1)*qi
+      elehessfieldk(3,3,2) = elehessfieldk(3,3,2) + t3ik(3,3,2)*qi
+      elehessfieldk(3,3,3) = elehessfieldk(3,3,3) + t3ik(3,3,3)*qi
+c
+c     from dipoles
+c
+      elehessfieldi(1,1,1) = elehessfieldi(1,1,1) - t4ik(1,1,1,1)*dkx - 
+     &     t4ik(1,1,1,2)*dky - t4ik(1,1,1,3)*dkz
+      elehessfieldi(1,1,2) = elehessfieldi(1,1,2) - t4ik(1,1,2,1)*dkx -
+     &     t4ik(1,1,2,2)*dky - t4ik(1,1,2,3)*dkz
+      elehessfieldi(1,1,3) = elehessfieldi(1,1,3) - t4ik(1,1,3,1)*dkx -
+     &     t4ik(1,1,3,2)*dky - t4ik(1,1,3,3)*dkz
+      elehessfieldi(1,2,1) = elehessfieldi(1,2,1) - t4ik(1,2,1,1)*dkx -
+     &     t4ik(1,2,1,2)*dky - t4ik(1,2,1,3)*dkz
+      elehessfieldi(1,2,2) = elehessfieldi(1,2,2) - t4ik(1,2,2,1)*dkx -
+     &     t4ik(1,2,2,2)*dky - t4ik(1,2,2,3)*dkz
+      elehessfieldi(1,2,3) = elehessfieldi(1,2,3) - t4ik(1,2,3,1)*dkx -
+     &     t4ik(1,2,3,2)*dky - t4ik(1,2,3,3)*dkz
+      elehessfieldi(1,3,1) = elehessfieldi(1,3,1) - t4ik(1,3,1,1)*dkx -
+     &     t4ik(1,3,1,2)*dky - t4ik(1,3,1,3)*dkz
+      elehessfieldi(1,3,2) = elehessfieldi(1,3,2) - t4ik(1,3,2,1)*dkx -
+     &     t4ik(1,3,2,2)*dky - t4ik(1,3,2,3)*dkz
+      elehessfieldi(1,3,3) = elehessfieldi(1,3,3) - t4ik(1,3,3,1)*dkx -
+     &     t4ik(1,3,3,2)*dky - t4ik(1,3,3,3)*dkz
+      elehessfieldi(2,1,1) = elehessfieldi(2,1,1) - t4ik(2,1,1,1)*dkx -
+     &     t4ik(2,1,1,2)*dky - t4ik(2,1,1,3)*dkz
+      elehessfieldi(2,1,2) = elehessfieldi(2,1,2) - t4ik(2,1,2,1)*dkx -
+     &     t4ik(2,1,2,2)*dky - t4ik(2,1,2,3)*dkz
+      elehessfieldi(2,1,3) = elehessfieldi(2,1,3) - t4ik(2,1,3,1)*dkx -
+     &     t4ik(2,1,3,2)*dky - t4ik(2,1,3,3)*dkz
+      elehessfieldi(2,2,1) = elehessfieldi(2,2,1) - t4ik(2,2,1,1)*dkx -
+     &     t4ik(2,2,1,2)*dky - t4ik(2,2,1,3)*dkz
+      elehessfieldi(2,2,2) = elehessfieldi(2,2,2) - t4ik(2,2,2,1)*dkx -
+     &     t4ik(2,2,2,2)*dky - t4ik(2,2,2,3)*dkz
+      elehessfieldi(2,2,3) = elehessfieldi(2,2,3) - t4ik(2,2,3,1)*dkx -
+     &     t4ik(2,2,3,2)*dky - t4ik(2,2,3,3)*dkz
+      elehessfieldi(2,3,1) = elehessfieldi(2,3,1) - t4ik(2,3,1,1)*dkx -
+     &     t4ik(2,3,1,2)*dky - t4ik(2,3,1,3)*dkz
+      elehessfieldi(2,3,2) = elehessfieldi(2,3,2) - t4ik(2,3,2,1)*dkx -
+     &     t4ik(2,3,2,2)*dky - t4ik(2,3,2,3)*dkz
+      elehessfieldi(2,3,3) = elehessfieldi(2,3,3) - t4ik(2,3,3,1)*dkx -
+     &     t4ik(2,3,3,2)*dky - t4ik(2,3,3,3)*dkz
+      elehessfieldi(3,1,1) = elehessfieldi(3,1,1) - t4ik(3,1,1,1)*dkx -
+     &     t4ik(3,1,1,2)*dky - t4ik(3,1,1,3)*dkz
+      elehessfieldi(3,1,2) = elehessfieldi(3,1,2) - t4ik(3,1,2,1)*dkx -
+     &     t4ik(3,1,2,2)*dky - t4ik(3,1,2,3)*dkz
+      elehessfieldi(3,1,3) = elehessfieldi(3,1,3) - t4ik(3,1,3,1)*dkx -
+     &     t4ik(3,1,3,2)*dky - t4ik(3,1,3,3)*dkz
+      elehessfieldi(3,2,1) = elehessfieldi(3,2,1) - t4ik(3,2,1,1)*dkx -
+     &     t4ik(3,2,1,2)*dky - t4ik(3,2,1,3)*dkz
+      elehessfieldi(3,2,2) = elehessfieldi(3,2,2) - t4ik(3,2,2,1)*dkx -
+     &     t4ik(3,2,2,2)*dky - t4ik(3,2,2,3)*dkz
+      elehessfieldi(3,2,3) = elehessfieldi(3,2,3) - t4ik(3,2,3,1)*dkx -
+     &     t4ik(3,2,3,2)*dky - t4ik(3,2,3,3)*dkz
+      elehessfieldi(3,3,1) = elehessfieldi(3,3,1) - t4ik(3,3,1,1)*dkx -
+     &     t4ik(3,3,1,2)*dky - t4ik(3,3,1,3)*dkz
+      elehessfieldi(3,3,2) = elehessfieldi(3,3,2) - t4ik(3,3,2,1)*dkx -
+     &     t4ik(3,3,2,2)*dky - t4ik(3,3,2,3)*dkz
+      elehessfieldi(3,3,3) = elehessfieldi(3,3,3) - t4ik(3,3,3,1)*dkx -
+     &     t4ik(3,3,3,2)*dky - t4ik(3,3,3,3)*dkz
+c
+      elehessfieldk(1,1,1) = elehessfieldk(1,1,1) - t4ik(1,1,1,1)*dix - 
+     &     t4ik(1,1,1,2)*diy - t4ik(1,1,1,3)*diz
+      elehessfieldk(1,1,2) = elehessfieldk(1,1,2) - t4ik(1,1,2,1)*dix -
+     &     t4ik(1,1,2,2)*diy - t4ik(1,1,2,3)*diz
+      elehessfieldk(1,1,3) = elehessfieldk(1,1,3) - t4ik(1,1,3,1)*dix -
+     &     t4ik(1,1,3,2)*diy - t4ik(1,1,3,3)*diz
+      elehessfieldk(1,2,1) = elehessfieldk(1,2,1) - t4ik(1,2,1,1)*dix -
+     &     t4ik(1,2,1,2)*diy - t4ik(1,2,1,3)*diz
+      elehessfieldk(1,2,2) = elehessfieldk(1,2,2) - t4ik(1,2,2,1)*dix -
+     &     t4ik(1,2,2,2)*diy - t4ik(1,2,2,3)*diz
+      elehessfieldk(1,2,3) = elehessfieldk(1,2,3) - t4ik(1,2,3,1)*dix -
+     &     t4ik(1,2,3,2)*diy - t4ik(1,2,3,3)*diz
+      elehessfieldk(1,3,1) = elehessfieldk(1,3,1) - t4ik(1,3,1,1)*dix -
+     &     t4ik(1,3,1,2)*diy - t4ik(1,3,1,3)*diz
+      elehessfieldk(1,3,2) = elehessfieldk(1,3,2) - t4ik(1,3,2,1)*dix -
+     &     t4ik(1,3,2,2)*diy - t4ik(1,3,2,3)*diz
+      elehessfieldk(1,3,3) = elehessfieldk(1,3,3) - t4ik(1,3,3,1)*dix -
+     &     t4ik(1,3,3,2)*diy - t4ik(1,3,3,3)*diz
+      elehessfieldk(2,1,1) = elehessfieldk(2,1,1) - t4ik(2,1,1,1)*dix -
+     &     t4ik(2,1,1,2)*diy - t4ik(2,1,1,3)*diz
+      elehessfieldk(2,1,2) = elehessfieldk(2,1,2) - t4ik(2,1,2,1)*dix -
+     &     t4ik(2,1,2,2)*diy - t4ik(2,1,2,3)*diz
+      elehessfieldk(2,1,3) = elehessfieldk(2,1,3) - t4ik(2,1,3,1)*dix -
+     &     t4ik(2,1,3,2)*diy - t4ik(2,1,3,3)*diz
+      elehessfieldk(2,2,1) = elehessfieldk(2,2,1) - t4ik(2,2,1,1)*dix -
+     &     t4ik(2,2,1,2)*diy - t4ik(2,2,1,3)*diz
+      elehessfieldk(2,2,2) = elehessfieldk(2,2,2) - t4ik(2,2,2,1)*dix -
+     &     t4ik(2,2,2,2)*diy - t4ik(2,2,2,3)*diz
+      elehessfieldk(2,2,3) = elehessfieldk(2,2,3) - t4ik(2,2,3,1)*dix -
+     &     t4ik(2,2,3,2)*diy - t4ik(2,2,3,3)*diz
+      elehessfieldk(2,3,1) = elehessfieldk(2,3,1) - t4ik(2,3,1,1)*dix -
+     &     t4ik(2,3,1,2)*diy - t4ik(2,3,1,3)*diz
+      elehessfieldk(2,3,2) = elehessfieldk(2,3,2) - t4ik(2,3,2,1)*dix -
+     &     t4ik(2,3,2,2)*diy - t4ik(2,3,2,3)*diz
+      elehessfieldk(2,3,3) = elehessfieldk(2,3,3) - t4ik(2,3,3,1)*dix -
+     &     t4ik(2,3,3,2)*diy - t4ik(2,3,3,3)*diz
+      elehessfieldk(3,1,1) = elehessfieldk(3,1,1) - t4ik(3,1,1,1)*dix -
+     &     t4ik(3,1,1,2)*diy - t4ik(3,1,1,3)*diz
+      elehessfieldk(3,1,2) = elehessfieldk(3,1,2) - t4ik(3,1,2,1)*dix -
+     &     t4ik(3,1,2,2)*diy - t4ik(3,1,2,3)*diz
+      elehessfieldk(3,1,3) = elehessfieldk(3,1,3) - t4ik(3,1,3,1)*dix -
+     &     t4ik(3,1,3,2)*diy - t4ik(3,1,3,3)*diz
+      elehessfieldk(3,2,1) = elehessfieldk(3,2,1) - t4ik(3,2,1,1)*dix -
+     &     t4ik(3,2,1,2)*diy - t4ik(3,2,1,3)*diz
+      elehessfieldk(3,2,2) = elehessfieldk(3,2,2) - t4ik(3,2,2,1)*dix -
+     &     t4ik(3,2,2,2)*diy - t4ik(3,2,2,3)*diz
+      elehessfieldk(3,2,3) = elehessfieldk(3,2,3) - t4ik(3,2,3,1)*dix -
+     &     t4ik(3,2,3,2)*diy - t4ik(3,2,3,3)*diz
+      elehessfieldk(3,3,1) = elehessfieldk(3,3,1) - t4ik(3,3,1,1)*dix -
+     &     t4ik(3,3,1,2)*diy - t4ik(3,3,1,3)*diz
+      elehessfieldk(3,3,2) = elehessfieldk(3,3,2) - t4ik(3,3,2,1)*dix -
+     &     t4ik(3,3,2,2)*diy - t4ik(3,3,2,3)*diz
+      elehessfieldk(3,3,3) = elehessfieldk(3,3,3) - t4ik(3,3,3,1)*dix -
+     &     t4ik(3,3,3,2)*diy - t4ik(3,3,3,3)*diz
+c
+c     quadrupoles
+c
+      elehessfieldi(1,1,1) = elehessfieldi(1,1,1) -t5ik(1,1,1,1,1)*qkxx- 
+     &     t5ik(1,1,1,1,2)*qkxy - t5ik(1,1,1,1,3)*qkxz - 
+     &     t5ik(1,1,1,2,2)*qkyy-
+     &     t5ik(1,1,1,2,3)*qkyz - t5ik(1,1,1,3,3)*qkzz
+      elehessfieldi(1,1,2) = elehessfieldi(1,1,2) -t5ik(1,1,2,1,1)*qkxx-
+     &     t5ik(1,1,2,1,2)*qkxy - t5ik(1,1,2,1,3)*qkxz - 
+     &     t5ik(1,1,2,2,2)*qkyy-
+     &     t5ik(1,1,2,2,3)*qkyz - t5ik(1,1,2,3,3)*qkzz
+      elehessfieldi(1,1,3) = elehessfieldi(1,1,3) -t5ik(1,1,3,1,1)*qkxx-
+     &     t5ik(1,1,3,1,2)*qkxy - t5ik(1,1,3,1,3)*qkxz - 
+     &     t5ik(1,1,3,2,2)*qkyy-
+     &     t5ik(1,1,3,2,3)*qkyz - t5ik(1,1,3,3,3)*qkzz
+      elehessfieldi(1,2,1) = elehessfieldi(1,2,1) -t5ik(1,2,1,1,1)*qkxx-
+     &     t5ik(1,2,1,1,2)*qkxy - t5ik(1,2,1,1,3)*qkxz - 
+     &     t5ik(1,2,1,2,2)*qkyy-
+     &     t5ik(1,2,1,2,3)*qkyz - t5ik(1,2,1,3,3)*qkzz
+      elehessfieldi(1,2,2) = elehessfieldi(1,2,2) -t5ik(1,2,2,1,1)*qkxx-
+     &     t5ik(1,2,2,1,2)*qkxy - t5ik(1,2,2,1,3)*qkxz - 
+     &     t5ik(1,2,2,2,2)*qkyy-
+     &     t5ik(1,2,2,2,3)*qkyz - t5ik(1,2,2,3,3)*qkzz
+      elehessfieldi(1,2,3) = elehessfieldi(1,2,3) -t5ik(1,2,3,1,1)*qkxx-
+     &     t5ik(1,2,3,1,2)*qkxy - t5ik(1,2,3,1,3)*qkxz - 
+     &     t5ik(1,2,3,2,2)*qkyy-
+     &     t5ik(1,2,3,2,3)*qkyz - t5ik(1,2,3,3,3)*qkzz
+      elehessfieldi(1,3,1) = elehessfieldi(1,3,1) -t5ik(1,3,1,1,1)*qkxx-
+     &     t5ik(1,3,1,1,2)*qkxy - t5ik(1,3,1,1,3)*qkxz - 
+     &     t5ik(1,3,1,2,2)*qkyy-
+     &     t5ik(1,3,1,2,3)*qkyz - t5ik(1,3,1,3,3)*qkzz
+      elehessfieldi(1,3,2) = elehessfieldi(1,3,2) -t5ik(1,3,2,1,1)*qkxx-
+     &     t5ik(1,3,2,1,2)*qkxy - t5ik(1,3,2,1,3)*qkxz - 
+     &     t5ik(1,3,2,2,2)*qkyy-
+     &     t5ik(1,3,2,2,3)*qkyz - t5ik(1,3,2,3,3)*qkzz
+      elehessfieldi(1,3,3) = elehessfieldi(1,3,3) -t5ik(1,3,3,1,1)*qkxx-
+     &     t5ik(1,3,3,1,2)*qkxy - t5ik(1,3,3,1,3)*qkxz - 
+     &     t5ik(1,3,3,2,2)*qkyy-
+     &     t5ik(1,3,3,2,3)*qkyz - t5ik(1,3,3,3,3)*qkzz
+      elehessfieldi(2,1,1) = elehessfieldi(2,1,1) -t5ik(2,1,1,1,1)*qkxx-
+     &     t5ik(2,1,1,1,2)*qkxy - t5ik(2,1,1,1,3)*qkxz - 
+     &     t5ik(2,1,1,2,2)*qkyy-
+     &     t5ik(2,1,1,2,3)*qkyz - t5ik(2,1,1,3,3)*qkzz
+      elehessfieldi(2,1,2) = elehessfieldi(2,1,2) -t5ik(2,1,2,1,1)*qkxx-
+     &     t5ik(2,1,2,1,2)*qkxy - t5ik(2,1,2,1,3)*qkxz - 
+     &     t5ik(2,1,2,2,2)*qkyy-
+     &     t5ik(2,1,2,2,3)*qkyz - t5ik(2,1,2,3,3)*qkzz
+      elehessfieldi(2,1,3) = elehessfieldi(2,1,3) -t5ik(2,1,3,1,1)*qkxx-
+     &     t5ik(2,1,3,1,2)*qkxy - t5ik(2,1,3,1,3)*qkxz - 
+     &     t5ik(2,1,3,2,2)*qkyy-
+     &     t5ik(2,1,3,2,3)*qkyz - t5ik(2,1,3,3,3)*qkzz
+      elehessfieldi(2,2,1) = elehessfieldi(2,2,1) -t5ik(2,2,1,1,1)*qkxx-
+     &     t5ik(2,2,1,1,2)*qkxy - t5ik(2,2,1,1,3)*qkxz - 
+     &     t5ik(2,2,1,2,2)*qkyy-
+     &     t5ik(2,2,1,2,3)*qkyz - t5ik(2,2,1,3,3)*qkzz
+      elehessfieldi(2,2,2) = elehessfieldi(2,2,2) -t5ik(2,2,2,1,1)*qkxx-
+     &     t5ik(2,2,2,1,2)*qkxy - t5ik(2,2,2,1,3)*qkxz - 
+     &     t5ik(2,2,2,2,2)*qkyy-
+     &     t5ik(2,2,2,2,3)*qkyz - t5ik(2,2,2,3,3)*qkzz
+      elehessfieldi(2,2,3) = elehessfieldi(2,2,3) -t5ik(2,2,3,1,1)*qkxx-
+     &     t5ik(2,2,3,1,2)*qkxy - t5ik(2,2,3,1,3)*qkxz - 
+     &     t5ik(2,2,3,2,2)*qkyy-
+     &     t5ik(2,2,3,2,3)*qkyz - t5ik(2,2,3,3,3)*qkzz
+      elehessfieldi(2,3,1) = elehessfieldi(2,3,1) -t5ik(2,3,1,1,1)*qkxx-
+     &     t5ik(2,3,1,1,2)*qkxy - t5ik(2,3,1,1,3)*qkxz - 
+     7     t5ik(2,3,1,2,2)*qkyy-
+     &     t5ik(2,3,1,2,3)*qkyz - t5ik(2,3,1,3,3)*qkzz
+      elehessfieldi(2,3,2) = elehessfieldi(2,3,2) -t5ik(2,3,2,1,1)*qkxx-
+     &     t5ik(2,3,2,1,2)*qkxy - t5ik(2,3,2,1,3)*qkxz - 
+     &     t5ik(2,3,2,2,2)*qkyy-
+     &     t5ik(2,3,2,2,3)*qkyz - t5ik(2,3,2,3,3)*qkzz
+      elehessfieldi(2,3,3) = elehessfieldi(2,3,3) -t5ik(2,3,3,1,1)*qkxx-
+     &     t5ik(2,3,3,1,2)*qkxy - t5ik(2,3,3,1,3)*qkxz - 
+     &     t5ik(2,3,3,2,2)*qkyy-
+     &     t5ik(2,3,3,2,3)*qkyz - t5ik(2,3,3,3,3)*qkzz
+      elehessfieldi(3,1,1) = elehessfieldi(3,1,1) -t5ik(3,1,1,1,1)*qkxx-
+     &     t5ik(3,1,1,1,2)*qkxy - t5ik(3,1,1,1,3)*qkxz - 
+     &     t5ik(3,1,1,2,2)*qkyy-
+     &     t5ik(3,1,1,2,3)*qkyz - t5ik(3,1,1,3,3)*qkzz
+      elehessfieldi(3,1,2) = elehessfieldi(3,1,2) -t5ik(3,1,2,1,1)*qkxx-
+     &     t5ik(3,1,2,1,2)*qkxy - t5ik(3,1,2,1,3)*qkxz - 
+     &     t5ik(3,1,2,2,2)*qkyy-
+     &     t5ik(3,1,2,2,3)*qkyz - t5ik(3,1,2,3,3)*qkzz
+      elehessfieldi(3,1,3) = elehessfieldi(3,1,3) -t5ik(3,1,3,1,1)*qkxx-
+     &     t5ik(3,1,3,1,2)*qkxy - t5ik(3,1,3,1,3)*qkxz - 
+     &     t5ik(3,1,3,2,2)*qkyy-
+     &     t5ik(3,1,3,2,3)*qkyz - t5ik(3,1,3,3,3)*qkzz
+      elehessfieldi(3,2,1) = elehessfieldi(3,2,1) -t5ik(3,2,1,1,1)*qkxx-
+     &     t5ik(3,2,1,1,2)*qkxy - t5ik(3,2,1,1,3)*qkxz - 
+     &     t5ik(3,2,1,2,2)*qkyy-
+     &     t5ik(3,2,1,2,3)*qkyz - t5ik(3,2,1,3,3)*qkzz
+      elehessfieldi(3,2,2) = elehessfieldi(3,2,2) -t5ik(3,2,2,1,1)*qkxx-
+     &     t5ik(3,2,2,1,2)*qkxy - t5ik(3,2,2,1,3)*qkxz - 
+     &     t5ik(3,2,2,2,2)*qkyy-
+     &     t5ik(3,2,2,2,3)*qkyz - t5ik(3,2,2,3,3)*qkzz
+      elehessfieldi(3,2,3) = elehessfieldi(3,2,3) -t5ik(3,2,3,1,1)*qkxx-
+     &     t5ik(3,2,3,1,2)*qkxy - t5ik(3,2,3,1,3)*qkxz - 
+     &     t5ik(3,2,3,2,2)*qkyy-
+     &     t5ik(3,2,3,2,3)*qkyz - t5ik(3,2,3,3,3)*qkzz
+      elehessfieldi(3,3,1) = elehessfieldi(3,3,1) -t5ik(3,3,1,1,1)*qkxx-
+     &     t5ik(3,3,1,1,2)*qkxy - t5ik(3,3,1,1,3)*qkxz - 
+     &     t5ik(3,3,1,2,2)*qkyy-
+     &     t5ik(3,3,1,2,3)*qkyz - t5ik(3,3,1,3,3)*qkzz
+      elehessfieldi(3,3,2) = elehessfieldi(3,3,2) -t5ik(3,3,2,1,1)*qkxx-
+     &     t5ik(3,3,2,1,2)*qkxy - t5ik(3,3,2,1,3)*qkxz - 
+     &     t5ik(3,3,2,2,2)*qkyy-
+     &     t5ik(3,3,2,2,3)*qkyz - t5ik(3,3,2,3,3)*qkzz
+      elehessfieldi(3,3,3) = elehessfieldi(3,3,3) -t5ik(3,3,3,1,1)*qkxx-
+     &     t5ik(3,3,3,1,2)*qkxy - t5ik(3,3,3,1,3)*qkxz - 
+     &     t5ik(3,3,3,2,2)*qkyy-
+     &     t5ik(3,3,3,2,3)*qkyz - t5ik(3,3,3,3,3)*qkzz
+c
+      elehessfieldk(1,1,1) = elehessfieldk(1,1,1) +t5ik(1,1,1,1,1)*qixx+ 
+     &     t5ik(1,1,1,1,2)*qixy + t5ik(1,1,1,1,3)*qixz + 
+     &     t5ik(1,1,1,2,2)*qiyy+
+     &     t5ik(1,1,1,2,3)*qiyz + t5ik(1,1,1,3,3)*qizz
+      elehessfieldk(1,1,2) = elehessfieldk(1,1,2) +t5ik(1,1,2,1,1)*qixx+
+     &     t5ik(1,1,2,1,2)*qixy + t5ik(1,1,2,1,3)*qixz + 
+     &     t5ik(1,1,2,2,2)*qiyy+
+     &     t5ik(1,1,2,2,3)*qiyz + t5ik(1,1,2,3,3)*qizz
+      elehessfieldk(1,1,3) = elehessfieldk(1,1,3) +t5ik(1,1,3,1,1)*qixx+
+     &     t5ik(1,1,3,1,2)*qixy + t5ik(1,1,3,1,3)*qixz + 
+     &     t5ik(1,1,3,2,2)*qiyy+
+     &     t5ik(1,1,3,2,3)*qiyz + t5ik(1,1,3,3,3)*qizz
+      elehessfieldk(1,2,1) = elehessfieldk(1,2,1) +t5ik(1,2,1,1,1)*qixx+
+     &     t5ik(1,2,1,1,2)*qixy + t5ik(1,2,1,1,3)*qixz + 
+     &     t5ik(1,2,1,2,2)*qiyy+
+     &     t5ik(1,2,1,2,3)*qiyz + t5ik(1,2,1,3,3)*qizz
+      elehessfieldk(1,2,2) = elehessfieldk(1,2,2) +t5ik(1,2,2,1,1)*qixx+
+     &     t5ik(1,2,2,1,2)*qixy + t5ik(1,2,2,1,3)*qixz + 
+     &     t5ik(1,2,2,2,2)*qiyy+
+     &     t5ik(1,2,2,2,3)*qiyz + t5ik(1,2,2,3,3)*qizz
+      elehessfieldk(1,2,3) = elehessfieldk(1,2,3) +t5ik(1,2,3,1,1)*qixx+
+     &     t5ik(1,2,3,1,2)*qixy + t5ik(1,2,3,1,3)*qixz + 
+     &     t5ik(1,2,3,2,2)*qiyy+
+     &     t5ik(1,2,3,2,3)*qiyz + t5ik(1,2,3,3,3)*qizz
+      elehessfieldk(1,3,1) = elehessfieldk(1,3,1) +t5ik(1,3,1,1,1)*qixx+
+     &     t5ik(1,3,1,1,2)*qixy + t5ik(1,3,1,1,3)*qixz + 
+     &     t5ik(1,3,1,2,2)*qiyy+
+     &     t5ik(1,3,1,2,3)*qiyz + t5ik(1,3,1,3,3)*qizz
+      elehessfieldk(1,3,2) = elehessfieldk(1,3,2) +t5ik(1,3,2,1,1)*qixx+
+     &     t5ik(1,3,2,1,2)*qixy + t5ik(1,3,2,1,3)*qixz + 
+     &     t5ik(1,3,2,2,2)*qiyy+
+     &     t5ik(1,3,2,2,3)*qiyz + t5ik(1,3,2,3,3)*qizz
+      elehessfieldk(1,3,3) = elehessfieldk(1,3,3) +t5ik(1,3,3,1,1)*qixx+
+     &     t5ik(1,3,3,1,2)*qixy + t5ik(1,3,3,1,3)*qixz + 
+     &     t5ik(1,3,3,2,2)*qiyy+
+     &     t5ik(1,3,3,2,3)*qiyz + t5ik(1,3,3,3,3)*qizz
+      elehessfieldk(2,1,1) = elehessfieldk(2,1,1) +t5ik(2,1,1,1,1)*qixx+
+     &     t5ik(2,1,1,1,2)*qixy + t5ik(2,1,1,1,3)*qixz + 
+     &     t5ik(2,1,1,2,2)*qiyy+
+     &     t5ik(2,1,1,2,3)*qiyz + t5ik(2,1,1,3,3)*qizz
+      elehessfieldk(2,1,2) = elehessfieldk(2,1,2) +t5ik(2,1,2,1,1)*qixx+
+     &     t5ik(2,1,2,1,2)*qixy + t5ik(2,1,2,1,3)*qixz + 
+     &     t5ik(2,1,2,2,2)*qiyy+
+     &     t5ik(2,1,2,2,3)*qiyz + t5ik(2,1,2,3,3)*qizz
+      elehessfieldk(2,1,3) = elehessfieldk(2,1,3) +t5ik(2,1,3,1,1)*qixx+
+     &     t5ik(2,1,3,1,2)*qixy + t5ik(2,1,3,1,3)*qixz + 
+     &     t5ik(2,1,3,2,2)*qiyy+
+     &     t5ik(2,1,3,2,3)*qiyz + t5ik(2,1,3,3,3)*qizz
+      elehessfieldk(2,2,1) = elehessfieldk(2,2,1) +t5ik(2,2,1,1,1)*qixx+
+     &     t5ik(2,2,1,1,2)*qixy + t5ik(2,2,1,1,3)*qixz + 
+     &     t5ik(2,2,1,2,2)*qiyy+
+     &     t5ik(2,2,1,2,3)*qiyz + t5ik(2,2,1,3,3)*qizz
+      elehessfieldk(2,2,2) = elehessfieldk(2,2,2) +t5ik(2,2,2,1,1)*qixx+
+     &     t5ik(2,2,2,1,2)*qixy + t5ik(2,2,2,1,3)*qixz + 
+     &     t5ik(2,2,2,2,2)*qiyy+
+     &     t5ik(2,2,2,2,3)*qiyz + t5ik(2,2,2,3,3)*qizz
+      elehessfieldk(2,2,3) = elehessfieldk(2,2,3) +t5ik(2,2,3,1,1)*qixx+
+     &     t5ik(2,2,3,1,2)*qixy + t5ik(2,2,3,1,3)*qixz + 
+     &     t5ik(2,2,3,2,2)*qiyy+
+     &     t5ik(2,2,3,2,3)*qiyz + t5ik(2,2,3,3,3)*qizz
+      elehessfieldk(2,3,1) = elehessfieldk(2,3,1) +t5ik(2,3,1,1,1)*qixx+
+     &     t5ik(2,3,1,1,2)*qixy + t5ik(2,3,1,1,3)*qixz + 
+     &     t5ik(2,3,1,2,2)*qiyy+
+     &     t5ik(2,3,1,2,3)*qiyz + t5ik(2,3,1,3,3)*qizz
+      elehessfieldk(2,3,2) = elehessfieldk(2,3,2) +t5ik(2,3,2,1,1)*qixx+
+     &     t5ik(2,3,2,1,2)*qixy + t5ik(2,3,2,1,3)*qixz + 
+     &     t5ik(2,3,2,2,2)*qiyy+
+     &     t5ik(2,3,2,2,3)*qiyz + t5ik(2,3,2,3,3)*qizz
+      elehessfieldk(2,3,3) = elehessfieldk(2,3,3) +t5ik(2,3,3,1,1)*qixx+
+     &     t5ik(2,3,3,1,2)*qixy + t5ik(2,3,3,1,3)*qixz + 
+     &     t5ik(2,3,3,2,2)*qiyy+
+     &     t5ik(2,3,3,2,3)*qiyz + t5ik(2,3,3,3,3)*qizz
+      elehessfieldk(3,1,1) = elehessfieldk(3,1,1) +t5ik(3,1,1,1,1)*qixx+
+     &     t5ik(3,1,1,1,2)*qixy + t5ik(3,1,1,1,3)*qixz + 
+     &     t5ik(3,1,1,2,2)*qiyy+
+     &     t5ik(3,1,1,2,3)*qiyz + t5ik(3,1,1,3,3)*qizz
+      elehessfieldk(3,1,2) = elehessfieldk(3,1,2) +t5ik(3,1,2,1,1)*qixx+
+     &     t5ik(3,1,2,1,2)*qixy + t5ik(3,1,2,1,3)*qixz + 
+     &     t5ik(3,1,2,2,2)*qiyy+
+     &     t5ik(3,1,2,2,3)*qiyz + t5ik(3,1,2,3,3)*qizz
+      elehessfieldk(3,1,3) = elehessfieldk(3,1,3) +t5ik(3,1,3,1,1)*qixx+
+     &     t5ik(3,1,3,1,2)*qixy + t5ik(3,1,3,1,3)*qixz + 
+     &     t5ik(3,1,3,2,2)*qiyy+
+     &     t5ik(3,1,3,2,3)*qiyz + t5ik(3,1,3,3,3)*qizz
+      elehessfieldk(3,2,1) = elehessfieldk(3,2,1) +t5ik(3,2,1,1,1)*qixx+
+     &     t5ik(3,2,1,1,2)*qixy + t5ik(3,2,1,1,3)*qixz + 
+     &     t5ik(3,2,1,2,2)*qiyy+
+     &     t5ik(3,2,1,2,3)*qiyz + t5ik(3,2,1,3,3)*qizz
+      elehessfieldk(3,2,2) = elehessfieldk(3,2,2) +t5ik(3,2,2,1,1)*qixx+
+     &     t5ik(3,2,2,1,2)*qixy + t5ik(3,2,2,1,3)*qixz + 
+     &     t5ik(3,2,2,2,2)*qiyy+
+     &     t5ik(3,2,2,2,3)*qiyz + t5ik(3,2,2,3,3)*qizz
+      elehessfieldk(3,2,3) = elehessfieldk(3,2,3) +t5ik(3,2,3,1,1)*qixx+
+     &     t5ik(3,2,3,1,2)*qixy + t5ik(3,2,3,1,3)*qixz + 
+     &     t5ik(3,2,3,2,2)*qiyy+
+     &     t5ik(3,2,3,2,3)*qiyz + t5ik(3,2,3,3,3)*qizz
+      elehessfieldk(3,3,1) = elehessfieldk(3,3,1) +t5ik(3,3,1,1,1)*qixx+
+     &     t5ik(3,3,1,1,2)*qixy + t5ik(3,3,1,1,3)*qixz + 
+     &     t5ik(3,3,1,2,2)*qiyy+
+     &     t5ik(3,3,1,2,3)*qiyz + t5ik(3,3,1,3,3)*qizz
+      elehessfieldk(3,3,2) = elehessfieldk(3,3,2) +t5ik(3,3,2,1,1)*qixx+
+     &     t5ik(3,3,2,1,2)*qixy + t5ik(3,3,2,1,3)*qixz + 
+     &     t5ik(3,3,2,2,2)*qiyy+
+     &     t5ik(3,3,2,2,3)*qiyz + t5ik(3,3,2,3,3)*qizz
+      elehessfieldk(3,3,3) = elehessfieldk(3,3,3) +t5ik(3,3,3,1,1)*qixx+
+     &     t5ik(3,3,3,1,2)*qixy + t5ik(3,3,3,1,3)*qixz + 
+     &     t5ik(3,3,3,2,2)*qiyy+
+     &     t5ik(3,3,3,2,3)*qiyz + t5ik(3,3,3,3,3)*qizz
+      return
+      end
+
+
+
+
+
+
+
+
+
+
+
+
+
 c
 c
 c     ##########################################################

@@ -48,6 +48,11 @@ c
       if (.not.allocated(upfield_thole)) 
      &     allocate (upfield_thole(3,npole))
 c
+      if (.not.allocated(udfield_gordon))
+     &     allocate (udfield_gordon(3,npole))
+      if (.not.allocated(upfield_gordon))
+     &     allocate (upfield_gordon(3,npole))
+c
 c     get the electrostatic potential, field and field gradient
 c     due to the induced dipoles
 c
@@ -105,6 +110,9 @@ c
       real*8 fieldip(3),fieldkp(3)
       real*8, allocatable :: pscale(:)
       real*8, allocatable :: scale(:)
+      real*8, allocatable :: scalei(:)
+      real*8, allocatable :: scalek(:)
+      real*8, allocatable :: scaleik(:)
       logical proceed
       logical usei,usek
       character*6 mode
@@ -119,6 +127,8 @@ c
             upfield_ewald(j,i) = 0.0d0
             udfield_thole(j,i) = 0.0d0
             upfield_thole(j,i) = 0.0d0
+            udfield_gordon(j,i) = 0.0d0
+            upfield_gordon(j,i) = 0.0d0
          end do
       end do
 c
@@ -137,8 +147,14 @@ c
       order = 1
       rorder = order*2 + 3
       allocate (scale(rorder))
+      allocate (scalei(rorder))
+      allocate (scalek(rorder))
+      allocate (scaleik(rorder))
       do i = 1,rorder
           scale(i) = 0.0d0
+          scalei(i) = 0.0d0
+          scalek(i) = 0.0d0
+          scaleik(i) = 0.0d0
       end do
 c
 c     find the electrostatic potential, field and field gradient 
@@ -220,6 +236,25 @@ c
                         upfield_thole(j,i) = upfield_thole(j,i) +
      &                       fieldip(j)
                         upfield_thole(j,k) = upfield_thole(j,k) +
+     &                       fieldkp(j)
+                     end do
+                  end if
+c
+c     gordon damping
+c
+                  if (damp_gordon) then
+                     call dampgordon(i,k,rorder,r,scalei,scalek,scaleik)
+                     t2 = t2rr3*scaleik(3) + t2rr5*scaleik(5)
+                     call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
+     &                    fieldkp)
+                     do j = 1, 3
+                        udfield_gordon(j,i) = udfield_gordon(j,i) +
+     &                       fieldid(j)
+                        udfield_gordon(j,k) = udfield_gordon(j,k) +
+     &                       fieldkd(j)
+                        upfield_gordon(j,i) = upfield_gordon(j,i) +
+     &                       fieldip(j)
+                        upfield_gordon(j,k) = upfield_gordon(j,k) +
      &                       fieldkp(j)
                      end do
                   end if

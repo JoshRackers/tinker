@@ -132,22 +132,21 @@ c
       end
 c
 c
-c     ####################################################################
-c     ##                                                                ##
-c     ##  subroutine dampgordonone  --  generate one-site gordon        ##
-c     ##                                damping coefficents             ##
-c     ##                                                                ##
-c     ####################################################################
+c     ######################################################################
+c     ##                                                                  ##
+c     ##  subroutine dampgordon  --  generate gordon damping coefficents  ##
+c     ##                                                                  ##
+c     ######################################################################
 c
 c
-c     "dampgordonone" generates the damping coefficients for the one-site 
+c     "dampgordon" generates the damping coefficients for the one-site 
 c     gordon damping functional form that go with corresponding powers of r
 c
 c     one-site scale factors are used for nuclear-electron interactions
 c
-      subroutine dampgordonone(i,k,rorder,r,scalei,scalek)
+      subroutine dampgordon(i,k,rorder,r,scalei,scalek,scaleik)
       use sizes
-c      use xtrpot
+      use chgpen
       implicit none
       integer i,k
       integer rorder
@@ -155,12 +154,14 @@ c      use xtrpot
       real*8 alphai,alphak
       real*8 dampi,dampk
       real*8 expdampi,expdampk
+      real*8 termi,termk
       real*8 scalei(*),scalek(*)
+      real*8 scaleik(*)
 c
 c     read in charge penetration damping parameters
 c
-c      alphai = alpha(cpclass(ii))
-c      alphak = alpha(cpclass(kk))
+      alphai = alpha(cpclass(i))
+      alphak = alpha(cpclass(k))
 c
 c     compute common factors for damping
 c
@@ -179,31 +180,101 @@ c
      &     (1.0d0/3.0d0)*dampi**2)*expdampi
       scalek(5) = 1.0d0 - (1.0d0 +dampk +
      &     (1.0d0/3.0d0)*dampk**2)*expdampk
-      if (rorder .ge. 9) then
+      if (rorder .ge. 11) then
 cccccccccccccccccccccccc need to put in scale(7) for forces
-         scalei(7) = 10000.0d0
-         scalei(7) = 10000.0d0
+         scalei(7) = 1.0d0 - (1.0d0 + dampi + 0.4d0*dampi**2 +
+     &        (1.0d0/15.0d0)*dampi**3)*expdampi
+         scalek(7) = 1.0d0 - (1.0d0 + dampk + 0.4d0*dampk**2 +
+     &        (1.0d0/15.0d0)*dampk**3)*expdampk
+      end if
+c
+c     calculate two-site scale factors
+c
+      if (alphai .ne. alphak) then
+         termi = alphak**2/(alphak**2 - alphai**2)
+         termk = alphai**2/(alphai**2 - alphak**2)
+         scaleik(1) = 1.0d0 -termi*expdampi -termk*expdampk
+         scaleik(3) = 1.0d0 - termi*(1.0d0 +dampi)*expdampi
+     &        - termk*(1.0d0 + dampk)*expdampk
+         scaleik(5) = 1.0d0 - termi*(1.0d0 + dampi +
+     &        (1.0d0/3.0d0)*dampi**2)*expdampi -
+     &        termk*(1.0d0 + dampk +
+     &        (1.0d0/3.0d0)*dampk**2)*expdampk
+         if (rorder .ge. 7) then
+            scaleik(7) = 1.0d0 - termi*(1.0d0 + dampi +
+     &           0.4d0*dampi**2 + (1.0d0/15.0d0)*dampi**3)*
+     &           expdampi -
+     &           termk*(1.0d0 + dampk +
+     &           0.4d0*dampk**2 + (1.0d0/15.0d0)*dampk**3)*
+     &           expdampk
+         end if
+         if (rorder .ge. 9) then
+            scaleik(9) = 1.0d0 - termi*(1.0d0 + dampi +
+     &           (3.0d0/7.0d0)*dampi**2 +
+     &           (2.0d0/21.0d0)*dampi**3 +
+     &           (1.0d0/105.0d0)*dampi**4)*expdampi -
+     &           termk*(1.0d0 + dampk +
+     &           (3.0d0/7.0d0)*dampk**2 +
+     &           (2.0d0/21.0d0)*dampk**3 +
+     &           (1.0d0/105.0d0)*dampk**4)*expdampk
+         end if
+         if (rorder .ge. 11) then
+            scaleik(11) = 1.0d0 - termi*(1.0d0 + dampi +
+     &           (4.0d0/9.0d0)*dampi**2 +
+     &           (1.0d0/9.0d0)*dampi**3 +
+     &           (1.0d0/63.0d0)*dampi**4 + 
+     &           (1.0d0/945.0d0)*dampi**5)*expdampi - 
+     &           termk*(1.0d0 + dampk +
+     &           (4.0d0/9.0d0)*dampk**2+
+     &           (1.0d0/9.0d0)*dampk**3+
+     &           (1.0d0/63.0d0)*dampk**4 +
+     &           (1.0d0/945.0d0)*dampk**5)*expdampk
+         end if
+      else
+         scaleik(1) = 1.0d0 - (1.0d0+0.5d0*dampi)*expdampi
+         scaleik(3) = 1.0d0 - (1.0d0+dampi+0.5d0*dampi**2)
+     &        *expdampi
+         scaleik(5) = 1.0d0 - (1.0d0+dampi+0.5d0*dampi**2
+     &        + (1.0d0/6.0d0)*dampi**3)*expdampi
+         if (rorder .ge. 7) then
+            scaleik(7) = 1.0d0 - (1.0d0+dampi+0.5d0*dampi**2
+     &           + (1.0d0/6.0d0)*dampi**3
+     &           + (1.0d0/30.0d0)*dampi**4)*expdampi
+         end if
+         if (rorder .ge. 9) then
+            scaleik(9) = 1.0d0 - (1.0d0+dampi+0.5d0*dampi**2
+     &           + (1.0d0/6.0d0)*dampi**3
+     &           + (4.0d0/105.0d0)*dampi**4
+     &           + (1.0d0/210.0d0)*dampi**5)*expdampi
+         end if
+         if (rorder .ge. 11) then
+            scaleik(11) = 1.0d0 - (1.0d0 + dampi + 0.5d0*dampi**2
+     &           + (1.0d0/6.0d0)*dampi**3 
+     &           + (5.0d0/126.0d0)*dampi**4
+     &           + (2.0d0/315.0d0)*dampi**5
+     &           + (1.0d0/1890.0d0)*dampi**6)*expdampi
+         end if
       end if
       return
       end
 c
 c
-c     ####################################################################
-c     ##                                                                ##
-c     ##  subroutine dampgordontwo  --  generate two-site gordon        ##
-c     ##                                damping coefficents             ##
-c     ##                                                                ##
-c     ####################################################################
+c     #########################################################################
+c     ##                                                                     ##
+c     ##  subroutine dampgordonreg  --  generate gordon damping coefficents  ##
+c     ##                                                                     ##
+c     #########################################################################
 c
 c
-c     "dampgordontwo" generates the damping coefficients for the two-site 
-c     gordon damping functional form that go with corresponding powers of r
+c     "dampgordonreg" generates the damping coefficients for 
+c     gordon damping functional form times the exp(-ar) nuclear 
+c     regularization that go with corresponding powers of r
 c
-c     two-site scale factors are used for electron-electron interactions
+c     one-site scale factors are used for nuclear-electron interactions
 c
-      subroutine dampgordontwo(i,k,rorder,r,scale)
+      subroutine dampgordonreg(i,k,rorder,r,scalei,scalek)
       use sizes
-c      use xtrpot
+      use chgpen
       implicit none
       integer i,k
       integer rorder
@@ -212,12 +283,17 @@ c      use xtrpot
       real*8 dampi,dampk
       real*8 expdampi,expdampk
       real*8 termi,termk
-      real*8 scale(*)
+      real*8 regulari,regulark
+      real*8 rdampi,rdampk
+      real*8 rexpdampi,rexpdampk
+      real*8 scalei(*),scalek(*)
 c
 c     read in charge penetration damping parameters
 c
-c      alphai = alpha(cpclass(ii))
-c      alphak = alpha(cpclass(kk))
+      alphai = alpha(cpclass(i))
+      alphak = alpha(cpclass(k))
+      regulari = regular(cpclass(i))
+      regulark = regular(cpclass(k))
 c
 c     compute common factors for damping
 c
@@ -225,53 +301,21 @@ c
       dampk = alphak*r
       expdampi = exp(-dampi)
       expdampk = exp(-dampk)
-      if (alphai .ne. alphak) then
-         termi = alphak**2/(alphak**2 - alphai**2)
-         termk = alphai**2/(alphai**2 - alphak**2)
-         scale(1) = 1.0d0 -termi*expdampi -termk*expdampk
-         scale(3) = 1.0d0 - termi*(1.0d0 +dampi)*expdampi 
-     &        - termk*(1.0d0 + dampk)*expdampk
-         scale(5) = 1.0d0 - termi*(1.0d0 + dampi + 
-     &        (1.0d0/3.0d0)*dampi**2)*expdampi - 
-     &        termk*(1.0d0 + dampk + 
-     &        (1.0d0/3.0d0)*dampk**2)*expdampk
-         scale(7) = 1.0d0 - termi*(1.0d0 + dampi +
-     &        0.4d0*dampi**2 + (1.0d0/15.0d0)*dampi**3)*
-     &        expdampi -
-     &        termk*(1.0d0 + dampk +
-     &        0.4d0*dampk**2 + (1.0d0/15.0d0)*dampk**3)*
-     &        expdampk
-         if (rorder .ge. 9) then
-            scale(9) = 1.0d0 - termi*(1.0d0 + dampi + 
-     &           (3.0d0/7.0d0)*dampi**2 + 
-     &           (2.0d0/21.0d0)*dampi**3 + 
-     &           (1.0d0/105.0d0)*dampi**4)*expdampi -
-     &           termk*(1.0d0 + dampk +
-     &           (3.0d0/7.0d0)*dampk**2 +
-     &           (2.0d0/21.0d0)*dampk**3 +
-     &           (1.0d0/105.0d0)*dampk**4)*expdampk
-         end if
-         if (rorder .ge. 11) then
-ccccccccccccc need scale 11 
-         end if
-      else
-         scale(1) = 1.0d0 - (1.0d0+0.5d0*dampi)*expdampi
-         scale(3) = 1.0d0 - (1.0d0+dampi+0.5d0*dampi**2)
-     &        *expdampi
-         scale(5) = 1.0d0 - (1.0d0+dampi+0.5d0*dampi**2
-     &        + (1.0d0/6.0d0)*dampi**3)*expdampi
-         scale(7) = 1.0d0 - (1.0d0+dampi+0.5d0*dampi**2
-     &        + (1.0d0/6.0d0)*dampi**3  
-     &        + (1.0d0/30.0d0)*dampi**4)*expdampi
-         if (rorder .ge. 9) then
-            scale(9) = 1.0d0 - (1.0d0+dampi+0.5d0*dampi**2
-     &           + (1.0d0/6.0d0)*dampi**3 
-     &           + (4.0d0/105.0d0)*dampi**4 
-     &           + (1.0d0/210.0d0)*dampi**5)*expdampi
-         end if
-         if (rorder .ge. 11) then
-ccccccccccccc need scale 11
-          end if
-      end if
+c
+c     common factors for regularization
+c
+      rdampi = regulari*r
+      rdampk = regulark*r
+      rexpdampi = exp(-rdampi)
+      rexpdampk = exp(-rdampk)
+c
+c     calculate one-site scale factors
+c
+      scalei(3) = 1.0d0 - (1.0d0 + dampi)*expdampi -
+     &     (1.0d0 + rdampk)*rexpdampk + (1.0d0 + dampi +
+     &     rdampk)*expdampi*rexpdampk
+      scalek(3) = 1.0d0 - (1.0d0 + dampk)*expdampk -
+     &     (1.0d0 + rdampi)*rexpdampi + (1.0d0 + dampk +
+     &     rdampi)*expdampk*rexpdampi
       return
       end

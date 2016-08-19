@@ -60,6 +60,36 @@ c
       if (.not.allocated(fieldd_thole)) allocate (fieldd_thole(3,npole))
       if (.not.allocated(fieldp_thole)) allocate (fieldp_thole(3,npole))
 c
+c     gordon charge penetration damping
+c
+      if (.not.allocated(potm_gordon)) allocate (potm_gordon(npole))
+      if (.not.allocated(fieldm_gordon)) 
+     &     allocate (fieldm_gordon(3,npole))
+      if (.not.allocated(gradfieldm_gordon))
+     &     allocate (gradfieldm_gordon(3,3,npole))
+c
+c     gordon charge penetration damping - nuclei
+c
+      if (.not.allocated(nucpotm_gordon))
+     &     allocate (nucpotm_gordon(npole))
+      if (.not.allocated(nucfieldm_gordon))
+     &     allocate (nucfieldm_gordon(3,npole))
+c
+c     gordon damping for polarization
+c
+      if (.not.allocated(fieldd_gordon))
+     &     allocate (fieldd_gordon(3,npole))
+      if (.not.allocated(fieldp_gordon))
+     &     allocate (fieldp_gordon(3,npole))
+c
+c     gordon damping with nuclear regularization
+c
+      if (.not.allocated(fieldd_gordonreg))
+     &     allocate (fieldd_gordonreg(3,npole))
+      if (.not.allocated(fieldp_gordonreg))
+     &     allocate (fieldp_gordonreg(3,npole))
+
+c
 c     get the electrostatic potential, field and field gradient
 c     due to permanent multipoles
 c
@@ -109,6 +139,9 @@ c
       real*8 fgrp,r,r2
       real*8 rr1,rr3,rr5,rr7,rr9,rr11
       real*8 t0,t1(3),t2(3,3),t3(3,3,3),t4(3,3,3,3)
+      real*8 t0i,t1i(3),t2i(3,3),t3i(3,3,3),t4i(3,3,3,3)
+      real*8 t0k,t1k(3),t2k(3,3),t3k(3,3,3),t4k(3,3,3,3)
+      real*8 t0ik,t1ik(3),t2ik(3,3),t3ik(3,3,3),t4ik(3,3,3,3)
       real*8 t0rr1,t1rr3(3)
       real*8 t2rr3(3,3),t2rr5(3,3)
       real*8 t3rr5(3,3,3),t3rr7(3,3,3)
@@ -116,7 +149,15 @@ c
       real*8 poti,potk
       real*8 fieldi(3),fieldk(3)
       real*8 gradfieldi(3,3),gradfieldk(3,3)
+      real*8 nucpoti,nucpotk
+      real*8 nucfieldi(3),nucfieldk(3)
+      real*8 elepoti,elepotk
+      real*8 elefieldi(3),elefieldk(3)
+      real*8 elegradfieldi(3,3),elegradfieldk(3,3)
       real*8, allocatable :: scale(:)
+      real*8, allocatable :: scalei(:)
+      real*8, allocatable :: scalek(:)
+      real*8, allocatable :: scaleik(:)
       real*8, allocatable :: mscale(:)
       real*8, allocatable :: dscale(:)
       real*8, allocatable :: pscale(:)
@@ -130,16 +171,25 @@ c
          pot(i) = 0.0d0
          potm(i) = 0.0d0
          pot_ewald(i) = 0.0d0
+         potm_gordon(i) = 0.0d0
+         nucpotm_gordon(i) = 0.0d0
          do j = 1, 3
             field(j,i) = 0.0d0
             fieldm(j,i) = 0.0d0
             field_ewald(j,i) = 0.0d0
             fieldd_thole(j,i) = 0.0d0
             fieldp_thole(j,i) = 0.0d0
+            fieldm_gordon(j,i) = 0.0d0
+            fieldd_gordon(j,i) = 0.0d0
+            fieldp_gordon(j,i) = 0.0d0
+            fieldd_gordonreg(j,i) = 0.0d0
+            fieldp_gordonreg(j,i) = 0.0d0
+            nucfieldm_gordon(j,i) = 0.0d0
             do k = 1, 3
                gradfield(k,j,i) = 0.0d0
                gradfieldm(k,j,i) = 0.0d0
                gradfield_ewald(k,j,i) = 0.0d0
+               gradfieldm_gordon(k,j,i) = 0.0d0
             end do
          end do
       end do
@@ -161,8 +211,14 @@ c
       order = 2
       rorder = order*2 + 5
       allocate (scale(rorder))
+      allocate (scalei(rorder))
+      allocate (scalek(rorder))
+      allocate (scaleik(rorder))
       do i = 1, rorder
          scale(i) = 0.0d0
+         scalei(i) = 0.0d0
+         scalek(i) = 0.0d0
+         scaleik(i) = 0.0d0
       end do
 c
 c     set arrays needed to scale connected atom interactions
@@ -252,7 +308,6 @@ c
 c     call routines that produce potential, field, field gradient
 c     for types of damping
 c
-                  print *,"doing damping"
                   if (damp_none) then
                      t0 = t0rr1
                      t1 = t1rr3
@@ -344,97 +399,127 @@ c
                      end do
                   end if
 c
-c     one center gordon damping
+c     gordon damping
 c
-c                  if (damp_gordonone) then
-c                     call dampgordonone(i,k,rorder,r,scale)
-c                     t0 = t0rr1*scale(1)
-c                     t1 = t1rr3*scale(3)
-c                     t2 = t2rr3*scale(3) + t2rr5*scale(5)
-c                     t3 = t3rr5*scale(5) + t3rr7*scale(7)
-c                     t4 = t4rr5*scale(5) + t4rr7*scale(7) +
-c     &                    t4rr9*scale(9)
-c                     call potik(i,k,t0,t1,t2,poti,potk)
-c                     call fieldik(i,k,t1,t2,t3,fieldi,fieldk)
-c                     call gradfieldik(i,k,t2,t3,t4,
-c     &                    gradfieldi,gradfieldk)
-c                     potm_gordonone(i)=potm_gordonone(i)+poti*mscale(kk)
-c                     potm_gordonone(k)=potm_gordonone(k)+potk*mscale(kk)
-c                     do j = 1, 3
-c                        fieldm_gordonone(j,i) = fieldm_gordonone(j,i) +
-c     &                       fieldi(j)*mscale(kk)
-c                        fieldm_gordonone(j,k) = fieldm_gordonone(j,k) +
-c     &                       fieldk(j)*mscale(kk)
-c                        fieldd_gordonone(j,i) = fieldd_gordonone(j,i) +
-c     &                       fieldi(j)*dscale(kk)
-c                        fieldd_gordonone(j,k) = fieldd_gordonone(j,i) +
-c     &                       fieldk(j)*dscale(kk)
-c                        fieldp_gordonone(j,i) = fieldp_gordonone(j,i) +
-c     &                       fieldi(j)*pscale(kk)
-c                        fieldp_gordonone(j,k) = fieldp_gordonone(j,k) +
-c     &                       fieldk(j)*pscale(kk)
-c                        do l = 1, 3
-c                           gradfieldm_gordonone(l,j,i) =
-c     &                          gradfieldm_gordonone(l,j,i) +
-c     &                          gradfieldi(l,j)*mscale(kk)
-c                           gradfieldm_gordonone(l,j,k) =
-c     &                          gradfieldm_gordonone(l,j,k) +
-c     &                          gradfieldk(l,j)*mscale(kk)
-c                           gradfieldp_gordonone(l,j,i) =
-c     &                          gradfieldp_gordonone(l,j,i) +
-c     &                          gradfieldi(l,j)*pscale(kk)
-c                           gradfieldp_gordonone(l,j,k) =
-c     &                          gradfieldp_gordonone(l,j,k) +
-c     &                          gradfieldk(l,j)*pscale(kk)
-c                        end do
-c                     end do
-c                  end if
+                  if (damp_gordon) then
+                     call dampgordon(i,k,rorder,r,scalei,scalek,scaleik)
+                     t0 = t0rr1
+                     t1 = t1rr3
+                     t2 = t2rr3 + t2rr5
+                     t3 = t3rr5 + t3rr7
+                     t4 = t4rr5 + t4rr7 + t4rr9
+                     t0i = t0rr1*scalei(1)
+                     t1i = t1rr3*scalei(3)
+                     t2i = t2rr3*scalei(3) + t2rr5*scalei(5)
+                     t3i = t3rr5*scalei(5) + t3rr7*scalei(7)
+                     t4i = t4rr5*scalei(5) + t4rr7*scalei(7) +
+     &                     t4rr9*scalei(9)
+                     t0k = t0rr1*scalek(1)
+                     t1k = t1rr3*scalek(3)
+                     t2k = t2rr3*scalek(3) + t2rr5*scalek(5)
+                     t3k = t3rr5*scalek(5) + t3rr7*scalek(7)
+                     t4k = t4rr5*scalek(5) + t4rr7*scalek(7) +
+     &                     t4rr9*scalek(9)
+                     t0ik = t0rr1*scaleik(1)
+                     t1ik = t1rr3*scaleik(3)
+                     t2ik = t2rr3*scaleik(3) + t2rr5*scaleik(5)
+                     t3ik = t3rr5*scaleik(5) + t3rr7*scaleik(7)
+                     t4ik = t4rr5*scaleik(5) + t4rr7*scaleik(7) +
+     &                      t4rr9*scaleik(9)
+                     call cp_potik(i,k,
+     &                  t0,t1,t2,t0i,t1i,t2i,t0k,t1k,t2k,t0ik,t1ik,t2ik,
+     &                  nucpoti,nucpotk,elepoti,elepotk)
+                     call cp_fieldik(i,k,
+     &                  t1,t2,t3,t1i,t2i,t3i,t1k,t2k,t3k,t1ik,t2ik,t3ik,
+     &                    nucfieldi,nucfieldk,elefieldi,elefieldk)
+                     call cp_gradfieldik(i,k,
+     &                  t2,t3,t4,t2i,t3i,t4i,t2k,t3k,t4k,t2ik,t3ik,t4ik,
+     &                    elegradfieldi,elegradfieldk)
 c
-c     two center gordon damping
+c     accumulate fields in global variables
 c
-c                  if (damp_gordontwo) then
-c                     call dampgordontwo(i,k,rorder,r,scale)
-c                     t0 = t0rr1*scale(1)
-c                     t1 = t1rr3*scale(3)
-c                     t2 = t2rr3*scale(3) + t2rr5*scale(5)
-c                     t3 = t3rr5*scale(5) + t3rr7*scale(7)
-c                     t4 = t4rr5*scale(5) + t4rr7*scale(7) +
-c     &                    t4rr9*scale(9)
-c                     call potik(i,k,t0,t1,t2,poti,potk)
-c                     call fieldik(i,k,t1,t2,t3,fieldi,fieldk)
-c                     call gradfieldik(i,k,t2,t3,t4,
-c     &                    gradfieldi,gradfieldk)
-c                     potm_gordontwo(i)=potm_gordontwo(i)+poti*mscale(kk)   
-c                     potm_gordontwo(k)=potm_gordontwo(k)+potk*mscale(kk)   
-c                     do j = 1, 3
-c                        fieldm_gordontwo(j,i) = fieldm_gordontwo(j,i) +
-c     &                       fieldi(j)*mscale(kk)
-c                        fieldm_gordontwo(j,k) = fieldm_gordontwo(j,k) +
-c     &                       fieldk(j)*mscale(kk)
-c                        fieldd_gordontwo(j,i) = fieldd_gordontwo(j,i) +
-c     &                       fieldi(j)*dscale(kk)
-c                        fieldd_gordontwo(j,k) = fieldd_gordontwo(j,i) +
-c     &                       fieldk(j)*dscale(kk)
-c                        fieldp_gordontwo(j,i) = fieldp_gordontwo(j,i) +
-c     &                       fieldi(j)*pscale(kk)
-c                        fieldp_gordontwo(j,k) = fieldp_gordontwo(j,k) +
-c     &                       fieldk(j)*pscale(kk)
-c                        do l = 1, 3
-c                           gradfieldm_gordontwo(l,j,i) =
-c     &                          gradfieldm_gordontwo(l,j,i) +
-c     &                          gradfieldi(l,j)*mscale(kk)
-c                           gradfieldm_gordontwo(l,j,k) =
-c     &                          gradfieldm_gordontwo(l,j,k) +
-c     &                          gradfieldk(l,j)*mscale(kk)
-c                           gradfieldp_gordontwo(l,j,i) =
-c     &                          gradfieldp_gordontwo(l,j,i) +
-c     &                          gradfieldi(l,j)*pscale(kk)
-c                           gradfieldp_gordontwo(l,j,k) =
-c     &                          gradfieldp_gordontwo(l,j,k) +
-c     &                          gradfieldk(l,j)*pscale(kk)
-c                        end do
-c                     end do
-c                  end if
+                     nucpotm_gordon(i) = nucpotm_gordon(i) + 
+     &                    nucpoti*mscale(kk)
+                     nucpotm_gordon(k) = nucpotm_gordon(k) + 
+     &                    nucpotk*mscale(kk)
+                     potm_gordon(i) = potm_gordon(i) +elepoti*mscale(kk)
+                     potm_gordon(k) = potm_gordon(k) +elepotk*mscale(kk)
+                     do j = 1, 3
+                        nucfieldm_gordon(j,i) = nucfieldm_gordon(j,i) + 
+     &                       nucfieldi(j)*mscale(kk)
+                        nucfieldm_gordon(j,k) = nucfieldm_gordon(j,k) +
+     &                       nucfieldk(j)*mscale(kk)
+                        fieldm_gordon(j,i) = fieldm_gordon(j,i) +
+     &                       elefieldi(j)*mscale(kk)
+                        fieldm_gordon(j,k) = fieldm_gordon(j,k) +
+     &                       elefieldk(j)*mscale(kk)
+                        fieldd_gordon(j,i) = fieldd_gordon(j,i) +
+     &                       elefieldi(j)*dscale(kk)
+                        fieldd_gordon(j,k) = fieldd_gordon(j,k) +
+     &                       elefieldk(j)*dscale(kk)
+                        fieldp_gordon(j,i) = fieldp_gordon(j,i) +
+     &                       elefieldi(j)*pscale(kk)
+                        fieldp_gordon(j,k) = fieldp_gordon(j,k) +
+     &                       elefieldk(j)*pscale(kk)
+                        do l = 1, 3
+                           gradfieldm_gordon(l,j,i) =
+     &                          gradfieldm_gordon(l,j,i) +
+     &                          elegradfieldi(l,j)*mscale(kk)
+                           gradfieldm_gordon(l,j,k) =
+     &                          gradfieldm_gordon(l,j,k) +
+     &                          elegradfieldk(l,j)*mscale(kk)
+                        end do
+                     end do
+                  end if
+c
+c     gordon damping + nuclear regularization
+c
+                  if (damp_gordonreg) then
+                     if (.not. damp_gordon) then
+                        call dampgordon(i,k,rorder,r,scalei,scalek,
+     &                       scaleik)
+                     end if
+                     call dampgordonreg(i,k,rorder,r,scalei,scalek)
+                     t0 = t0rr1
+                     t1 = t1rr3
+                     t2 = t2rr3 + t2rr5
+                     t3 = t3rr5 + t3rr7
+                     t4 = t4rr5 + t4rr7 + t4rr9
+                     t0i = t0rr1*scalei(1)
+                     t1i = t1rr3*scalei(3)
+                     t2i = t2rr3*scalei(3) + t2rr5*scalei(5)
+                     t3i = t3rr5*scalei(5) + t3rr7*scalei(7)
+                     t4i = t4rr5*scalei(5) + t4rr7*scalei(7) +
+     &                     t4rr9*scalei(9)
+                     t0k = t0rr1*scalek(1)
+                     t1k = t1rr3*scalek(3)
+                     t2k = t2rr3*scalek(3) + t2rr5*scalek(5)
+                     t3k = t3rr5*scalek(5) + t3rr7*scalek(7)
+                     t4k = t4rr5*scalek(5) + t4rr7*scalek(7) +
+     &                     t4rr9*scalek(9)
+                     t0ik = t0rr1*scaleik(1)
+                     t1ik = t1rr3*scaleik(3)
+                     t2ik = t2rr3*scaleik(3) + t2rr5*scaleik(5)
+                     t3ik = t3rr5*scaleik(5) + t3rr7*scaleik(7)
+                     t4ik = t4rr5*scaleik(5) + t4rr7*scaleik(7) +
+     &                      t4rr9*scaleik(9)
+                     call cp_fieldik(i,k,
+     &                  t1,t2,t3,t1i,t2i,t3i,t1k,t2k,t3k,t1ik,t2ik,t3ik,
+     &                    nucfieldi,nucfieldk,elefieldi,elefieldk)
+c
+c     accumulate fields in global variables
+c
+                     do j = 1, 3
+                        fieldd_gordonreg(j,i) = fieldd_gordonreg(j,i) +
+     &                       elefieldi(j)*dscale(kk)
+                        fieldd_gordonreg(j,k) = fieldd_gordonreg(j,k) +
+     &                       elefieldk(j)*dscale(kk)
+                        fieldp_gordonreg(j,i) = fieldp_gordonreg(j,i) +
+     &                       elefieldi(j)*pscale(kk)
+                        fieldp_gordonreg(j,k) = fieldp_gordonreg(j,k) +
+     &                       elefieldk(j)*pscale(kk)
+                     end do
+                  end if
 c
 c     one center piquemal damping
 c

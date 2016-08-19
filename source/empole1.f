@@ -63,11 +63,13 @@ c
 c
       subroutine empole1a
       use sizes
+      use atomid
       use atoms
       use bound
       use boxes
       use cell
       use chgpot
+      use chgpen
       use couple
       use deriv
       use energi
@@ -88,7 +90,8 @@ c
       integer i,j,ii
       real*8 e,ei,f
       real*8 fx,fy,fz
-      real*8 ci,dix,diy,diz
+      real*8 ci,zi,qi
+      real*8 dix,diy,diz
       real*8 qixx,qixy,qixz
       real*8 qiyy,qiyz,qizz
       real*8, allocatable :: frc(:,:)
@@ -124,10 +127,8 @@ c
       damp_none = .true.
       damp_ewald = .false.
       damp_thole = .true.
-      damp_gordonone = .false.
-      damp_gordontwo = .false.
-      damp_piquemalone = .false.
-      damp_piquemaltwo = .false.
+      if (penetration .eq. "GORDON") damp_gordon = .true.
+      if (penetration .eq. "PIQUEMAL") damp_piquemal = .true.
 c
 c     compute the permanent electric potential,
 c     field, field gradient and field hessian 
@@ -159,18 +160,37 @@ c
          qixz = 2.0d0*qixz
          qiyz = 2.0d0*qiyz
 c
-c     calculate the permanent multipole interaction energy
+c     split nuclear and electronic charge if applying charge penetration
 c
-c     charge
-         e = 0.5d0*ci*potm(ii)
+         if (penetration .eq. "GORDON") then
+            zi = atomic(i)
+            if (num_ele .eq. "VALENCE") then
+               if (atomic(i) .gt. 2)  zi = zi - 2.0d0
+               if (atomic(i) .gt. 10)  zi = zi - 8.0d0
+               if (atomic(i) .gt. 18)  zi = zi - 8.0d0
+               if (atomic(i) .gt. 20)  zi = zi - 10.0d0
+            end if
+            qi = ci - zi
+         end if
+c
+c     compute charge penetration corrected permanent multipole energy
+c
+c     charge - nucleus
+         e = 0.5d0*zi*nucpotm_gordon(ii)
+c     charge - electrons
+         e = e + 0.5d0*qi*potm_gordon(ii)
 c     permanent dipole
          e = e + 0.5d0*
-     &        (dix*fieldm(1,ii)+diy*fieldm(2,ii)+diz*fieldm(3,ii))
+     &        (dix*fieldm_gordon(1,ii)+diy*fieldm_gordon(2,ii)+
+     &        diz*fieldm_gordon(3,ii))
 c     quadrupole
          e = e + 0.5d0*
-     &        (qixx*gradfieldm(1,1,ii) + qixy*gradfieldm(1,2,ii) +
-     &        qixz*gradfieldm(1,3,ii) + qiyy*gradfieldm(2,2,ii) +
-     &        qiyz*gradfieldm(2,3,ii) + qizz*gradfieldm(3,3,ii))
+     &        (qixx*gradfieldm_gordon(1,1,ii) + 
+     &        qixy*gradfieldm_gordon(1,2,ii) +
+     &        qixz*gradfieldm_gordon(1,3,ii) + 
+     &        qiyy*gradfieldm_gordon(2,2,ii) +
+     &        qiyz*gradfieldm_gordon(2,3,ii) + 
+     &        qizz*gradfieldm_gordon(3,3,ii))
 c
 c     apply f constant
 c
@@ -180,29 +200,45 @@ c     increment the overall multipole energy
 c
          em = em + e
 c
-c     calculate the permanent multipole forces
+c     compute charge penetration corrected multipole gradient
 c
-c     charge
-         fx = ci*fieldm(1,ii)
-         fy = ci*fieldm(2,ii)
-         fz = ci*fieldm(3,ii)
+c     charge - nucleus
+         fx = zi*nucfieldm_gordon(1,ii)
+         fy = zi*nucfieldm_gordon(2,ii)
+         fz = zi*nucfieldm_gordon(3,ii)
+c     charge - electrons
+         fx = fx + qi*fieldm_gordon(1,ii)
+         fy = fy + qi*fieldm_gordon(2,ii)
+         fz = fz + qi*fieldm_gordon(3,ii)
 c     dipole
-         fx = fx + dix*gradfieldm(1,1,ii) + diy*gradfieldm(1,2,ii) +
-     &        diz*gradfieldm(1,3,ii) 
-         fy = fy + dix*gradfieldm(1,2,ii) + diy*gradfieldm(2,2,ii) +
-     &        diz*gradfieldm(2,3,ii)
-         fz = fz + dix*gradfieldm(1,3,ii) + diy*gradfieldm(2,3,ii) +
-     &        diz*gradfieldm(3,3,ii)
+         fx = fx + dix*gradfieldm_gordon(1,1,ii) + 
+     &        diy*gradfieldm_gordon(1,2,ii) +
+     &        diz*gradfieldm_gordon(1,3,ii)
+         fy = fy + dix*gradfieldm_gordon(1,2,ii) + 
+     &        diy*gradfieldm_gordon(2,2,ii) +
+     &        diz*gradfieldm_gordon(2,3,ii)
+         fz = fz + dix*gradfieldm_gordon(1,3,ii) + 
+     &        diy*gradfieldm_gordon(2,3,ii) +
+     &        diz*gradfieldm_gordon(3,3,ii)
 c     quadrupole
-         fx = fx + qixx*hessfieldm(1,1,1,ii)+qixy*hessfieldm(1,1,2,ii) +
-     &        qixz*hessfieldm(1,1,3,ii) + qiyy*hessfieldm(1,2,2,ii) + 
-     &        qiyz*hessfieldm(1,2,3,ii) + qizz*hessfieldm(1,3,3,ii)
-         fy = fy + qixx*hessfieldm(1,1,2,ii)+qixy*hessfieldm(1,2,2,ii) +
-     &        qixz*hessfieldm(1,2,3,ii) + qiyy*hessfieldm(2,2,2,ii) +
-     &        qiyz*hessfieldm(2,2,3,ii) + qizz*hessfieldm(2,3,3,ii)
-         fz = fz + qixx*hessfieldm(1,1,3,ii)+qixy*hessfieldm(1,2,3,ii) +
-     &        qixz*hessfieldm(1,3,3,ii) + qiyy*hessfieldm(2,2,3,ii) +
-     &        qiyz*hessfieldm(2,3,3,ii) + qizz*hessfieldm(3,3,3,ii)
+         fx = fx + qixx*hessfieldm_gordon(1,1,1,ii) +
+     &        qixy*hessfieldm_gordon(1,1,2,ii) +
+     &        qixz*hessfieldm_gordon(1,1,3,ii) + 
+     &        qiyy*hessfieldm_gordon(1,2,2,ii) +
+     &        qiyz*hessfieldm_gordon(1,2,3,ii) + 
+     &        qizz*hessfieldm_gordon(1,3,3,ii)
+         fy = fy + qixx*hessfieldm_gordon(1,1,2,ii) + 
+     &        qixy*hessfieldm_gordon(1,2,2,ii) +
+     &        qixz*hessfieldm_gordon(1,2,3,ii) + 
+     &        qiyy*hessfieldm_gordon(2,2,2,ii) +
+     &        qiyz*hessfieldm_gordon(2,2,3,ii) + 
+     &        qizz*hessfieldm_gordon(2,3,3,ii)
+         fz = fz + qixx*hessfieldm_gordon(1,1,3,ii) +
+     &        qixy*hessfieldm_gordon(1,2,3,ii) +
+     &        qixz*hessfieldm_gordon(1,3,3,ii) + 
+     &        qiyy*hessfieldm_gordon(2,2,3,ii) +
+     &        qiyz*hessfieldm_gordon(2,3,3,ii) + 
+     &        qizz*hessfieldm_gordon(3,3,3,ii)
 c
 c     increment the permanent multipole gradient
 c
@@ -213,19 +249,28 @@ c
 c     calculate permanent multipole torques (no torques on charges)
 c
 c     dipole
-         trq(1,ii) = diz*fieldm(2,ii) - diy*fieldm(3,ii)
-         trq(2,ii) = dix*fieldm(3,ii) - diz*fieldm(1,ii)
-         trq(3,ii) = diy*fieldm(1,ii) - dix*fieldm(2,ii)
+         trq(1,ii) = diz*fieldm_gordon(2,ii) - diy*fieldm_gordon(3,ii)
+         trq(2,ii) = dix*fieldm_gordon(3,ii) - diz*fieldm_gordon(1,ii)
+         trq(3,ii) = diy*fieldm_gordon(1,ii) - dix*fieldm_gordon(2,ii)
 c     quadrupole
-         trq(1,ii) = trq(1,ii) + 2.0d0*(qizz - qiyy)*gradfieldm(2,3,ii)
-     &        + qixz*gradfieldm(1,2,ii) + qiyz*gradfieldm(2,2,ii)
-     &        - qixy*gradfieldm(1,3,ii) - qiyz*gradfieldm(3,3,ii)
-         trq(2,ii) = trq(2,ii) + 2.0d0*(qixx - qizz)*gradfieldm(1,3,ii)
-     &        + qixy*gradfieldm(2,3,ii) + qixz*gradfieldm(3,3,ii)
-     &        - qixz*gradfieldm(1,1,ii) - qiyz*gradfieldm(1,2,ii)
-         trq(3,ii) = trq(3,ii) + 2.0d0*(qiyy - qixx)*gradfieldm(1,2,ii)
-     &        + qixy*gradfieldm(1,1,ii) + qiyz*gradfieldm(1,3,ii)
-     &        - qixy*gradfieldm(2,2,ii) - qixz*gradfieldm(2,3,ii)
+         trq(1,ii) = trq(1,ii) + 
+     &        2.0d0*(qizz - qiyy)*gradfieldm_gordon(2,3,ii)
+     &        + qixz*gradfieldm_gordon(1,2,ii) + 
+     &        qiyz*gradfieldm_gordon(2,2,ii)
+     &        - qixy*gradfieldm_gordon(1,3,ii) - 
+     &        qiyz*gradfieldm_gordon(3,3,ii)
+         trq(2,ii) = trq(2,ii) + 
+     &        2.0d0*(qixx - qizz)*gradfieldm_gordon(1,3,ii)
+     &        + qixy*gradfieldm_gordon(2,3,ii) + 
+     &        qixz*gradfieldm_gordon(3,3,ii)
+     &        - qixz*gradfieldm_gordon(1,1,ii) - 
+     &        qiyz*gradfieldm_gordon(1,2,ii)
+         trq(3,ii) = trq(3,ii) + 
+     &        2.0d0*(qiyy - qixx)*gradfieldm_gordon(1,2,ii)
+     &        + qixy*gradfieldm_gordon(1,1,ii) + 
+     &        qiyz*gradfieldm_gordon(1,3,ii)
+     &        - qixy*gradfieldm_gordon(2,2,ii) - 
+     &        qixz*gradfieldm_gordon(2,3,ii)
          trq(1,ii) = f * trq(1,ii)
          trq(2,ii) = f * trq(2,ii)
          trq(3,ii) = f * trq(3,ii)
@@ -328,10 +373,8 @@ c
       damp_none = .true.
       damp_ewald = .true.
       damp_thole = .true.
-      damp_gordonone = .false.
-      damp_gordontwo = .false.
-      damp_piquemalone = .false.
-      damp_piquemaltwo = .false.
+      damp_gordon = .false.
+      damp_piquemal = .false.
       call permfield3
 c
 c     get reciprocal space potential, field and field gradient

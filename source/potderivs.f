@@ -44,20 +44,25 @@ c
       real*8, allocatable :: gradfieldd_thole(:,:,:)
       real*8, allocatable :: gradfieldp_thole(:,:,:)
 c
-c     clean these up later
+      real*8, allocatable :: potm_gordon(:)
+      real*8, allocatable :: fieldm_gordon(:,:)
+      real*8, allocatable :: gradfieldm_gordon(:,:,:)
+      real*8, allocatable :: hessfieldm_gordon(:,:,:,:)
 c
-c      real*8, allocatable :: potm_gordonone(:)
-c      real*8, allocatable :: fieldm_gordonone(:,:)
-c      real*8, allocatable :: fieldd_gordonone(:,:)
-c      real*8, allocatable :: fieldp_gordonone(:,:)
-c      real*8, allocatable :: gradfieldm_gordonone(:,:,:)
-c      real*8, allocatable :: gradfieldp_gordonone(:,:,:)
-c      real*8, allocatable :: potm_gordontwo(:)
-c      real*8, allocatable :: fieldm_gordontwo(:,:)
-c      real*8, allocatable :: fieldd_gordontwo(:,:)
-c      real*8, allocatable :: fieldp_gordontwo(:,:)
-c      real*8, allocatable :: gradfieldm_gordontwo(:,:,:)
-c      real*8, allocatable :: gradfieldp_gordontwo(:,:,:)
+      real*8, allocatable :: nucpotm_gordon(:)
+      real*8, allocatable :: nucfieldm_gordon(:,:)
+c
+      real*8, allocatable :: fieldd_gordon(:,:)
+      real*8, allocatable :: fieldp_gordon(:,:)
+      real*8, allocatable :: gradfieldd_gordon(:,:,:)
+      real*8, allocatable :: gradfieldp_gordon(:,:,:)
+c
+      real*8, allocatable :: udfield_gordon(:,:)
+      real*8, allocatable :: upfield_gordon(:,:)
+c
+      real*8, allocatable :: fieldd_gordonreg(:,:)
+      real*8, allocatable :: fieldp_gordonreg(:,:)
+c
 c      real*8, allocatable :: potm_piquemalone(:)
 c      real*8, allocatable :: fieldm_piquemalone(:,:)
 c      real*8, allocatable :: fieldd_piquemalone(:,:)
@@ -132,9 +137,8 @@ c
       logical damp_none
       logical damp_ewald
       logical damp_thole
-      logical damp_gordonone
-      logical damp_gordontwo
-      logical damp_piquemalone
-      logical damp_piquemaltwo
+      logical damp_gordon
+      logical damp_piquemal
+      logical damp_gordonreg
       save
       end

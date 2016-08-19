@@ -176,6 +176,7 @@ c
       subroutine induce0a
       use sizes
       use atoms
+      use chgpen
       use inform
       use iounit
       use limits
@@ -262,6 +263,7 @@ c
             damp_none = .true.
             damp_ewald = .true.
             damp_thole = .true.
+            if (penetration .eq. "GORDON") damp_gordon = .true.
 c
 c     get real space permanent field
 c
@@ -277,28 +279,61 @@ c
 c
 c     add up the total permanent field at each site
 c            
-            fieldd_tot = field_recip + field_ewald - field + 
-     &           fieldd_thole + field_self
-            fieldp_tot = field_recip + field_ewald - field + 
-     &           fieldp_thole + field_self
+c            fieldd_tot = field_recip + field_ewald - field + 
+c     &           fieldd_thole + field_self
+c            fieldp_tot = field_recip + field_ewald - field + 
+c     &           fieldp_thole + field_self
+            fieldd_tot = field_recip + field_ewald - field +
+     &           fieldd_gordon + field_self
+            fieldp_tot = field_recip + field_ewald - field +
+     &           fieldp_gordon + field_self
+            if (regularize .eq. "YES") then
+               fieldd_tot = field_recip + field_ewald - field +
+     &              fieldd_gordonreg + field_self
+               fieldp_tot = field_recip + field_ewald - field +
+     &              fieldp_gordonreg + field_self
+            end if
          else
             damp_none = .true.
             damp_ewald = .false.
             damp_thole = .true.
+            if (penetration .eq. "GORDON") damp_gordon = .true.
             call permfield3
-            fieldd_tot = fieldd_thole
-            fieldp_tot = fieldp_thole
+c            fieldd_tot = fieldd_thole
+c            fieldp_tot = fieldp_thole
+            fieldd_tot = fieldd_gordon
+            fieldp_tot = fieldp_gordon
+            if (regularize .eq. "YES") then
+               fieldd_tot = fieldd_gordonreg
+               fieldp_tot = fieldp_gordonreg
+            end if
          end if
       else
          if (use_ewald) then
             call permself
+c            fieldd_tot = field_recip + field_ewald - field +
+c     &           fieldd_thole + field_self
+c            fieldp_tot = field_recip + field_ewald - field +
+c     &           fieldp_thole + field_self
             fieldd_tot = field_recip + field_ewald - field +
-     &           fieldd_thole + field_self
+     &           fieldd_gordon + field_self
             fieldp_tot = field_recip + field_ewald - field +
-     &           fieldp_thole + field_self
+     &           fieldp_gordon + field_self
+            if (regularize .eq. "YES") then
+               fieldd_tot = field_recip + field_ewald - field +
+     &              fieldd_gordonreg + field_self
+               fieldp_tot = field_recip + field_ewald - field +
+     &              fieldp_gordonreg + field_self
+            end if
          else
-            fieldd_tot = fieldd_thole
-            fieldp_tot = fieldp_thole
+c            fieldd_tot = fieldd_thole
+c            fieldp_tot = fieldp_thole
+            fieldd_tot = fieldd_gordon
+            fieldp_tot = fieldp_gordon
+            if (regularize .eq. "YES") then
+               fieldd_tot = fieldd_gordonreg
+               fieldp_tot = fieldp_gordonreg
+            end if
          end if
       end if
 c
@@ -367,14 +402,24 @@ c
 c     get mutual self field and vacuum correction
 c
             call mutualself
-            udfield_tot = udfield_recip + udfield_ewald - 
-     &           udfield + udfield_thole + udfield_self
+c            udfield_tot = udfield_recip + udfield_ewald - 
+c     &           udfield + udfield_thole + udfield_self
+c            upfield_tot = upfield_recip + upfield_ewald -
+c     &           upfield + upfield_thole + upfield_self
+            udfield_tot = udfield_recip + udfield_ewald -
+     &           udfield + udfield_gordon + udfield_self
             upfield_tot = upfield_recip + upfield_ewald -
-     &           upfield + upfield_thole + upfield_self
+     &           upfield + upfield_gordon + upfield_self
          else
             call mutualfield1
-            udfield_tot = udfield_thole
-            upfield_tot = upfield_thole
+c            udfield_tot = udfield_thole
+c            upfield_tot = upfield_thole
+            udfield_tot = udfield_gordon
+            upfield_tot = upfield_gordon
+            print *,"upfield_gordon"
+            print *,upfield_gordon
+            print *,"upfield_thole"
+            print *,upfield_thole
          end if
 c
 c     set initial conjugate gradient residual and conjugate vector
@@ -430,14 +475,20 @@ c
 c     get mutual self field and vacuum correction
 c
                call mutualself
-               udfield_tot = udfield_recip + udfield_ewald - 
-     &              udfield + udfield_thole + udfield_self
+c               udfield_tot = udfield_recip + udfield_ewald - 
+c     &              udfield + udfield_thole + udfield_self
+c               upfield_tot = upfield_recip + upfield_ewald -
+c     &              upfield + upfield_thole + upfield_self
+               udfield_tot = udfield_recip + udfield_ewald -
+     &              udfield + udfield_gordon + udfield_self
                upfield_tot = upfield_recip + upfield_ewald -
-     &              upfield + upfield_thole + upfield_self
+     &              upfield + upfield_gordon + upfield_self
             else
                call mutualfield1
-               udfield_tot = udfield_thole
-               upfield_tot = upfield_thole
+c               udfield_tot = udfield_thole
+c               upfield_tot = upfield_thole
+               udfield_tot = udfield_gordon
+               upfield_tot = upfield_gordon
             end if
             do i = 1, npole
                do j = 1, 3

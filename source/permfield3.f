@@ -68,6 +68,34 @@ c
       if (.not.allocated(gradfieldp_thole))
      &     allocate (gradfieldp_thole(3,3,npole))
 c
+c     gordon charge penetration damping
+c
+      if (.not.allocated(potm_gordon)) allocate (potm_gordon(npole))
+      if (.not.allocated(fieldm_gordon)) 
+     &     allocate (fieldm_gordon(3,npole))
+      if (.not.allocated(gradfieldm_gordon))
+     &     allocate (gradfieldm_gordon(3,3,npole))
+      if (.not.allocated(hessfieldm_gordon))
+     &     allocate (hessfieldm_gordon(3,3,3,npole))
+c
+c     gordon charge penetration damping - nuclei
+c
+      if (.not.allocated(nucpotm_gordon))
+     &     allocate (nucpotm_gordon(npole))
+      if (.not.allocated(nucfieldm_gordon))
+     &     allocate (nucfieldm_gordon(3,npole))
+c
+c     gordon damping for polarization
+c
+      if (.not.allocated(fieldd_gordon))
+     &     allocate (fieldd_gordon(3,npole))
+      if (.not.allocated(fieldp_gordon))
+     &     allocate (fieldp_gordon(3,npole))
+      if (.not.allocated(gradfieldd_gordon))
+     &     allocate (gradfieldd_gordon(3,3,npole))
+      if (.not.allocated(gradfieldp_gordon))
+     &     allocate (gradfieldp_gordon(3,3,npole))
+c
 c     get the electrostatic potential, field and field gradient
 c     due to permanent multipoles
 c
@@ -118,6 +146,10 @@ c
       real*8 fgrp,r,r2
       real*8 rr1,rr3,rr5,rr7,rr9,rr11
       real*8 t0,t1(3),t2(3,3),t3(3,3,3),t4(3,3,3,3),t5(3,3,3,3,3)
+      real*8 t0i,t1i(3),t2i(3,3),t3i(3,3,3),t4i(3,3,3,3),t5i(3,3,3,3,3)
+      real*8 t0k,t1k(3),t2k(3,3),t3k(3,3,3),t4k(3,3,3,3),t5k(3,3,3,3,3)
+      real*8 t0ik,t1ik(3),t2ik(3,3),t3ik(3,3,3),t4ik(3,3,3,3)
+      real*8 t5ik(3,3,3,3,3)
       real*8 t0rr1,t1rr3(3)
       real*8 t2rr3(3,3),t2rr5(3,3)
       real*8 t3rr5(3,3,3),t3rr7(3,3,3)
@@ -127,7 +159,16 @@ c
       real*8 fieldi(3),fieldk(3)
       real*8 gradfieldi(3,3),gradfieldk(3,3)
       real*8 hessfieldi(3,3,3),hessfieldk(3,3,3)
+      real*8 nucpoti,nucpotk
+      real*8 nucfieldi(3),nucfieldk(3)
+      real*8 elepoti,elepotk
+      real*8 elefieldi(3),elefieldk(3)
+      real*8 elegradfieldi(3,3),elegradfieldk(3,3)
+      real*8 elehessfieldi(3,3,3),elehessfieldk(3,3,3)
       real*8, allocatable :: scale(:)
+      real*8, allocatable :: scalei(:)
+      real*8, allocatable :: scalek(:)
+      real*8, allocatable :: scaleik(:)
       real*8, allocatable :: mscale(:)
       real*8, allocatable :: dscale(:)
       real*8, allocatable :: pscale(:)
@@ -141,22 +182,32 @@ c
          pot(i) = 0.0d0
          potm(i) = 0.0d0
          pot_ewald(i) = 0.0d0
+         potm_gordon(i) = 0.0d0
+         nucpotm_gordon(i) = 0.0d0
          do j = 1, 3
             field(j,i) = 0.0d0
             fieldm(j,i) = 0.0d0
             field_ewald(j,i) = 0.0d0
             fieldd_thole(j,i) = 0.0d0
             fieldp_thole(j,i) = 0.0d0
+            fieldm_gordon(j,i) = 0.0d0
+            fieldd_gordon(j,i) = 0.0d0
+            fieldp_gordon(j,i) = 0.0d0
+            nucfieldm_gordon(j,i) = 0.0d0
             do k = 1, 3
                gradfield(k,j,i) = 0.0d0
                gradfieldm(k,j,i) = 0.0d0
                gradfield_ewald(k,j,i) = 0.0d0
                gradfieldd_thole(k,j,i) = 0.0d0
                gradfieldp_thole(k,j,i) = 0.0d0
+               gradfieldm_gordon(k,j,i) = 0.0d0
+               gradfieldd_gordon(k,j,i) = 0.0d0
+               gradfieldp_gordon(k,j,i) = 0.0d0
                do l = 1, 3
                   hessfield(l,k,j,i) = 0.0d0
                   hessfieldm(l,k,j,i) = 0.0d0
                   hessfield_ewald(l,k,j,i) = 0.0d0
+                  hessfieldm_gordon(l,k,j,i) = 0.0d0
                end do
             end do
          end do
@@ -179,8 +230,14 @@ c
       order = 3
       rorder = order*2 + 5
       allocate (scale(rorder))
+      allocate (scalei(rorder))
+      allocate (scalek(rorder))
+      allocate (scaleik(rorder))
       do i = 1,rorder
-          scale(i) = 0.0d0
+         scale(i) = 0.0d0
+         scalei(i) = 0.0d0
+         scalek(i) = 0.0d0
+         scaleik(i) = 0.0d0
       end do
 c
 c     set arrays needed to scale connected atom interactions
@@ -402,6 +459,97 @@ c
                            gradfieldp_thole(l,j,k) =
      &                          gradfieldp_thole(l,j,k) +
      &                          gradfieldk(l,j)*pscale(kk)
+                        end do
+                     end do
+                  end if
+c
+c     gordon damping - splits charge into nuclear and electronic
+c
+                  if (damp_gordon) then
+                     call dampgordon(i,k,rorder,r,scalei,scalek,scaleik)
+                     t0 = t0rr1
+                     t1 = t1rr3
+                     t2 = t2rr3 + t2rr5
+                     t3 = t3rr5 + t3rr7
+                     t4 = t4rr5 + t4rr7 + t4rr9
+                     t5 = t5rr7 + t5rr9 + t5rr11
+                     t0i = t0rr1*scalei(1)
+                     t1i = t1rr3*scalei(3)
+                     t2i = t2rr3*scalei(3) + t2rr5*scalei(5)
+                     t3i = t3rr5*scalei(5) + t3rr7*scalei(7)
+                     t4i = t4rr5*scalei(5) + t4rr7*scalei(7) +
+     &                     t4rr9*scalei(9)
+                     t5i = t5rr7*scalei(7) + t5rr9*scalei(9) + 
+     &                     t5rr11*scalei(11)
+                     t0k = t0rr1*scalek(1)
+                     t1k = t1rr3*scalek(3)
+                     t2k = t2rr3*scalek(3) + t2rr5*scalek(5)
+                     t3k = t3rr5*scalek(5) + t3rr7*scalek(7)
+                     t4k = t4rr5*scalek(5) + t4rr7*scalek(7) +
+     &                     t4rr9*scalek(9)
+                     t5k = t5rr7*scalek(7) + t5rr9*scalek(9) +
+     &                     t5rr11*scalek(11)
+                     t0ik = t0rr1*scaleik(1)
+                     t1ik = t1rr3*scaleik(3)
+                     t2ik = t2rr3*scaleik(3) + t2rr5*scaleik(5)
+                     t3ik = t3rr5*scaleik(5) + t3rr7*scaleik(7)
+                     t4ik = t4rr5*scaleik(5) + t4rr7*scaleik(7) +
+     &                      t4rr9*scaleik(9)
+                     t5ik = t5rr7*scaleik(7) + t5rr9*scaleik(9) +
+     &                      t5rr11*scaleik(11)
+                     call cp_potik(i,k,
+     &                  t0,t1,t2,t0i,t1i,t2i,t0k,t1k,t2k,t0ik,t1ik,t2ik,
+     &                  nucpoti,nucpotk,elepoti,elepotk)
+                     call cp_fieldik(i,k,
+     &                  t1,t2,t3,t1i,t2i,t3i,t1k,t2k,t3k,t1ik,t2ik,t3ik,
+     &                    nucfieldi,nucfieldk,elefieldi,elefieldk)
+                     call cp_gradfieldik(i,k,
+     &                  t2,t3,t4,t2i,t3i,t4i,t2k,t3k,t4k,t2ik,t3ik,t4ik,
+     &                    elegradfieldi,elegradfieldk)
+                     call cp_hessfieldik(i,k,
+     &                  t3,t4,t5,t3i,t4i,t5i,t3k,t4k,t5k,t3ik,t4ik,t5ik,
+     &                    elehessfieldi,elehessfieldk)
+c
+c     accumulate fields in global variables
+c
+                     nucpotm_gordon(i) = nucpotm_gordon(i) + 
+     &                    nucpoti*mscale(kk)
+                     nucpotm_gordon(k) = nucpotm_gordon(k) + 
+     &                    nucpotk*mscale(kk)
+                     potm_gordon(i) = potm_gordon(i) +elepoti*mscale(kk)
+                     potm_gordon(k) = potm_gordon(k) +elepotk*mscale(kk)
+                     do j = 1, 3
+                        nucfieldm_gordon(j,i) = nucfieldm_gordon(j,i) + 
+     &                       nucfieldi(j)*mscale(kk)
+                        nucfieldm_gordon(j,k) = nucfieldm_gordon(j,k) +
+     &                       nucfieldk(j)*mscale(kk)
+                        fieldm_gordon(j,i) = fieldm_gordon(j,i) +
+     &                       elefieldi(j)*mscale(kk)
+                        fieldm_gordon(j,k) = fieldm_gordon(j,k) +
+     &                       elefieldk(j)*mscale(kk)
+                        fieldd_gordon(j,i) = fieldd_gordon(j,i) +
+     &                       elefieldi(j)*dscale(kk)
+                        fieldd_gordon(j,k) = fieldd_gordon(j,k) +
+     &                       elefieldk(j)*dscale(kk)
+                        fieldp_gordon(j,i) = fieldp_gordon(j,i) +
+     &                       elefieldi(j)*pscale(kk)
+                        fieldp_gordon(j,k) = fieldp_gordon(j,k) +
+     &                       elefieldk(j)*pscale(kk)
+                        do l = 1, 3
+                           gradfieldm_gordon(l,j,i) =
+     &                          gradfieldm_gordon(l,j,i) +
+     &                          elegradfieldi(l,j)*mscale(kk)
+                           gradfieldm_gordon(l,j,k) =
+     &                          gradfieldm_gordon(l,j,k) +
+     &                          elegradfieldk(l,j)*mscale(kk)
+                           do h = 1, 3
+                              hessfieldm_gordon(h,l,j,i) =
+     &                             hessfieldm_gordon(h,l,j,i) +
+     &                             elehessfieldi(h,l,j)*mscale(kk)
+                              hessfieldm_gordon(h,l,j,k) =
+     &                             hessfieldm_gordon(h,l,j,k) +
+     &                             elehessfieldk(h,l,j)*mscale(kk)
+                           end do
                         end do
                      end do
                   end if

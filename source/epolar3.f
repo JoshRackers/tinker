@@ -70,6 +70,7 @@ c      use atomid
       use bound
       use boxes
       use cell
+      use chgpen
       use chgpot
 c      use couple
       use energi
@@ -131,10 +132,15 @@ c
          uiy = uind(2,i)
          uiz = uind(3,i)
 c
-c     contract induced dipoles with thole damped permanent field
+c     contract induced dipoles with gordon damped permanent field
 c
-         ei = 0.5*(uix*fieldp_thole(1,ii) + uiy*fieldp_thole(2,ii) + 
-     &        uiz*fieldp_thole(3,ii))
+         ei = 0.5*(uix*fieldp_gordon(1,ii) + uiy*fieldp_gordon(2,ii) +
+     &        uiz*fieldp_gordon(3,ii))
+         if (regularize .eq. "YES") then
+            ei = 0.5*(uix*fieldp_gordonreg(1,ii) + 
+     &           uiy*fieldp_gordonreg(2,ii) +
+     &           uiz*fieldp_gordonreg(3,ii))
+         end if
 c
 c     apply f constant
 c

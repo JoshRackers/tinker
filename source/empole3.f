@@ -72,6 +72,7 @@ c
       use boxes
       use cell
       use chgpot
+      use chgpen
       use couple
       use energi
       use group
@@ -95,8 +96,10 @@ c
       integer ii
       integer ix,iy,iz
       real*8 e,fgrp
+      real*8 eold
       real*8 f,fm,fp
-      real*8 ci,dix,diy,diz
+      real*8 ci,zi,qi
+      real*8 dix,diy,diz
       real*8 uix,uiy,uiz
       real*8 qixx,qixy,qixz
       real*8 qiyy,qiyz,qizz
@@ -130,10 +133,9 @@ c
       damp_none = .true.
       damp_ewald = .false.
       damp_thole = .true.
-      damp_gordonone = .false.
-      damp_gordontwo = .false.
-      damp_piquemalone = .false.
-      damp_piquemaltwo = .false.
+      if (penetration .eq. "GORDON") damp_gordon = .true.
+      if (penetration .eq. "PIQUEMAL") damp_piquemal = .true.
+      if (regularize .eq. "YES") damp_gordonreg = .true.
 c
 c     compute the permanent electric potential,
 c     field and field gradient at each multipole site
@@ -167,18 +169,54 @@ c
          qixz = 2.0d0*qixz
          qiyz = 2.0d0*qiyz
 c
+c     split nuclear and electronic charge if applying charge penetration
+c
+         if (penetration .eq. "GORDON") then
+            zi = atomic(i)
+            if (num_ele .eq. "VALENCE") then
+               if (atomic(i) .gt. 2)  zi = zi - 2.0d0
+               if (atomic(i) .gt. 10)  zi = zi - 8.0d0
+               if (atomic(i) .gt. 18)  zi = zi - 8.0d0
+               if (atomic(i) .gt. 20)  zi = zi - 10.0d0
+            end if
+            qi = ci - zi
+         end if
+c     
 c     contract multipoles with permanent potential, field and field gradient
 c
 c     charge
-         e = 0.5d0*ci*potm(ii)
+         eold = 0.5d0*ci*potm(ii)
 c     permanent dipole
-         e = e + 0.5d0*
+         eold = eold + 0.5d0*
      &        (dix*fieldm(1,ii)+diy*fieldm(2,ii)+diz*fieldm(3,ii))
 c     quadrupole
-         e = e + 0.5d0*
+         eold = eold + 0.5d0*
      &        (qixx*gradfieldm(1,1,ii) + qixy*gradfieldm(1,2,ii) +
      &        qixz*gradfieldm(1,3,ii) + qiyy*gradfieldm(2,2,ii) +
      &        qiyz*gradfieldm(2,3,ii) + qizz*gradfieldm(3,3,ii))
+c
+c     apply f constant
+c
+         eold = f * eold
+c
+c     compute charge penetration corrected permanent multipole energy
+c
+c     charge - nucleus
+         e = 0.5d0*zi*nucpotm_gordon(ii)
+c     charge - electrons
+         e = e + 0.5d0*qi*potm_gordon(ii)
+c     permanent dipole
+         e = e + 0.5d0*
+     &        (dix*fieldm_gordon(1,ii)+diy*fieldm_gordon(2,ii)+
+     &        diz*fieldm_gordon(3,ii))
+c     quadrupole
+         e = e + 0.5d0*
+     &        (qixx*gradfieldm_gordon(1,1,ii) + 
+     &        qixy*gradfieldm_gordon(1,2,ii) +
+     &        qixz*gradfieldm_gordon(1,3,ii) + 
+     &        qiyy*gradfieldm_gordon(2,2,ii) +
+     &        qiyz*gradfieldm_gordon(2,3,ii) + 
+     &        qizz*gradfieldm_gordon(3,3,ii))
 c
 c     apply f constant
 c
@@ -233,7 +271,6 @@ c
       real*8 uix,uiy,uiz
       real*8 qixx,qixy,qixz
       real*8 qiyy,qiyz,qizz
-      logical, allocatable :: damplist(:)
 c
 c
 c     zero out the multipole and polarization energies
@@ -265,10 +302,8 @@ c
       damp_none = .true.
       damp_ewald = .true.
       damp_thole = .true.
-      damp_gordonone = .false.
-      damp_gordontwo = .false.
-      damp_piquemalone = .false.
-      damp_piquemaltwo = .false.
+      damp_gordon = .false.
+      damp_piquemal = .false.
       call permfield2
 c
 c     get reciprocal space potential, field and field gradient
