@@ -506,9 +506,6 @@ c
                      call cp_fieldik(i,k,
      &                  t1,t2,t3,t1i,t2i,t3i,t1k,t2k,t3k,t1ik,t2ik,t3ik,
      &                    nucfieldi,nucfieldk,elefieldi,elefieldk)
-c
-c     accumulate fields in global variables
-c
                      do j = 1, 3
                         fieldd_gordonreg(j,i) = fieldd_gordonreg(j,i) +
      &                       elefieldi(j)*dscale(kk)

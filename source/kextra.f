@@ -30,10 +30,11 @@ c
       real*8 factor
       real*8 polf,dampf
       real*8 pen
-      integer c1(29),c2(18),c3(26),c4(3),c5(1)
+      integer c1(29),c2(19),c3(26),c4(3),c5(1)
       integer c6(3),c7(25),c8(6),c9(37)
       integer c10(2),c11(3),c12(3),c13(7)
-      integer c14(3),c15(7),c16(3),c17(2),c18(8)
+      integer c14(3),c15(8),c16(3),c17(2),c18(8)
+      integer c19(1)
       character*20 keyword
       character*120 record
       character*120 string
@@ -131,7 +132,7 @@ cccc
 c         c1 = (/ 404,402,406,408,41,410,411,68,109,
 c     &        155,415,421,445,449,446,533,529,537,538,545,546,547,
 c     &        465,468,471,498,501,602,702 /)
-         c2 = (/ 430,438,107,419,442,39,66,151,514,521,558,
+         c2 = (/ 2,430,438,107,419,442,39,66,151,514,521,558,
      &        454,458,462,526,539,548,508 /)
          c3 = (/ 218,424,426,428,434,436,515,516,517,522,
      &        523,559,560,561,562,563,564,477,478,479,485,486,487,
@@ -153,10 +154,13 @@ c     &        420,506,527,534,535,531,443,447,463,466,469,496,499,601 /)
          c13 = (/ 422,429,437,511,513,520,555 /)
          c14 = (/ 65,505,536 /)
 c         c14 = (/ 65,505,701 /)
-         c15 = (/ 150,441,38,544,452,456,460 /)
+         c15 = (/ 1,150,441,38,544,452,456,460 /)
          c16 = (/ 464,476,497 /)
          c17 = (/ 432,440 /)
          c18 = (/ 105,153,417,530,450,453,457,461 /)
+c     catch-all for test charges
+         c19 = (/ 7 /)
+
          polf = 1.0d0
          dampf = 1.0d0
          do i = 1, n
@@ -406,6 +410,11 @@ c               if (polfactor(18).eq.0.0d0) polfactor(18) =2.6154d0*dampf
                if (xpolr(18).eq.0.0d0) xpolr(18) = 0.2871d0
                if (polfactor(18).eq.0.0d0) polfactor(18) =2.5295d0
                cpclass(i) = 18
+c     test charges
+            else if (any(c19==ii)) then
+               if (alpha(19).eq.0.0d0) alpha(19) = 1000.0d0
+               if (regular(19).eq.0.0d0) regular(19) = 1000.0d0
+               cpclass(i) = 19
             end if
 c
 c     this allows polarizability and thole damping to vary by cpclass
@@ -422,7 +431,9 @@ c            print *,"atom",i,"cpclass",cpclass(i)
 c            print *,"xpolr",xpolr(cpclass(i))
 c            print *,"polfactor",polfactor(cpclass(i))
 c            print *,"alphap",alphap(cpclass(i))
-            if (regular(cpclass(i)).eq.0.0d0) regular(cpclass(i))= 3.0d0
+            if (regular(cpclass(i)).eq.0.0d0) then
+               regular(cpclass(i)) = 1000.0d0
+            end if
          end do
       end if
       return

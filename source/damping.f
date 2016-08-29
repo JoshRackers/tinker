@@ -311,6 +311,8 @@ c
 c
 c     calculate one-site scale factors
 c
+      scalei(1) = (1.0d0 - expdampi)*(1.0d0 - rexpdampi) 
+      scalek(1) = (1.0d0 - expdampk)*(1.0d0 - rexpdampk)
       scalei(3) = 1.0d0 - (1.0d0 + dampi)*expdampi -
      &     (1.0d0 + rdampk)*rexpdampk + (1.0d0 + dampi +
      &     rdampk)*expdampi*rexpdampk
