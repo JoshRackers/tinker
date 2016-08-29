@@ -446,8 +446,12 @@ c
          iy = yaxis(i)
          ii = ipole(i)
 c
-c     set interaction scaling coefficients for connected atoms
+c     set m, d and p exclusion rules
 c
+         do j = i+1, npole
+            dscale(ipole(j)) = 1.0d0
+            pscale(ipole(j)) = 1.0d0
+         end do
          do j = 1, n12(ii)
             mscale(i12(j,ii)) = m2scale
             pscale(i12(j,ii)) = p2scale
@@ -459,10 +463,26 @@ c
          do j = 1, n14(ii)
             mscale(i14(j,ii)) = m4scale
             pscale(i14(j,ii)) = p4scale
+            do k = 1, np11(ii)
+               if (i14(j,ii) .eq. ip11(k,ii))
+     &            pscale(i14(j,ii)) = p4scale * p41scale
+            end do
          end do
          do j = 1, n15(ii)
             mscale(i15(j,ii)) = m5scale
             pscale(i15(j,ii)) = p5scale
+         end do
+         do j = 1, np11(ii)
+            dscale(ip11(j,ii)) = d1scale
+         end do
+         do j = 1, np12(ii)
+            dscale(ip12(j,ii)) = d2scale
+         end do
+         do j = 1, np13(ii)
+            dscale(ip13(j,ii)) = d3scale
+         end do
+         do j = 1, np14(ii)
+            dscale(ip14(j,ii)) = d4scale
          end do
 c
 c     decide whether to compute the current interaction

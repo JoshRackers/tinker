@@ -223,202 +223,6 @@ c
      &                       fieldkp(j)
                      end do
                   end if
-c
-c     one center gordon damping
-c
-c                  if (damp_gordonone) then
-c                     call dampgordonone(i,k,rorder,r,scale)
-c                     t0 = t0rr1*scale(1)
-c                     t1 = t1rr3*scale(3)
-c                     t2 = t2rr3*scale(3) + t2rr5*scale(5)
-c                     t3 = t3rr5*scale(5) + t3rr7*scale(7)
-c                     t4 = t4rr5*scale(5) + t4rr7*scale(7) +
-c     &                    t4rr9*scale(9)
-c                     call upotik(i,k,t1,potid,potkd,potip,potkp)
-c                     call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
-c     &                    fieldkp)
-c                     call ugradfieldik(i,k,t3,
-c     &                    gradfieldid,gradfieldkd,
-c     &                    gradfieldip,gradfieldkp)
-c                     potm_gordonone(i)=potm_gordonone(i)+poti*mscale(kk)
-c                     potm_gordonone(k)=potm_gordonone(k)+potk*mscale(kk)
-c                     do j = 1, 3
-c                        fieldm_gordonone(j,i) = fieldm_gordonone(j,i) +
-c     &                       fieldi(j)*mscale(kk)
-c                        fieldm_gordonone(j,k) = fieldm_gordonone(j,k) +
-c     &                       fieldk(j)*mscale(kk)
-c                        fieldd_gordonone(j,i) = fieldd_gordonone(j,i) +
-c     &                       fieldi(j)*dscale(kk)
-c                        fieldd_gordonone(j,k) = fieldd_gordonone(j,i) +
-c     &                       fieldk(j)*dscale(kk)
-c                        fieldp_gordonone(j,i) = fieldp_gordonone(j,i) +
-c     &                       fieldi(j)*pscale(kk)
-c                        fieldp_gordonone(j,k) = fieldp_gordonone(j,k) +
-c     &                       fieldk(j)*pscale(kk)
-c                        do l = 1, 3
-c                           gradfieldm_gordonone(l,j,i) =
-c     &                          gradfieldm_gordonone(l,j,i) +
-c     &                          gradfieldi(l,j)*mscale(kk)
-c                           gradfieldm_gordonone(l,j,k) =
-c     &                          gradfieldm_gordonone(l,j,k) +
-c     &                          gradfieldk(l,j)*mscale(kk)
-c                           gradfieldp_gordonone(l,j,i) =
-c     &                          gradfieldp_gordonone(l,j,i) +
-c     &                          gradfieldi(l,j)*pscale(kk)
-c                           gradfieldp_gordonone(l,j,k) =
-c     &                          gradfieldp_gordonone(l,j,k) +
-c     &                          gradfieldk(l,j)*pscale(kk)
-c                        end do
-c                     end do
-c                  end if
-cc
-cc     two center gordon damping
-cc
-c                  if (damp_gordontwo) then
-c                     call dampgordontwo(i,k,rorder,r,scale)
-c                     t0 = t0rr1*scale(1)
-c                     t1 = t1rr3*scale(3)
-c                     t2 = t2rr3*scale(3) + t2rr5*scale(5)
-c                     t3 = t3rr5*scale(5) + t3rr7*scale(7)
-cc                     t4 = t4rr5*scale(5) + t4rr7*scale(7) +
-cc     &                    t4rr9*scale(9)
-c                     call upotik(i,k,t1,potid,potkd,potip,potkp)
-c                     call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
-c     &                    fieldkp)
-c                     call ugradfieldik(i,k,t3,
-c     &                    gradfieldid,gradfieldkd,
-c     &                    gradfieldip,gradfieldkp)
-c                     potm_gordontwo(i)=potm_gordontwo(i)+poti*mscale(kk)   
-c                     potm_gordontwo(k)=potm_gordontwo(k)+potk*mscale(kk)   
-c                     do j = 1, 3
-c                        fieldm_gordontwo(j,i) = fieldm_gordontwo(j,i) +
-c     &                       fieldi(j)*mscale(kk)
-c                        fieldm_gordontwo(j,k) = fieldm_gordontwo(j,k) +
-c     &                       fieldk(j)*mscale(kk)
-c                        fieldd_gordontwo(j,i) = fieldd_gordontwo(j,i) +
-c     &                       fieldi(j)*dscale(kk)
-c                        fieldd_gordontwo(j,k) = fieldd_gordontwo(j,i) +
-c     &                       fieldk(j)*dscale(kk)
-c                        fieldp_gordontwo(j,i) = fieldp_gordontwo(j,i) +
-c     &                       fieldi(j)*pscale(kk)
-c                        fieldp_gordontwo(j,k) = fieldp_gordontwo(j,k) +
-c     &                       fieldk(j)*pscale(kk)
-c                        do l = 1, 3
-c                           gradfieldm_gordontwo(l,j,i) =
-c     &                          gradfieldm_gordontwo(l,j,i) +
-c     &                          gradfieldi(l,j)*mscale(kk)
-c                           gradfieldm_gordontwo(l,j,k) =
-c     &                          gradfieldm_gordontwo(l,j,k) +
-c     &                          gradfieldk(l,j)*mscale(kk)
-c                           gradfieldp_gordontwo(l,j,i) =
-c     &                          gradfieldp_gordontwo(l,j,i) +
-c     &                          gradfieldi(l,j)*pscale(kk)
-c                           gradfieldp_gordontwo(l,j,k) =
-c     &                          gradfieldp_gordontwo(l,j,k) +
-c     &                          gradfieldk(l,j)*pscale(kk)
-c                        end do
-c                     end do
-c                  end if
-c
-c     one center piquemal damping
-c
-c                  if (damp_piquemalone) then 
-cc                     call damppiquemalone(i,k,rorder,r,scale)
-c                     t0 = t0rr1*scale(1)
-c                     t1 = t1rr3*scale(3)
-c                     t2 = t2rr3*scale(3) + t2rr5*scale(5)
-c                     t3 = t3rr5*scale(5) + t3rr7*scale(7)
-cc                     t4 = t4rr5*scale(5) + t4rr7*scale(7) +
-cc     &                    t4rr9*scale(9)
-c                     call upotik(i,k,t1,potid,potkd,potip,potkp)
-c                     call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
-c     &                    fieldkp)
-c                     call ugradfieldik(i,k,t3,
-c     &                    gradfieldid,gradfieldkd,
-c     &                    gradfieldip,gradfieldkp)
-c                     potm_piquemalone(i) = potm_piquemalone(i) + 
-c     &                    poti*mscale(kk)
-c                     potm_piquemalone(k) = potm_piquemalone(k) + 
-c     &                    potk*mscale(kk)
-c                     do j = 1, 3
-c                        fieldm_piquemalone(j,i)=fieldm_piquemalone(j,i)+
-c     &                       fieldi(j)*mscale(kk)
-c                        fieldm_piquemalone(j,k)=fieldm_piquemalone(j,k)+
-c     &                       fieldk(j)*mscale(kk)
-c                        fieldd_piquemalone(j,i)=fieldd_piquemalone(j,i)+
-c     &                       fieldi(j)*dscale(kk)
-c                        fieldd_piquemalone(j,k)=fieldd_piquemalone(j,i)+
-c     &                       fieldk(j)*dscale(kk)
-c                        fieldp_piquemalone(j,i)=fieldp_piquemalone(j,i)+
-c     &                       fieldi(j)*pscale(kk)
-c                        fieldp_piquemalone(j,k)=fieldp_piquemalone(j,k)+
-c     &                       fieldk(j)*pscale(kk)
-c                        do l = 1, 3
-c                           gradfieldm_piquemalone(l,j,i) =
-c     &                          gradfieldm_piquemalone(l,j,i) +
-c     &                          gradfieldi(l,j)*mscale(kk)
-c                           gradfieldm_piquemalone(l,j,k) =
-c     &                          gradfieldm_piquemalone(l,j,k) +
-c     &                          gradfieldk(l,j)*mscale(kk)
-c                           gradfieldp_piquemalone(l,j,i) =
-c     &                          gradfieldp_piquemalone(l,j,i) +
-c     &                          gradfieldi(l,j)*pscale(kk)
-c                           gradfieldp_piquemalone(l,j,k) =
-c     &                          gradfieldp_piquemalone(l,j,k) +
-c     &                          gradfieldk(l,j)*pscale(kk)
-c                        end do
-c                     end do
-c                  end if
-c
-c     two center piquemal damping
-c
-c                  if (damp_piquemaltwo) then
-c                     call damppiquemaltwo(i,k,rorder,r,scale)
-c                     t0 = t0rr1*scale(1)
-c                     t1 = t1rr3*scale(3)
-c                     t2 = t2rr3*scale(3) + t2rr5*scale(5)
-c                     t3 = t3rr5*scale(5) + t3rr7*scale(7)
-cc                     t4 = t4rr5*scale(5) + t4rr7*scale(7) +
-c     &                    t4rr9*scale(9)
-c                     call upotik(i,k,t1,potid,potkd,potip,potkp)
-c                     call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
-c     &                    fieldkp)
-c                     call ugradfieldik(i,k,t3,
-c     &                    gradfieldid,gradfieldkd,
-c     &                    gradfieldip,gradfieldkp)
-c                     potm_piquemaltwo(i) = potm_piquemaltwo(i) +
-c     &                    poti*mscale(kk)
-c                     potm_piquemaltwo(k) = potm_piquemaltwo(k) +
-c     &                    potk*mscale(kk)
-c                     do j = 1, 3
-c                        fieldm_piquemaltwo(j,i)=fieldm_piquemaltwo(j,i)+
-c     &                       fieldi(j)*mscale(kk)
-c                        fieldm_piquemaltwo(j,k)=fieldm_piquemaltwo(j,k)+
-c     &                       fieldk(j)*mscale(kk)
-c                        fieldd_piquemaltwo(j,i)=fieldd_piquemaltwo(j,i)+
-c     &                       fieldi(j)*dscale(kk)
-c                        fieldd_piquemaltwo(j,k)=fieldd_piquemaltwo(j,i)+
-c     &                       fieldk(j)*dscale(kk)
-c                        fieldp_piquemaltwo(j,i)=fieldp_piquemaltwo(j,i)+
-c     &                       fieldi(j)*pscale(kk)
-c                        fieldp_piquemaltwo(j,k)=fieldp_piquemaltwo(j,k)+
-c     &                       fieldk(j)*pscale(kk)
-c                        do l = 1, 3
-c                           gradfieldm_piquemaltwo(l,j,i) =
-c     &                          gradfieldm_piquemaltwo(l,j,i) +
-c     &                          gradfieldi(l,j)*mscale(kk)
-c                           gradfieldm_piquemaltwo(l,j,k) =
-c     &                          gradfieldm_piquemaltwo(l,j,k) +
-c     &                          gradfieldk(l,j)*mscale(kk)
-c                           gradfieldp_piquemaltwo(l,j,i) =
-c     &                          gradfieldp_piquemaltwo(l,j,i) +
-c     &                          gradfieldi(l,j)*pscale(kk)
-c                           gradfieldp_piquemaltwo(l,j,k) =
-c     &                          gradfieldp_piquemaltwo(l,j,k) +
-c     &                          gradfieldk(l,j)*pscale(kk)
-c                        end do
-c                     end do
-c                  end if
                end if
             end if
          end do
@@ -464,12 +268,8 @@ c
                      rr3 = rr1 / r2
                      rr5 = 3.0d0 * rr3 / r2
                      rr7 = 5.0d0 * rr5 / r2
-                     call t0matrixrr1(rr1,t0rr1)
-                     call t1matrixrr3(xr,yr,zr,rr3,t1rr3)
                      call t2matrixrr3(xr,yr,zr,rr3,t2rr3)
                      call t2matrixrr5(xr,yr,zr,rr5,t2rr5)
-                     call t3matrixrr5(xr,yr,zr,rr5,t3rr5)
-                     call t3matrixrr7(xr,yr,zr,rr7,t3rr7)
 c
 c     call routines that produce potential, field, field gradient
 c     for types of damping
@@ -488,9 +288,9 @@ c
                            upfield(j,k) = upfield(j,k) + fieldkp(j)
                         end do
                      end if
-c
+c     
 c     error function damping for ewald
-c
+c     
                      if (damp_ewald) then
                         call dampewald(i,k,rorder,r,r2,scale)
 c     
@@ -510,9 +310,9 @@ c
      &                          fieldkp(j)
                         end do
                      end if
-c
+c     
 c     thole damping
-c
+c     
                      if (damp_thole) then
                         call dampthole(i,k,rorder,r,scale)
                         t2 = t2rr3*scale(3) + t2rr5*scale(5)
