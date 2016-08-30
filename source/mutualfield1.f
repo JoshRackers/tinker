@@ -489,12 +489,8 @@ c
                   rr3 = rr1 / r2
                   rr5 = 3.0d0 * rr3 / r2
                   rr7 = 5.0d0 * rr5 / r2
-c                  call t0matrixrr1(rr1,t0rr1)
-c                  call t1matrixrr3(xr,yr,zr,rr3,t1rr3)
                   call t2matrixrr3(xr,yr,zr,rr3,t2rr3)
                   call t2matrixrr5(xr,yr,zr,rr5,t2rr5)
-c                  call t3matrixrr5(xr,yr,zr,rr5,t3rr5)
-c                  call t3matrixrr7(xr,yr,zr,rr7,t3rr7)
 c
 c     call routines that produce potential, field, field gradient
 c     for types of damping

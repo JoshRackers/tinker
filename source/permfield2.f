@@ -851,10 +851,12 @@ c
                      potmo(i) = potmo(i) + poti*mscale(kk)
                      potmo(k) = potmo(k) + potk*mscale(kk)
                      do j = 1, 3
-                        fieldo(j,i)= fieldo(j,i)+ fieldi(j)
-                        fieldo(j,k)= fieldo(j,k)+ fieldk(j)
-                        fieldmo(j,i)= fieldmo(j,i)+ fieldi(j)*mscale(kk)
-                        fieldmo(j,k)= fieldmo(j,k)+ fieldk(j)*mscale(kk)
+                        fieldo(j,i) = fieldo(j,i) + fieldi(j)
+                        fieldo(j,k) = fieldo(j,k) + fieldk(j)
+                        fieldmo(j,i) = fieldmo(j,i) + 
+     &                       fieldi(j)*mscale(kk)
+                        fieldmo(j,k) = fieldmo(j,k) + 
+     &                       fieldk(j)*mscale(kk)
                         do l = 1, 3
                            gradfieldo(l,j,i) = gradfieldo(l,j,i) +
      &                          gradfieldi(l,j)
@@ -867,11 +869,14 @@ c
                         end do
                      end do
                   end if
-c     
+c
 c     error function damping for ewald
-c     
+c
                   if (damp_ewald) then
                      call dampewald(i,k,rorder,r,r2,scale)
+c
+c     the ewald damping factors already contain their powers of rr
+c
                      t0 = t0rr1*scale(1)/rr1
                      t1 = t1rr3*scale(3)/rr3
                      t2 = t2rr3*scale(3)/rr3 + t2rr5*scale(5)/rr5
@@ -899,9 +904,9 @@ c
                         end do
                      end do
                   end if
-c     
+c
 c     thole damping
-c     
+c
                   if (damp_thole) then
                      call dampthole(i,k,rorder,r,scale)
                      t0 = t0rr1*scale(1)
