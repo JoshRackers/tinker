@@ -128,8 +128,8 @@ c
 c     set conversion factor, cutoff and switching coefficients
 c
       f = electric / dielec
-      mode = 'MPOLE'
-      call switch (mode)
+c      mode = 'MPOLE'
+c      call switch (mode)
 c
 c     calculate the total multipole interaction energy
 c
@@ -174,26 +174,36 @@ c
 c     force on induced dipole from permanent field gradient
 c
          fx = uix*gradfieldp_thole(1,1,ii) + 
-     &        uiy*gradfieldp_thole(1,2,ii) +
-     &        uiz*gradfieldp_thole(1,3,ii)
-         fy = uix*gradfieldp_thole(1,2,ii) + 
+     &        uiy*gradfieldp_thole(2,1,ii) +
+     &        uiz*gradfieldp_thole(3,1,ii)
+         fy = uix*gradfieldp_thole(2,1,ii) + 
      &        uiy*gradfieldp_thole(2,2,ii) +
-     &        uiz*gradfieldp_thole(2,3,ii)
-         fz = uix*gradfieldp_thole(1,3,ii) + 
-     &        uiy*gradfieldp_thole(2,3,ii) +
+     &        uiz*gradfieldp_thole(3,2,ii)
+         fz = uix*gradfieldp_thole(3,1,ii) + 
+     &        uiy*gradfieldp_thole(3,2,ii) +
      &        uiz*gradfieldp_thole(3,3,ii)
 c
 c     force on induced dipole from mutual field gradient
 c
          if (poltyp .eq. 'MUTUAL') then
+c            fx = fx + uix*udgradfield_thole(1,1,ii) +
+c     &           uiy*udgradfield_thole(2,1,ii) +
+c     &           uiz*udgradfield_thole(3,1,ii)
+c            fy = fy + uix*udgradfield_thole(2,1,ii) +
+c     &           uiy*udgradfield_thole(2,2,ii) +
+c     &           uiz*udgradfield_thole(3,2,ii)
+c            fz = fz + uix*udgradfield_thole(3,1,ii) +
+c     &           uiy*udgradfield_thole(3,2,ii) +
+c     &           uiz*udgradfield_thole(3,3,ii)
+c
             fx = fx + uix*upgradfield_thole(1,1,ii) +
-     &           uiy*upgradfield_thole(1,2,ii) +
-     &           uiz*upgradfield_thole(1,3,ii)
-            fy = fy + uix*upgradfield_thole(1,2,ii) +
+     &           uiy*upgradfield_thole(2,1,ii) +
+     &           uiz*upgradfield_thole(3,1,ii)
+            fy = fy + uix*upgradfield_thole(2,1,ii) +
      &           uiy*upgradfield_thole(2,2,ii) +
-     &           uiz*upgradfield_thole(2,3,ii)
-            fz = fz + uix*upgradfield_thole(1,3,ii) +
-     &           uiy*upgradfield_thole(2,3,ii) +
+     &           uiz*upgradfield_thole(3,2,ii)
+            fz = fz + uix*upgradfield_thole(3,1,ii) +
+     &           uiy*upgradfield_thole(3,2,ii) +
      &           uiz*upgradfield_thole(3,3,ii)
          end if
 c
@@ -208,32 +218,32 @@ c     charges
          fz = fz + ci*upfieldp_thole(3,ii)
 c     dipoles
          fx = fx + dix*upgradfieldp_thole(1,1,ii) +
-     &        diy*upgradfieldp_thole(1,2,ii) +
-     &        diz*upgradfieldp_thole(1,3,ii)
-         fy = fy + dix*upgradfieldp_thole(1,2,ii) +
+     &        diy*upgradfieldp_thole(2,1,ii) +
+     &        diz*upgradfieldp_thole(3,1,ii)
+         fy = fy + dix*upgradfieldp_thole(2,1,ii) +
      &        diy*upgradfieldp_thole(2,2,ii) +
-     &        diz*upgradfieldp_thole(2,3,ii)
-         fz = fz + dix*upgradfieldp_thole(1,3,ii) +
-     &        diy*upgradfieldp_thole(2,3,ii) +
+     &        diz*upgradfieldp_thole(3,2,ii)
+         fz = fz + dix*upgradfieldp_thole(3,1,ii) +
+     &        diy*upgradfieldp_thole(3,2,ii) +
      &        diz*upgradfieldp_thole(3,3,ii)
 c     quadrupoles
          fx = fx + qixx*uphessfieldp_thole(1,1,1,ii) +
-     &        qixy*uphessfieldp_thole(1,1,2,ii) +
-     &        qixz*uphessfieldp_thole(1,1,3,ii) + 
-     &        qiyy*uphessfieldp_thole(1,2,2,ii) + 
-     &        qiyz*uphessfieldp_thole(1,2,3,ii) + 
-     &        qizz*uphessfieldp_thole(1,3,3,ii)
-         fy = fy + qixx*uphessfieldp_thole(1,1,2,ii) + 
-     &        qixy*uphessfieldp_thole(1,2,2,ii) +
-     &        qixz*uphessfieldp_thole(1,2,3,ii) + 
+     &        qixy*uphessfieldp_thole(2,1,1,ii) +
+     &        qixz*uphessfieldp_thole(3,1,1,ii) + 
+     &        qiyy*uphessfieldp_thole(2,2,1,ii) + 
+     &        qiyz*uphessfieldp_thole(3,2,1,ii) + 
+     &        qizz*uphessfieldp_thole(3,3,1,ii)
+         fy = fy + qixx*uphessfieldp_thole(2,1,1,ii) + 
+     &        qixy*uphessfieldp_thole(2,2,1,ii) +
+     &        qixz*uphessfieldp_thole(3,2,1,ii) + 
      &        qiyy*uphessfieldp_thole(2,2,2,ii) +
-     &        qiyz*uphessfieldp_thole(2,2,3,ii) + 
-     &        qizz*uphessfieldp_thole(2,3,3,ii)
-         fz = fz + qixx*uphessfieldp_thole(1,1,3,ii) + 
-     &        qixy*uphessfieldp_thole(1,2,3,ii) +
-     &        qixz*uphessfieldp_thole(1,3,3,ii) + 
-     &        qiyy*uphessfieldp_thole(2,2,3,ii) +
-     &        qiyz*uphessfieldp_thole(2,3,3,ii) + 
+     &        qiyz*uphessfieldp_thole(3,2,2,ii) + 
+     &        qizz*uphessfieldp_thole(3,3,2,ii)
+         fz = fz + qixx*uphessfieldp_thole(3,1,1,ii) + 
+     &        qixy*uphessfieldp_thole(3,2,1,ii) +
+     &        qixz*uphessfieldp_thole(3,3,1,ii) + 
+     &        qiyy*uphessfieldp_thole(3,2,2,ii) +
+     &        qiyz*uphessfieldp_thole(3,3,2,ii) + 
      &        qizz*uphessfieldp_thole(3,3,3,ii)
 c
 c     increment the induced dipole gradient
@@ -270,30 +280,29 @@ c     dipole
      &        dix*upfieldp_thole(2,ii)
 c     quadrupole
          trq(1,ii) = trq(1,ii) + 2.0d0*(qizz - qiyy)*
-     &        upgradfieldp_thole(2,3,ii)
-     &        + qixz*upgradfieldp_thole(1,2,ii) + 
+     &        upgradfieldp_thole(3,2,ii)
+     &        + qixz*upgradfieldp_thole(2,1,ii) + 
      &        qiyz*upgradfieldp_thole(2,2,ii)
-     &        - qixy*upgradfieldp_thole(1,3,ii) - 
+     &        - qixy*upgradfieldp_thole(3,1,ii) - 
      &        qiyz*upgradfieldp_thole(3,3,ii)
          trq(2,ii) = trq(2,ii) + 2.0d0*(qixx - qizz)*
-     &        upgradfieldp_thole(1,3,ii)
-     &        + qixy*upgradfieldp_thole(2,3,ii) + 
+     &        upgradfieldp_thole(3,1,ii)
+     &        + qixy*upgradfieldp_thole(3,2,ii) + 
      &        qixz*upgradfieldp_thole(3,3,ii)
      &        - qixz*upgradfieldp_thole(1,1,ii) - 
-     &        qiyz*upgradfieldp_thole(1,2,ii)
+     &        qiyz*upgradfieldp_thole(2,1,ii)
          trq(3,ii) = trq(3,ii) + 2.0d0*(qiyy - qixx)*
-     &        upgradfieldp_thole(1,2,ii)
+     &        upgradfieldp_thole(2,1,ii)
      &        + qixy*upgradfieldp_thole(1,1,ii) + 
-     &        qiyz*upgradfieldp_thole(1,3,ii)
+     &        qiyz*upgradfieldp_thole(3,1,ii)
      &        - qixy*upgradfieldp_thole(2,2,ii) - 
-     &        qixz*upgradfieldp_thole(2,3,ii)
+     &        qixz*upgradfieldp_thole(3,2,ii)
 c
 c     apply f constant to torques
 c
          trq(1,ii) = f * trq(1,ii)
          trq(2,ii) = f * trq(2,ii)
          trq(3,ii) = f * trq(3,ii)
-         print *,"trq",trq(1,ii),trq(2,ii),trq(3,ii)
       end do
 c
 c     distribute torques into polarization gradient
@@ -383,7 +392,7 @@ c
 c     terms needed for self energy
 c
       term = 2.0d0 * aewald * aewald
-      term2 = (4.0d0/3.0d0) * f * aewald**3 / sqrtpi
+      term2 = (4.0d0/3.0d0) * aewald**3 / sqrtpi
       fterm = -f * aewald / sqrtpi
 c
 c     compute the induced dipoles at each polarizable atom
@@ -396,7 +405,7 @@ c
 c
 c     get reciprocal space field, field gradient and field hessian
 c
-      call mutualrecip1
+      call mutualrecip3
 c
 c     compute the real space, reciprocal space and self-energy 
 c     parts of the Ewald summation
@@ -470,13 +479,13 @@ c
      &        gradfield(:,:,ii) + gradfieldp_thole(:,:,ii) + 
      &        gradfield_recip(:,:,ii)
          fx = uix*gradfield_tot(1,1) + 
-     &        uiy*gradfield_tot(1,2) +
-     &        uiz*gradfield_tot(1,3)
-         fy = uix*gradfield_tot(1,2) + 
+     &        uiy*gradfield_tot(2,1) +
+     &        uiz*gradfield_tot(3,1)
+         fy = uix*gradfield_tot(2,1) + 
      &        uiy*gradfield_tot(2,2) +
-     &        uiz*gradfield_tot(2,3)
-         fz = uix*gradfield_tot(1,3) + 
-     &        uiy*gradfield_tot(2,3) +
+     &        uiz*gradfield_tot(3,2)
+         fz = uix*gradfield_tot(3,1) + 
+     &        uiy*gradfield_tot(3,2) +
      &        uiz*gradfield_tot(3,3)
 c     torques
          trq(1,ii) = uiz*field_tot(2) - uiy*field_tot(3)
@@ -492,13 +501,13 @@ c
      &           upgradfield(:,:,ii) + upgradfield_thole(:,:,ii) + 
      &           upgradfield_recip(:,:,ii)
             fx = fx + uix*upgradfield_tot(1,1) +
-     &           uiy*upgradfield_tot(1,2) +
-     &           uiz*upgradfield_tot(1,3)
-            fy = fy + uix*upgradfield_tot(1,2) +
+     &           uiy*upgradfield_tot(2,1) +
+     &           uiz*upgradfield_tot(3,1)
+            fy = fy + uix*upgradfield_tot(2,1) +
      &           uiy*upgradfield_tot(2,2) +
-     &           uiz*upgradfield_tot(2,3)
-            fz = fz + uix*upgradfield_tot(1,3) +
-     &           uiy*upgradfield_tot(2,3) +
+     &           uiz*upgradfield_tot(3,2)
+            fz = fz + uix*upgradfield_tot(3,1) +
+     &           uiy*upgradfield_tot(3,2) +
      &           uiz*upgradfield_tot(3,3)
 c     torques
             trq(1,ii) = trq(1,ii) + uiz*upfield_tot(2) - 
@@ -526,32 +535,32 @@ c     charges
          fz = fz + ci*upfield_tot(3)
 c     dipoles
          fx = fx + dix*upgradfield_tot(1,1) +
-     &        diy*upgradfield_tot(1,2) +
-     &        diz*upgradfield_tot(1,3)
-         fy = fy + dix*upgradfield_tot(1,2) +
+     &        diy*upgradfield_tot(2,1) +
+     &        diz*upgradfield_tot(3,1)
+         fy = fy + dix*upgradfield_tot(2,1) +
      &        diy*upgradfield_tot(2,2) +
-     &        diz*upgradfield_tot(2,3)
-         fz = fz + dix*upgradfield_tot(1,3) +
-     &        diy*upgradfield_tot(2,3) +
+     &        diz*upgradfield_tot(3,2)
+         fz = fz + dix*upgradfield_tot(3,1) +
+     &        diy*upgradfield_tot(3,2) +
      &        diz*upgradfield_tot(3,3)
 c     quadrupoles
          fx = fx + qixx*uphessfield_tot(1,1,1) +
-     &        qixy*uphessfield_tot(1,1,2) +
-     &        qixz*uphessfield_tot(1,1,3) + 
-     &        qiyy*uphessfield_tot(1,2,2) + 
-     &        qiyz*uphessfield_tot(1,2,3) + 
-     &        qizz*uphessfield_tot(1,3,3)
-         fy = fy + qixx*uphessfield_tot(1,1,2) + 
-     &        qixy*uphessfield_tot(1,2,2) +
-     &        qixz*uphessfield_tot(1,2,3) + 
+     &        qixy*uphessfield_tot(2,1,1) +
+     &        qixz*uphessfield_tot(3,1,1) + 
+     &        qiyy*uphessfield_tot(2,2,1) + 
+     &        qiyz*uphessfield_tot(3,2,1) + 
+     &        qizz*uphessfield_tot(3,3,1)
+         fy = fy + qixx*uphessfield_tot(2,1,1) + 
+     &        qixy*uphessfield_tot(2,2,1) +
+     &        qixz*uphessfield_tot(3,2,1) + 
      &        qiyy*uphessfield_tot(2,2,2) +
-     &        qiyz*uphessfield_tot(2,2,3) + 
-     &        qizz*uphessfield_tot(2,3,3)
-         fz = fz + qixx*uphessfield_tot(1,1,3) + 
-     &        qixy*uphessfield_tot(1,2,3) +
-     &        qixz*uphessfield_tot(1,3,3) + 
-     &        qiyy*uphessfield_tot(2,2,3) +
-     &        qiyz*uphessfield_tot(2,3,3) + 
+     &        qiyz*uphessfield_tot(3,2,2) + 
+     &        qizz*uphessfield_tot(3,3,2)
+         fz = fz + qixx*uphessfield_tot(3,1,1) + 
+     &        qixy*uphessfield_tot(3,2,1) +
+     &        qixz*uphessfield_tot(3,3,1) + 
+     &        qiyy*uphessfield_tot(3,2,2) +
+     &        qiyz*uphessfield_tot(3,3,2) + 
      &        qizz*uphessfield_tot(3,3,3)
 c     torques
 c     dipole
@@ -563,23 +572,23 @@ c     dipole
      &        dix*upfield_tot(2)
 c     quadrupole
          trq(1,ii) = trq(1,ii) + 2.0d0*(qizz - qiyy)*
-     &        upgradfield_tot(2,3)
-     &        + qixz*upgradfield_tot(1,2) + 
+     &        upgradfield_tot(3,2)
+     &        + qixz*upgradfield_tot(2,1) + 
      &        qiyz*upgradfield_tot(2,2)
-     &        - qixy*upgradfield_tot(1,3) - 
+     &        - qixy*upgradfield_tot(3,1) - 
      &        qiyz*upgradfield_tot(3,3)
          trq(2,ii) = trq(2,ii) + 2.0d0*(qixx - qizz)*
-     &        upgradfield_tot(1,3)
-     &        + qixy*upgradfield_tot(2,3) + 
+     &        upgradfield_tot(3,1)
+     &        + qixy*upgradfield_tot(3,2) + 
      &        qixz*upgradfield_tot(3,3)
      &        - qixz*upgradfield_tot(1,1) - 
-     &        qiyz*upgradfield_tot(1,2)
+     &        qiyz*upgradfield_tot(2,1)
          trq(3,ii) = trq(3,ii) + 2.0d0*(qiyy - qixx)*
-     &        upgradfield_tot(1,2)
+     &        upgradfield_tot(2,1)
      &        + qixy*upgradfield_tot(1,1) + 
-     &        qiyz*upgradfield_tot(1,3)
+     &        qiyz*upgradfield_tot(3,1)
      &        - qixy*upgradfield_tot(2,2) - 
-     &        qixz*upgradfield_tot(2,3)
+     &        qixz*upgradfield_tot(3,2)
 c
 c     self torque due to induced dipole
 c

@@ -124,8 +124,13 @@ c
 c
 c     set the switching function coefficients
 c
-      mode = 'MPOLE'
-      call switch (mode)
+      if (damp_ewald) then
+         mode = 'EWALD'
+         call switch (mode)
+      else
+         mode = 'MPOLE'
+         call switch (mode)
+      end if
 c
 c     perform dynamic allocation of some local arrays
 c
@@ -428,14 +433,19 @@ c
 c
 c     set the switching function coefficients
 c
-      mode = 'MPOLE'
-      call switch (mode)
+      if (damp_ewald) then
+         mode = 'EWALD'
+         call switch (mode)
+      else
+         mode = 'MPOLE'
+         call switch (mode)
+      end if
 c
 c     set highest order rr and damping terms needed
 c     2 = up to field gradient (rr9)
 c
-c      order = 1
-      order = 2
+      order = 1
+c      order = 2
       rorder = order*2 + 3
       allocate (scale(rorder))
       do i = 1,rorder
@@ -469,84 +479,74 @@ c
          do kkk = 1, nelst(i)
             k = elst(kkk,i)
             kk = ipole(k)
-            kz = zaxis(k)
-            kx = xaxis(k)
-            ky = yaxis(k)
-            usek = (use(kk) .or. use(kz) .or. use(kx) .or. use(ky))
-            proceed = .true.
-            if (use_group)  call groups (proceed,fgrp,ii,kk,0,0,0,0)
-            if (.not. use_intra)  proceed = .true.
-            if (proceed)  proceed = (usei .or. usek)
-            if (proceed) then
-               xr = x(kk) - x(ii)
-               yr = y(kk) - y(ii)
-               zr = z(kk) - z(ii)
-               if (use_bounds)  call image (xr,yr,zr)
-               r2 = xr*xr + yr* yr + zr*zr
-               if (r2 .le. off2) then
-                  r = sqrt(r2)
-                  rr1 = 1.0d0 / r
-                  rr3 = rr1 / r2
-                  rr5 = 3.0d0 * rr3 / r2
-                  rr7 = 5.0d0 * rr5 / r2
-                  call t2matrixrr3(xr,yr,zr,rr3,t2rr3)
-                  call t2matrixrr5(xr,yr,zr,rr5,t2rr5)
-c
+            xr = x(kk) - x(ii)
+            yr = y(kk) - y(ii)
+            zr = z(kk) - z(ii)
+            if (use_bounds)  call image (xr,yr,zr)
+            r2 = xr*xr + yr* yr + zr*zr
+            if (r2 .le. off2) then
+               r = sqrt(r2)
+               rr1 = 1.0d0 / r
+               rr3 = rr1 / r2
+               rr5 = 3.0d0 * rr3 / r2
+               rr7 = 5.0d0 * rr5 / r2
+               call t2matrixrr3(xr,yr,zr,rr3,t2rr3)
+               call t2matrixrr5(xr,yr,zr,rr5,t2rr5)
+c     
 c     call routines that produce potential, field, field gradient
 c     for types of damping
-c
-                  if (damp_none) then
-                     t2 = t2rr3 + t2rr5
-                     call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
-     &                    fieldkp)
-                     do j = 1, 3
-                        udfieldo(j,i) = udfieldo(j,i) + fieldid(j)
-                        udfieldo(j,k) = udfieldo(j,k) + fieldkd(j)
-                        upfieldo(j,i) = upfieldo(j,i) + fieldip(j)
-                        upfieldo(j,k) = upfieldo(j,k) + fieldkp(j)
-                     end do
-                  end if
-c
+c     
+               if (damp_none) then
+                  t2 = t2rr3 + t2rr5
+                  call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
+     &                 fieldkp)
+                  do j = 1, 3
+                     udfieldo(j,i) = udfieldo(j,i) + fieldid(j)
+                     udfieldo(j,k) = udfieldo(j,k) + fieldkd(j)
+                     upfieldo(j,i) = upfieldo(j,i) + fieldip(j)
+                     upfieldo(j,k) = upfieldo(j,k) + fieldkp(j)
+                  end do
+               end if
+c     
 c     error function damping for ewald
-c
-                  if (damp_ewald) then
-                     call dampewald(i,k,rorder,r,r2,scale)
-c
+c     
+               if (damp_ewald) then
+                  call dampewald(i,k,rorder,r,r2,scale)
+c     
 c     the ewald damping factors already contain their powers of r (rrx)
-c
-                     t2 = t2rr3*scale(3)/rr3 + t2rr5*scale(5)/rr5
-                     call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
-     &                    fieldkp)
-                     do j = 1, 3
-                        udfield_ewaldo(j,i) = udfield_ewaldo(j,i) + 
-     &                       fieldid(j)
-                        udfield_ewaldo(j,k) = udfield_ewaldo(j,k) + 
-     &                       fieldkd(j)
-                        upfield_ewaldo(j,i) = upfield_ewaldo(j,i) +
-     &                       fieldip(j)
-                        upfield_ewaldo(j,k) = upfield_ewaldo(j,k) +
-     &                       fieldkp(j)
-                     end do
-                  end if
-c
+c     
+                  t2 = t2rr3*scale(3)/rr3 + t2rr5*scale(5)/rr5
+                  call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
+     &                 fieldkp)
+                  do j = 1, 3
+                     udfield_ewaldo(j,i) = udfield_ewaldo(j,i) + 
+     &                    fieldid(j)
+                     udfield_ewaldo(j,k) = udfield_ewaldo(j,k) + 
+     &                    fieldkd(j)
+                     upfield_ewaldo(j,i) = upfield_ewaldo(j,i) +
+     &                    fieldip(j)
+                     upfield_ewaldo(j,k) = upfield_ewaldo(j,k) +
+     &                    fieldkp(j)
+                  end do
+               end if
+c     
 c     thole damping
-c
-                  if (damp_thole) then
-                     call dampthole(i,k,rorder,r,scale)
-                     t2 = t2rr3*scale(3) + t2rr5*scale(5)
-                     call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
-     &                    fieldkp)
-                     do j = 1, 3
-                        udfield_tholeo(j,i) = udfield_tholeo(j,i) +
-     &                       fieldid(j)
-                        udfield_tholeo(j,k) = udfield_tholeo(j,k) +
-     &                       fieldkd(j)
-                        upfield_tholeo(j,i) = upfield_tholeo(j,i) +
-     &                       fieldip(j)
-                        upfield_tholeo(j,k) = upfield_tholeo(j,k) +
-     &                       fieldkp(j)
-                     end do
-                  end if
+c     
+               if (damp_thole) then
+                  call dampthole(i,k,rorder,r,scale)
+                  t2 = t2rr3*scale(3) + t2rr5*scale(5)
+                  call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
+     &                 fieldkp)
+                  do j = 1, 3
+                     udfield_tholeo(j,i) = udfield_tholeo(j,i) +
+     &                    fieldid(j)
+                     udfield_tholeo(j,k) = udfield_tholeo(j,k) +
+     &                    fieldkd(j)
+                     upfield_tholeo(j,i) = upfield_tholeo(j,i) +
+     &                    fieldip(j)
+                     upfield_tholeo(j,k) = upfield_tholeo(j,k) +
+     &                    fieldkp(j)
+                  end do
                end if
             end if
          end do

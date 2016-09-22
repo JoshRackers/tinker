@@ -78,10 +78,10 @@ c
 c     Intel compiler extensions to OpenMP standard
 c
 c     commented out for gfortran compiler
-c#ifdef __INTEL_COMPILER
-c!$    call kmp_set_stacksize_s (2**28)
-c!$    call kmp_set_blocktime (0)
-c#endif
+#ifdef __INTEL_COMPILER
+!$    call kmp_set_stacksize_s (2**28)
+!$    call kmp_set_blocktime (0)
+#endif
 c
 c     values of machine precision constants
 c

@@ -1,3 +1,11 @@
 *.swp
+bench/
 build/
 bin/
+configure/
+fftw/
+make/
+source/*.o
+source/*.mod
+source/*.x
+source/*~

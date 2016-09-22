@@ -146,8 +146,13 @@ c
 c
 c     set the switching function coefficients
 c
-      mode = 'MPOLE'
-      call switch (mode)
+      if (damp_ewald) then
+         mode = 'EWALD'
+         call switch (mode)
+      else
+         mode = 'MPOLE'
+         call switch (mode)
+      end if
 c
 c     perform dynamic allocation of some local arrays
 c
@@ -711,8 +716,13 @@ c
 c
 c     set the switching function coefficients
 c
-      mode = 'MPOLE'
-      call switch (mode)
+      if (damp_ewald) then
+         mode = 'EWALD'
+         call switch (mode)
+      else
+         mode = 'MPOLE'
+         call switch (mode)
+      end if
 c
 c     set highest order rr and damping terms needed
 c     2 = up to field gradient (rr9)
@@ -802,136 +812,126 @@ c
          do kkk = 1, nelst(i)
             k = elst(kkk,i)
             kk = ipole(k)
-            kz = zaxis(k)
-            kx = xaxis(k)
-            ky = yaxis(k)
-            usek = (use(kk) .or. use(kz) .or. use(kx) .or. use(ky))
-            proceed = .true.
-            if (use_group)  call groups (proceed,fgrp,ii,kk,0,0,0,0)
-            if (.not. use_intra)  proceed = .true.
-            if (proceed)  proceed = (usei .or. usek)
-            if (proceed) then
-               xr = x(kk) - x(ii)
-               yr = y(kk) - y(ii)
-               zr = z(kk) - z(ii)
-               if (use_bounds)  call image (xr,yr,zr)
-               r2 = xr*xr + yr* yr + zr*zr
-               if (r2 .le. off2) then
-                  r = sqrt(r2)
-                  rr1 = 1.0d0 / r
-                  rr3 = rr1 / r2
-                  rr5 = 3.0d0 * rr3 / r2
-                  rr7 = 5.0d0 * rr5 / r2
-                  rr9 = 7.0d0 * rr7 / r2
-                  call t0matrixrr1(rr1,t0rr1)
-                  call t1matrixrr3(xr,yr,zr,rr3,t1rr3)
-                  call t2matrixrr3(xr,yr,zr,rr3,t2rr3)
-                  call t2matrixrr5(xr,yr,zr,rr5,t2rr5)
-                  call t3matrixrr5(xr,yr,zr,rr5,t3rr5)
-                  call t3matrixrr7(xr,yr,zr,rr7,t3rr7)
-                  call t4matrixrr5(xr,yr,zr,rr5,t4rr5)
-                  call t4matrixrr7(xr,yr,zr,rr7,t4rr7)
-                  call t4matrixrr9(xr,yr,zr,rr9,t4rr9)
+            xr = x(kk) - x(ii)
+            yr = y(kk) - y(ii)
+            zr = z(kk) - z(ii)
+            if (use_bounds)  call image (xr,yr,zr)
+            r2 = xr*xr + yr* yr + zr*zr
+            if (r2 .le. off2) then
+               r = sqrt(r2)
+               rr1 = 1.0d0 / r
+               rr3 = rr1 / r2
+               rr5 = 3.0d0 * rr3 / r2
+               rr7 = 5.0d0 * rr5 / r2
+               rr9 = 7.0d0 * rr7 / r2
+               call t0matrixrr1(rr1,t0rr1)
+               call t1matrixrr3(xr,yr,zr,rr3,t1rr3)
+               call t2matrixrr3(xr,yr,zr,rr3,t2rr3)
+               call t2matrixrr5(xr,yr,zr,rr5,t2rr5)
+               call t3matrixrr5(xr,yr,zr,rr5,t3rr5)
+               call t3matrixrr7(xr,yr,zr,rr7,t3rr7)
+               call t4matrixrr5(xr,yr,zr,rr5,t4rr5)
+               call t4matrixrr7(xr,yr,zr,rr7,t4rr7)
+               call t4matrixrr9(xr,yr,zr,rr9,t4rr9)
 c
 c     call routines that produce potential, field, field gradient
 c     for types of damping
 c
-                  if (damp_none) then
-                     t0 = t0rr1
-                     t1 = t1rr3
-                     t2 = t2rr3 + t2rr5
-                     t3 = t3rr5 + t3rr7
-                     t4 = t4rr5 + t4rr7 + t4rr9
-                     call potik(i,k,t0,t1,t2,poti,potk)
-                     call fieldik(i,k,t1,t2,t3,fieldi,fieldk)
-                     call gradfieldik(i,k,t2,t3,t4,
-     &                    gradfieldi,gradfieldk)
-                     poto(i) = poto(i) + poti
-                     poto(k) = poto(k) + potk
-                     potmo(i) = potmo(i) + poti*mscale(kk)
-                     potmo(k) = potmo(k) + potk*mscale(kk)
-                     do j = 1, 3
-                        fieldo(j,i) = fieldo(j,i) + fieldi(j)
-                        fieldo(j,k) = fieldo(j,k) + fieldk(j)
-                        fieldmo(j,i) = fieldmo(j,i) + 
-     &                       fieldi(j)*mscale(kk)
-                        fieldmo(j,k) = fieldmo(j,k) + 
-     &                       fieldk(j)*mscale(kk)
-                        do l = 1, 3
-                           gradfieldo(l,j,i) = gradfieldo(l,j,i) +
-     &                          gradfieldi(l,j)
-                           gradfieldo(l,j,k) = gradfieldo(l,j,k) +
-     &                          gradfieldk(l,j)
-                           gradfieldmo(l,j,i) = gradfieldmo(l,j,i) +
-     &                          gradfieldi(l,j)*mscale(kk)
-                           gradfieldmo(l,j,k) = gradfieldmo(l,j,k) +
-     &                          gradfieldk(l,j)*mscale(kk)
-                        end do
+               if (damp_none) then
+                  t0 = t0rr1
+                  t1 = t1rr3
+                  t2 = t2rr3 + t2rr5
+                  t3 = t3rr5 + t3rr7
+                  t4 = t4rr5 + t4rr7 + t4rr9
+                  call potik(i,k,t0,t1,t2,poti,potk)
+                  call fieldik(i,k,t1,t2,t3,fieldi,fieldk)
+                  call gradfieldik(i,k,t2,t3,t4,
+     &                 gradfieldi,gradfieldk)
+                  poto(i) = poto(i) + poti
+                  poto(k) = poto(k) + potk
+                  potmo(i) = potmo(i) + poti*mscale(kk)
+                  potmo(k) = potmo(k) + potk*mscale(kk)
+                  do j = 1, 3
+                     fieldo(j,i) = fieldo(j,i) + fieldi(j)
+                     fieldo(j,k) = fieldo(j,k) + fieldk(j)
+                     fieldmo(j,i) = fieldmo(j,i) + 
+     &                    fieldi(j)*mscale(kk)
+                     fieldmo(j,k) = fieldmo(j,k) + 
+     &                    fieldk(j)*mscale(kk)
+                     do l = 1, 3
+                        gradfieldo(l,j,i) = gradfieldo(l,j,i) +
+     &                       gradfieldi(l,j)
+                        gradfieldo(l,j,k) = gradfieldo(l,j,k) +
+     &                       gradfieldk(l,j)
+                        gradfieldmo(l,j,i) = gradfieldmo(l,j,i) +
+     &                       gradfieldi(l,j)*mscale(kk)
+                        gradfieldmo(l,j,k) = gradfieldmo(l,j,k) +
+     &                       gradfieldk(l,j)*mscale(kk)
                      end do
-                  end if
+                  end do
+               end if
 c
 c     error function damping for ewald
 c
-                  if (damp_ewald) then
-                     call dampewald(i,k,rorder,r,r2,scale)
-c
+               if (damp_ewald) then
+                  call dampewald(i,k,rorder,r,r2,scale)
+c     
 c     the ewald damping factors already contain their powers of rr
-c
-                     t0 = t0rr1*scale(1)/rr1
-                     t1 = t1rr3*scale(3)/rr3
-                     t2 = t2rr3*scale(3)/rr3 + t2rr5*scale(5)/rr5
-                     t3 = t3rr5*scale(5)/rr5 + t3rr7*scale(7)/rr7
-                     t4 = t4rr5*scale(5)/rr5 + t4rr7*scale(7)/rr7 +
-     &                    t4rr9*scale(9)/rr9
-                     call potik(i,k,t0,t1,t2,poti,potk)
-                     call fieldik(i,k,t1,t2,t3,fieldi,fieldk)
-                     call gradfieldik(i,k,t2,t3,t4,
-     &                    gradfieldi,gradfieldk)
-                     pot_ewaldo(i) = pot_ewaldo(i) + poti
-                     pot_ewaldo(k) = pot_ewaldo(k) + potk
-                     do j = 1, 3
-                        field_ewaldo(j,i) = field_ewaldo(j,i) + 
-     &                       fieldi(j)
-                        field_ewaldo(j,k) = field_ewaldo(j,k) + 
-     &                       fieldk(j)
-                        do l = 1, 3
-                           gradfield_ewaldo(l,j,i) = 
-     &                          gradfield_ewaldo(l,j,i) + 
-     &                          gradfieldi(l,j)
-                           gradfield_ewaldo(l,j,k) = 
-     &                          gradfield_ewaldo(l,j,k) +
-     &                          gradfieldk(l,j)
-                        end do
+c     
+                  t0 = t0rr1*scale(1)/rr1
+                  t1 = t1rr3*scale(3)/rr3
+                  t2 = t2rr3*scale(3)/rr3 + t2rr5*scale(5)/rr5
+                  t3 = t3rr5*scale(5)/rr5 + t3rr7*scale(7)/rr7
+                  t4 = t4rr5*scale(5)/rr5 + t4rr7*scale(7)/rr7 +
+     &                 t4rr9*scale(9)/rr9
+                  call potik(i,k,t0,t1,t2,poti,potk)
+                  call fieldik(i,k,t1,t2,t3,fieldi,fieldk)
+                  call gradfieldik(i,k,t2,t3,t4,
+     &                 gradfieldi,gradfieldk)
+                  pot_ewaldo(i) = pot_ewaldo(i) + poti
+                  pot_ewaldo(k) = pot_ewaldo(k) + potk
+                  do j = 1, 3
+                     field_ewaldo(j,i) = field_ewaldo(j,i) + 
+     &                    fieldi(j)
+                     field_ewaldo(j,k) = field_ewaldo(j,k) + 
+     &                    fieldk(j)
+                     do l = 1, 3
+                        gradfield_ewaldo(l,j,i) = 
+     &                       gradfield_ewaldo(l,j,i) + 
+     &                       gradfieldi(l,j)
+                        gradfield_ewaldo(l,j,k) = 
+     &                       gradfield_ewaldo(l,j,k) +
+     &                       gradfieldk(l,j)
                      end do
-                  end if
-c
+                  end do
+               end if
+c     
 c     thole damping
-c
-                  if (damp_thole) then
-                     call dampthole(i,k,rorder,r,scale)
-                     t0 = t0rr1*scale(1)
-                     t1 = t1rr3*scale(3)
-                     t2 = t2rr3*scale(3) + t2rr5*scale(5)
-                     t2 = t2rr3*scale(3) + t2rr5*scale(5)
-                     t3 = t3rr5*scale(5) + t3rr7*scale(7)
-                     t4 = t4rr5*scale(5) + t4rr7*scale(7) +
-     &                    t4rr9*scale(9)
-                     call fieldik(i,k,t1,t2,t3,fieldi,fieldk)
-                     do j = 1, 3
-                        fieldd_tholeo(j,i) = fieldd_tholeo(j,i) +
-     &                       fieldi(j)*dscale(kk)
-                        fieldd_tholeo(j,k) = fieldd_tholeo(j,k) +
-     &                       fieldk(j)*dscale(kk)
-                        fieldp_tholeo(j,i) = fieldp_tholeo(j,i) +
-     &                       fieldi(j)*pscale(kk)
-                        fieldp_tholeo(j,k) = fieldp_tholeo(j,k) +
-     &                       fieldk(j)*pscale(kk)
-                     end do
-                  end if
+c     
+               if (damp_thole) then
+                  call dampthole(i,k,rorder,r,scale)
+                  t0 = t0rr1*scale(1)
+                  t1 = t1rr3*scale(3)
+                  t2 = t2rr3*scale(3) + t2rr5*scale(5)
+                  t2 = t2rr3*scale(3) + t2rr5*scale(5)
+                  t3 = t3rr5*scale(5) + t3rr7*scale(7)
+                  t4 = t4rr5*scale(5) + t4rr7*scale(7) +
+     &                 t4rr9*scale(9)
+                  call fieldik(i,k,t1,t2,t3,fieldi,fieldk)
+                  do j = 1, 3
+                     fieldd_tholeo(j,i) = fieldd_tholeo(j,i) +
+     &                    fieldi(j)*dscale(kk)
+                     fieldd_tholeo(j,k) = fieldd_tholeo(j,k) +
+     &                    fieldk(j)*dscale(kk)
+                     fieldp_tholeo(j,i) = fieldp_tholeo(j,i) +
+     &                    fieldi(j)*pscale(kk)
+                     fieldp_tholeo(j,k) = fieldp_tholeo(j,k) +
+     &                    fieldk(j)*pscale(kk)
+                  end do
                end if
             end if
          end do
-c
+c     
 c     reset interaction scaling coefficients for connected atoms
 c
          do j = 1, n12(ii)

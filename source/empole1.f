@@ -23,6 +23,7 @@ c
       use limits
       use mpole
       use potent
+      use potderivs
       implicit none
       integer i,j,ii
 c
@@ -30,8 +31,14 @@ c
 c     choose the method for summing over multipole interactions
 c
       if (use_ewald) then
+         damp_none = .true.
+         damp_ewald = .true.
+         if (use_polar) damp_thole = .true.
          call empole1b
       else
+         damp_none = .true.
+         damp_ewald = .false.
+         if (use_polar) damp_thole = .true.
          call empole1a
       end if
 c
@@ -119,16 +126,6 @@ c     rotate the multipole components into the global frame
 c
       call rotpole
 c
-c     flags for types of damping needed
-c
-      damp_none = .true.
-      damp_ewald = .false.
-      damp_thole = .true.
-      damp_gordonone = .false.
-      damp_gordontwo = .false.
-      damp_piquemalone = .false.
-      damp_piquemaltwo = .false.
-c
 c     compute the permanent electric potential,
 c     field, field gradient and field hessian 
 c     at each multipole site
@@ -168,9 +165,9 @@ c     permanent dipole
      &        (dix*fieldm(1,ii)+diy*fieldm(2,ii)+diz*fieldm(3,ii))
 c     quadrupole
          e = e + 0.5d0*
-     &        (qixx*gradfieldm(1,1,ii) + qixy*gradfieldm(1,2,ii) +
-     &        qixz*gradfieldm(1,3,ii) + qiyy*gradfieldm(2,2,ii) +
-     &        qiyz*gradfieldm(2,3,ii) + qizz*gradfieldm(3,3,ii))
+     &        (qixx*gradfieldm(1,1,ii) + qixy*gradfieldm(2,1,ii) +
+     &        qixz*gradfieldm(3,1,ii) + qiyy*gradfieldm(2,2,ii) +
+     &        qiyz*gradfieldm(3,2,ii) + qizz*gradfieldm(3,3,ii))
 c
 c     apply f constant
 c
@@ -187,22 +184,22 @@ c     charge
          fy = ci*fieldm(2,ii)
          fz = ci*fieldm(3,ii)
 c     dipole
-         fx = fx + dix*gradfieldm(1,1,ii) + diy*gradfieldm(1,2,ii) +
-     &        diz*gradfieldm(1,3,ii) 
-         fy = fy + dix*gradfieldm(1,2,ii) + diy*gradfieldm(2,2,ii) +
-     &        diz*gradfieldm(2,3,ii)
-         fz = fz + dix*gradfieldm(1,3,ii) + diy*gradfieldm(2,3,ii) +
+         fx = fx + dix*gradfieldm(1,1,ii) + diy*gradfieldm(2,1,ii) +
+     &        diz*gradfieldm(3,1,ii) 
+         fy = fy + dix*gradfieldm(2,1,ii) + diy*gradfieldm(2,2,ii) +
+     &        diz*gradfieldm(3,2,ii)
+         fz = fz + dix*gradfieldm(3,1,ii) + diy*gradfieldm(3,2,ii) +
      &        diz*gradfieldm(3,3,ii)
 c     quadrupole
-         fx = fx + qixx*hessfieldm(1,1,1,ii)+qixy*hessfieldm(1,1,2,ii) +
-     &        qixz*hessfieldm(1,1,3,ii) + qiyy*hessfieldm(1,2,2,ii) + 
-     &        qiyz*hessfieldm(1,2,3,ii) + qizz*hessfieldm(1,3,3,ii)
-         fy = fy + qixx*hessfieldm(1,1,2,ii)+qixy*hessfieldm(1,2,2,ii) +
-     &        qixz*hessfieldm(1,2,3,ii) + qiyy*hessfieldm(2,2,2,ii) +
-     &        qiyz*hessfieldm(2,2,3,ii) + qizz*hessfieldm(2,3,3,ii)
-         fz = fz + qixx*hessfieldm(1,1,3,ii)+qixy*hessfieldm(1,2,3,ii) +
-     &        qixz*hessfieldm(1,3,3,ii) + qiyy*hessfieldm(2,2,3,ii) +
-     &        qiyz*hessfieldm(2,3,3,ii) + qizz*hessfieldm(3,3,3,ii)
+         fx = fx + qixx*hessfieldm(1,1,1,ii)+qixy*hessfieldm(2,1,1,ii) +
+     &        qixz*hessfieldm(3,1,1,ii) + qiyy*hessfieldm(2,2,1,ii) + 
+     &        qiyz*hessfieldm(3,2,1,ii) + qizz*hessfieldm(3,3,1,ii)
+         fy = fy + qixx*hessfieldm(2,1,1,ii)+qixy*hessfieldm(2,2,1,ii) +
+     &        qixz*hessfieldm(3,2,1,ii) + qiyy*hessfieldm(2,2,2,ii) +
+     &        qiyz*hessfieldm(3,2,2,ii) + qizz*hessfieldm(3,3,2,ii)
+         fz = fz + qixx*hessfieldm(3,1,1,ii)+qixy*hessfieldm(3,2,1,ii) +
+     &        qixz*hessfieldm(3,3,1,ii) + qiyy*hessfieldm(3,2,2,ii) +
+     &        qiyz*hessfieldm(3,3,2,ii) + qizz*hessfieldm(3,3,3,ii)
 c
 c     increment the permanent multipole gradient
 c
@@ -217,15 +214,15 @@ c     dipole
          trq(2,ii) = dix*fieldm(3,ii) - diz*fieldm(1,ii)
          trq(3,ii) = diy*fieldm(1,ii) - dix*fieldm(2,ii)
 c     quadrupole
-         trq(1,ii) = trq(1,ii) + 2.0d0*(qizz - qiyy)*gradfieldm(2,3,ii)
-     &        + qixz*gradfieldm(1,2,ii) + qiyz*gradfieldm(2,2,ii)
-     &        - qixy*gradfieldm(1,3,ii) - qiyz*gradfieldm(3,3,ii)
-         trq(2,ii) = trq(2,ii) + 2.0d0*(qixx - qizz)*gradfieldm(1,3,ii)
-     &        + qixy*gradfieldm(2,3,ii) + qixz*gradfieldm(3,3,ii)
-     &        - qixz*gradfieldm(1,1,ii) - qiyz*gradfieldm(1,2,ii)
-         trq(3,ii) = trq(3,ii) + 2.0d0*(qiyy - qixx)*gradfieldm(1,2,ii)
-     &        + qixy*gradfieldm(1,1,ii) + qiyz*gradfieldm(1,3,ii)
-     &        - qixy*gradfieldm(2,2,ii) - qixz*gradfieldm(2,3,ii)
+         trq(1,ii) = trq(1,ii) + 2.0d0*(qizz - qiyy)*gradfieldm(3,2,ii)
+     &        + qixz*gradfieldm(2,1,ii) + qiyz*gradfieldm(2,2,ii)
+     &        - qixy*gradfieldm(3,1,ii) - qiyz*gradfieldm(3,3,ii)
+         trq(2,ii) = trq(2,ii) + 2.0d0*(qixx - qizz)*gradfieldm(3,1,ii)
+     &        + qixy*gradfieldm(3,2,ii) + qixz*gradfieldm(3,3,ii)
+     &        - qixz*gradfieldm(1,1,ii) - qiyz*gradfieldm(2,1,ii)
+         trq(3,ii) = trq(3,ii) + 2.0d0*(qiyy - qixx)*gradfieldm(2,1,ii)
+     &        + qixy*gradfieldm(1,1,ii) + qiyz*gradfieldm(3,1,ii)
+     &        - qixy*gradfieldm(2,2,ii) - qixz*gradfieldm(3,2,ii)
          trq(1,ii) = f * trq(1,ii)
          trq(2,ii) = f * trq(2,ii)
          trq(3,ii) = f * trq(3,ii)
@@ -325,19 +322,17 @@ c
 c     compute the permanent electric potential,
 c     field, field gradient and field hessian at each multipole site
 c
-      damp_none = .true.
-      damp_ewald = .true.
-      damp_thole = .true.
-      damp_gordonone = .false.
-      damp_gordontwo = .false.
-      damp_piquemalone = .false.
-      damp_piquemaltwo = .false.
       call permfield3
 c
 c     get reciprocal space potential, field and field gradient
 c     and field hessian
 c
       call permrecip1
+c
+c     terms for self energy
+c
+      term = 2.0d0 * aewald * aewald
+      fterm = -f * aewald / sqrtpi
 c
 c     compute the real space, reciprocal space and self-energy 
 c     parts of the Ewald summation
@@ -377,9 +372,9 @@ c     permanent dipole
      &        diy*field_ewald(2,ii) + diz*field_ewald(3,ii))
 c     quadrupole
          ereal = ereal + 0.5d0*(
-     &    qixx*gradfield_ewald(1,1,ii)+ qixy*gradfield_ewald(1,2,ii) +
-     &    qixz*gradfield_ewald(1,3,ii)+ qiyy*gradfield_ewald(2,2,ii) +
-     &    qiyz*gradfield_ewald(2,3,ii)+ qizz*gradfield_ewald(3,3,ii))
+     &    qixx*gradfield_ewald(1,1,ii)+ qixy*gradfield_ewald(2,1,ii) +
+     &    qixz*gradfield_ewald(3,1,ii)+ qiyy*gradfield_ewald(2,2,ii) +
+     &    qiyz*gradfield_ewald(3,2,ii)+ qizz*gradfield_ewald(3,3,ii))
 c
 c     self-energy
 c
@@ -391,9 +386,9 @@ c
          efix = efix + 0.5d0*(dix*field(1,ii) +
      &        diy*field(2,ii) + diz*field(3,ii))
          efix = efix + 0.5d0*(
-     &    qixx*gradfield(1,1,ii)+ qixy*gradfield(1,2,ii) +
-     &    qixz*gradfield(1,3,ii)+ qiyy*gradfield(2,2,ii) +
-     &    qiyz*gradfield(2,3,ii)+ qizz*gradfield(3,3,ii))
+     &    qixx*gradfield(1,1,ii)+ qixy*gradfield(2,1,ii) +
+     &    qixz*gradfield(3,1,ii)+ qiyy*gradfield(2,2,ii) +
+     &    qiyz*gradfield(3,2,ii)+ qizz*gradfield(3,3,ii))
 c
 c     scaled interactions
 c
@@ -401,9 +396,9 @@ c
          efix = efix - 0.5d0*(dix*fieldm(1,ii) +
      &        diy*fieldm(2,ii) + diz*fieldm(3,ii))
          efix = efix - 0.5d0*(
-     &    qixx*gradfieldm(1,1,ii)+ qixy*gradfieldm(1,2,ii) +
-     &    qixz*gradfieldm(1,3,ii)+ qiyy*gradfieldm(2,2,ii) +
-     &    qiyz*gradfieldm(2,3,ii)+ qizz*gradfieldm(3,3,ii))
+     &    qixx*gradfieldm(1,1,ii)+ qixy*gradfieldm(2,1,ii) +
+     &    qixz*gradfieldm(3,1,ii)+ qiyy*gradfieldm(2,2,ii) +
+     &    qiyz*gradfieldm(3,2,ii)+ qizz*gradfieldm(3,3,ii))
 c
 c     reciprocal space
 c
@@ -414,9 +409,9 @@ c     permanent dipole
      &        diy*field_recip(2,ii)+diz*field_recip(3,ii))
 c     quadrupole
          erecip = erecip + 0.5d0*(
-     &     qixx*gradfield_recip(1,1,ii) + qixy*gradfield_recip(1,2,ii) +
-     &     qixz*gradfield_recip(1,3,ii) + qiyy*gradfield_recip(2,2,ii) +
-     &     qiyz*gradfield_recip(2,3,ii) + qizz*gradfield_recip(3,3,ii))
+     &     qixx*gradfield_recip(1,1,ii) + qixy*gradfield_recip(2,1,ii) +
+     &     qixz*gradfield_recip(3,1,ii) + qiyy*gradfield_recip(2,2,ii) +
+     &     qiyz*gradfield_recip(3,2,ii) + qizz*gradfield_recip(3,3,ii))
 c
 c     apply f constant
 c
@@ -439,29 +434,29 @@ c     charge
          fzreal = ci*field_ewald(3,ii)
 c     dipole
          fxreal = fxreal + dix*gradfield_ewald(1,1,ii) + 
-     &        diy*gradfield_ewald(1,2,ii) + diz*gradfield_ewald(1,3,ii)
-         fyreal = fyreal + dix*gradfield_ewald(1,2,ii) +
-     &        diy*gradfield_ewald(2,2,ii) + diz*gradfield_ewald(2,3,ii)
-         fzreal = fzreal + dix*gradfield_ewald(1,3,ii) +
-     &        diy*gradfield_ewald(2,3,ii) + diz*gradfield_ewald(3,3,ii)
+     &        diy*gradfield_ewald(2,1,ii) + diz*gradfield_ewald(3,1,ii)
+         fyreal = fyreal + dix*gradfield_ewald(2,1,ii) +
+     &        diy*gradfield_ewald(2,2,ii) + diz*gradfield_ewald(3,2,ii)
+         fzreal = fzreal + dix*gradfield_ewald(3,1,ii) +
+     &        diy*gradfield_ewald(3,2,ii) + diz*gradfield_ewald(3,3,ii)
 c     quadrupole
          fxreal = fxreal + qixx*hessfield_ewald(1,1,1,ii) +
-     &        qixy*hessfield_ewald(1,1,2,ii) +
-     &        qixz*hessfield_ewald(1,1,3,ii) + 
-     &        qiyy*hessfield_ewald(1,2,2,ii) +
-     &        qiyz*hessfield_ewald(1,2,3,ii) + 
-     &        qizz*hessfield_ewald(1,3,3,ii)
-         fyreal = fyreal + qixx*hessfield_ewald(1,1,2,ii) +
-     &        qixy*hessfield_ewald(1,2,2,ii) +
-     &        qixz*hessfield_ewald(1,2,3,ii) + 
+     &        qixy*hessfield_ewald(2,1,1,ii) +
+     &        qixz*hessfield_ewald(3,1,1,ii) + 
+     &        qiyy*hessfield_ewald(2,2,1,ii) +
+     &        qiyz*hessfield_ewald(3,2,1,ii) + 
+     &        qizz*hessfield_ewald(3,3,1,ii)
+         fyreal = fyreal + qixx*hessfield_ewald(2,1,1,ii) +
+     &        qixy*hessfield_ewald(2,2,1,ii) +
+     &        qixz*hessfield_ewald(3,2,1,ii) + 
      &        qiyy*hessfield_ewald(2,2,2,ii) +
-     &        qiyz*hessfield_ewald(2,2,3,ii) + 
-     &        qizz*hessfield_ewald(2,3,3,ii)
-         fzreal = fzreal + qixx*hessfield_ewald(1,1,3,ii) +
-     &        qixy*hessfield_ewald(1,2,3,ii) +
-     &        qixz*hessfield_ewald(1,3,3,ii) + 
-     &        qiyy*hessfield_ewald(2,2,3,ii) +
-     &        qiyz*hessfield_ewald(2,3,3,ii) + 
+     &        qiyz*hessfield_ewald(3,2,2,ii) + 
+     &        qizz*hessfield_ewald(3,3,2,ii)
+         fzreal = fzreal + qixx*hessfield_ewald(3,1,1,ii) +
+     &        qixy*hessfield_ewald(3,2,1,ii) +
+     &        qixz*hessfield_ewald(3,3,1,ii) + 
+     &        qiyy*hessfield_ewald(3,2,2,ii) +
+     &        qiyz*hessfield_ewald(3,3,2,ii) + 
      &        qizz*hessfield_ewald(3,3,3,ii)
 c
 c     full real space forces needed for scaled interactions
@@ -472,24 +467,24 @@ c     charge
          fzfix = ci*field(3,ii)
 c     dipole
          fxfix = fxfix + dix*gradfield(1,1,ii) +
-     &        diy*gradfield(1,2,ii) + diz*gradfield(1,3,ii)
-         fyfix = fyfix + dix*gradfield(1,2,ii) +
-     &        diy*gradfield(2,2,ii) + diz*gradfield(2,3,ii)
-         fzfix = fzfix + dix*gradfield(1,3,ii) +
-     &        diy*gradfield(2,3,ii) + diz*gradfield(3,3,ii)
+     &        diy*gradfield(2,1,ii) + diz*gradfield(3,1,ii)
+         fyfix = fyfix + dix*gradfield(2,1,ii) +
+     &        diy*gradfield(2,2,ii) + diz*gradfield(3,2,ii)
+         fzfix = fzfix + dix*gradfield(3,1,ii) +
+     &        diy*gradfield(3,2,ii) + diz*gradfield(3,3,ii)
 c     quadrupole
          fxfix = fxfix + qixx*hessfield(1,1,1,ii) + 
-     &        qixy*hessfield(1,1,2,ii) +
-     &        qixz*hessfield(1,1,3,ii) + qiyy*hessfield(1,2,2,ii) +
-     &        qiyz*hessfield(1,2,3,ii) + qizz*hessfield(1,3,3,ii)
-         fyfix = fyfix + qixx*hessfield(1,1,2,ii) + 
-     &        qixy*hessfield(1,2,2,ii) +
-     &        qixz*hessfield(1,2,3,ii) + qiyy*hessfield(2,2,2,ii) +
-     &        qiyz*hessfield(2,2,3,ii) + qizz*hessfield(2,3,3,ii)
-         fzfix = fzfix + qixx*hessfield(1,1,3,ii) + 
-     &        qixy*hessfield(1,2,3,ii) +
-     &        qixz*hessfield(1,3,3,ii) + qiyy*hessfield(2,2,3,ii) +
-     &        qiyz*hessfield(2,3,3,ii) + qizz*hessfield(3,3,3,ii)
+     &        qixy*hessfield(2,1,1,ii) +
+     &        qixz*hessfield(3,1,1,ii) + qiyy*hessfield(2,2,1,ii) +
+     &        qiyz*hessfield(3,2,1,ii) + qizz*hessfield(3,3,1,ii)
+         fyfix = fyfix + qixx*hessfield(2,1,1,ii) + 
+     &        qixy*hessfield(2,2,1,ii) +
+     &        qixz*hessfield(3,2,1,ii) + qiyy*hessfield(2,2,2,ii) +
+     &        qiyz*hessfield(3,2,2,ii) + qizz*hessfield(3,3,2,ii)
+         fzfix = fzfix + qixx*hessfield(3,1,1,ii) + 
+     &        qixy*hessfield(3,2,1,ii) +
+     &        qixz*hessfield(3,3,1,ii) + qiyy*hessfield(3,2,2,ii) +
+     &        qiyz*hessfield(3,3,2,ii) + qizz*hessfield(3,3,3,ii)
 c
 c     scaled interactions
 c
@@ -499,24 +494,24 @@ c     charge
          fzfix = fzfix - ci*fieldm(3,ii)
 c     dipole
          fxfix = fxfix - dix*gradfieldm(1,1,ii) -
-     &        diy*gradfieldm(1,2,ii) - diz*gradfieldm(1,3,ii)
-         fyfix = fyfix - dix*gradfieldm(1,2,ii) -
-     &        diy*gradfieldm(2,2,ii) - diz*gradfieldm(2,3,ii)
-         fzfix = fzfix - dix*gradfieldm(1,3,ii) -
-     &        diy*gradfieldm(2,3,ii) - diz*gradfieldm(3,3,ii)
+     &        diy*gradfieldm(2,1,ii) - diz*gradfieldm(3,1,ii)
+         fyfix = fyfix - dix*gradfieldm(2,1,ii) -
+     &        diy*gradfieldm(2,2,ii) - diz*gradfieldm(3,2,ii)
+         fzfix = fzfix - dix*gradfieldm(3,1,ii) -
+     &        diy*gradfieldm(3,2,ii) - diz*gradfieldm(3,3,ii)
 c     quadrupole
          fxfix = fxfix - qixx*hessfieldm(1,1,1,ii) -
-     &        qixy*hessfieldm(1,1,2,ii) -
-     &        qixz*hessfieldm(1,1,3,ii) - qiyy*hessfieldm(1,2,2,ii) -
-     &        qiyz*hessfieldm(1,2,3,ii) - qizz*hessfieldm(1,3,3,ii)
-         fyfix = fyfix - qixx*hessfieldm(1,1,2,ii) -
-     &        qixy*hessfieldm(1,2,2,ii) -
-     &        qixz*hessfieldm(1,2,3,ii) - qiyy*hessfieldm(2,2,2,ii) -
-     &        qiyz*hessfieldm(2,2,3,ii) - qizz*hessfieldm(2,3,3,ii)
-         fzfix = fzfix - qixx*hessfieldm(1,1,3,ii) -
-     &        qixy*hessfieldm(1,2,3,ii) -
-     &        qixz*hessfieldm(1,3,3,ii) - qiyy*hessfieldm(2,2,3,ii) -
-     &        qiyz*hessfieldm(2,3,3,ii) - qizz*hessfieldm(3,3,3,ii)
+     &        qixy*hessfieldm(2,1,1,ii) -
+     &        qixz*hessfieldm(3,1,1,ii) - qiyy*hessfieldm(2,2,1,ii) -
+     &        qiyz*hessfieldm(3,2,1,ii) - qizz*hessfieldm(3,3,1,ii)
+         fyfix = fyfix - qixx*hessfieldm(2,1,1,ii) -
+     &        qixy*hessfieldm(2,2,1,ii) -
+     &        qixz*hessfieldm(3,2,1,ii) - qiyy*hessfieldm(2,2,2,ii) -
+     &        qiyz*hessfieldm(3,2,2,ii) - qizz*hessfieldm(3,3,2,ii)
+         fzfix = fzfix - qixx*hessfieldm(3,1,1,ii) -
+     &        qixy*hessfieldm(3,2,1,ii) -
+     &        qixz*hessfieldm(3,3,1,ii) - qiyy*hessfieldm(3,2,2,ii) -
+     &        qiyz*hessfieldm(3,3,2,ii) - qizz*hessfieldm(3,3,3,ii)
 c
 c     reciprocal space forces
 c
@@ -526,29 +521,29 @@ c     charge
          fzrecip = ci*field_recip(3,ii)
 c     dipole
          fxrecip = fxrecip + dix*gradfield_recip(1,1,ii) +
-     &        diy*gradfield_recip(1,2,ii) + diz*gradfield_recip(1,3,ii)
-         fyrecip = fyrecip + dix*gradfield_recip(1,2,ii) +
-     &        diy*gradfield_recip(2,2,ii) + diz*gradfield_recip(2,3,ii)
-         fzrecip = fzrecip + dix*gradfield_recip(1,3,ii) +
-     &        diy*gradfield_recip(2,3,ii) + diz*gradfield_recip(3,3,ii)
+     &        diy*gradfield_recip(2,1,ii) + diz*gradfield_recip(3,1,ii)
+         fyrecip = fyrecip + dix*gradfield_recip(2,1,ii) +
+     &        diy*gradfield_recip(2,2,ii) + diz*gradfield_recip(3,2,ii)
+         fzrecip = fzrecip + dix*gradfield_recip(3,1,ii) +
+     &        diy*gradfield_recip(3,2,ii) + diz*gradfield_recip(3,3,ii)
 c     quadrupole
          fxrecip = fxrecip + qixx*hessfield_recip(1,1,1,ii) + 
-     &        qixy*hessfield_recip(1,1,2,ii) +
-     &        qixz*hessfield_recip(1,1,3,ii) + 
-     &        qiyy*hessfield_recip(1,2,2,ii) +
-     &        qiyz*hessfield_recip(1,2,3,ii) + 
-     &        qizz*hessfield_recip(1,3,3,ii)
-         fyrecip = fyrecip + qixx*hessfield_recip(1,1,2,ii) +
-     &        qixy*hessfield_recip(1,2,2,ii) +
-     &        qixz*hessfield_recip(1,2,3,ii) + 
+     &        qixy*hessfield_recip(2,1,1,ii) +
+     &        qixz*hessfield_recip(3,1,1,ii) + 
+     &        qiyy*hessfield_recip(2,2,1,ii) +
+     &        qiyz*hessfield_recip(3,2,1,ii) + 
+     &        qizz*hessfield_recip(3,3,1,ii)
+         fyrecip = fyrecip + qixx*hessfield_recip(2,1,1,ii) +
+     &        qixy*hessfield_recip(2,2,1,ii) +
+     &        qixz*hessfield_recip(3,2,1,ii) + 
      &        qiyy*hessfield_recip(2,2,2,ii) +
-     &        qiyz*hessfield_recip(2,2,3,ii) + 
-     &        qizz*hessfield_recip(2,3,3,ii)
-         fzrecip = fzrecip + qixx*hessfield_recip(1,1,3,ii) +
-     &        qixy*hessfield_recip(1,2,3,ii) +
-     &        qixz*hessfield_recip(1,3,3,ii) + 
-     &        qiyy*hessfield_recip(2,2,3,ii) +
-     &        qiyz*hessfield_recip(2,3,3,ii) + 
+     &        qiyz*hessfield_recip(3,2,2,ii) + 
+     &        qizz*hessfield_recip(3,3,2,ii)
+         fzrecip = fzrecip + qixx*hessfield_recip(3,1,1,ii) +
+     &        qixy*hessfield_recip(3,2,1,ii) +
+     &        qixz*hessfield_recip(3,3,1,ii) + 
+     &        qiyy*hessfield_recip(3,2,2,ii) +
+     &        qiyz*hessfield_recip(3,3,2,ii) + 
      &        qizz*hessfield_recip(3,3,3,ii)
 c
 c     apply f constant
@@ -577,51 +572,51 @@ c     dipole
          trq(3,ii) = diy*field_ewald(1,ii) - dix*field_ewald(2,ii)
 c     quadrupole
          trq(1,ii) = trq(1,ii) + 
-     &        2.0d0*(qizz - qiyy)*gradfield_ewald(2,3,ii)
-     &        + qixz*gradfield_ewald(1,2,ii) + 
+     &        2.0d0*(qizz - qiyy)*gradfield_ewald(3,2,ii)
+     &        + qixz*gradfield_ewald(2,1,ii) + 
      &        qiyz*gradfield_ewald(2,2,ii)
-     &        - qixy*gradfield_ewald(1,3,ii) - 
+     &        - qixy*gradfield_ewald(3,1,ii) - 
      &        qiyz*gradfield_ewald(3,3,ii)
          trq(2,ii) = trq(2,ii) + 
-     &        2.0d0*(qixx - qizz)*gradfield_ewald(1,3,ii)
-     &        + qixy*gradfield_ewald(2,3,ii) + 
+     &        2.0d0*(qixx - qizz)*gradfield_ewald(3,1,ii)
+     &        + qixy*gradfield_ewald(3,2,ii) + 
      &        qixz*gradfield_ewald(3,3,ii)
      &        - qixz*gradfield_ewald(1,1,ii) - 
-     &        qiyz*gradfield_ewald(1,2,ii)
+     &        qiyz*gradfield_ewald(2,1,ii)
          trq(3,ii) = trq(3,ii) + 
-     &        2.0d0*(qiyy - qixx)*gradfield_ewald(1,2,ii)
+     &        2.0d0*(qiyy - qixx)*gradfield_ewald(2,1,ii)
      &        + qixy*gradfield_ewald(1,1,ii) + 
-     &        qiyz*gradfield_ewald(1,3,ii)
+     &        qiyz*gradfield_ewald(3,1,ii)
      &        - qixy*gradfield_ewald(2,2,ii) - 
-     &        qixz*gradfield_ewald(2,3,ii)
+     &        qixz*gradfield_ewald(3,2,ii)
 c     dipole
          trq(1,ii) = trq(1,ii) - (diz*field(2,ii) - diy*field(3,ii))
          trq(2,ii) = trq(2,ii) - (dix*field(3,ii) - diz*field(1,ii))
          trq(3,ii) = trq(3,ii) - (diy*field(1,ii) - dix*field(2,ii))
 c     quadrupole
-         trq(1,ii) = trq(1,ii) - (2.0d0*(qizz - qiyy)*gradfield(2,3,ii)
-     &        + qixz*gradfield(1,2,ii) + qiyz*gradfield(2,2,ii)
-     &        - qixy*gradfield(1,3,ii) - qiyz*gradfield(3,3,ii))
-         trq(2,ii) = trq(2,ii) - (2.0d0*(qixx - qizz)*gradfield(1,3,ii)
-     &        + qixy*gradfield(2,3,ii) + qixz*gradfield(3,3,ii)
-     &        - qixz*gradfield(1,1,ii) - qiyz*gradfield(1,2,ii))
-         trq(3,ii) = trq(3,ii) - (2.0d0*(qiyy - qixx)*gradfield(1,2,ii)
-     &        + qixy*gradfield(1,1,ii) + qiyz*gradfield(1,3,ii)
-     &        - qixy*gradfield(2,2,ii) - qixz*gradfield(2,3,ii))
+         trq(1,ii) = trq(1,ii) - (2.0d0*(qizz - qiyy)*gradfield(3,2,ii)
+     &        + qixz*gradfield(2,1,ii) + qiyz*gradfield(2,2,ii)
+     &        - qixy*gradfield(3,1,ii) - qiyz*gradfield(3,3,ii))
+         trq(2,ii) = trq(2,ii) - (2.0d0*(qixx - qizz)*gradfield(3,1,ii)
+     &        + qixy*gradfield(3,2,ii) + qixz*gradfield(3,3,ii)
+     &        - qixz*gradfield(1,1,ii) - qiyz*gradfield(2,1,ii))
+         trq(3,ii) = trq(3,ii) - (2.0d0*(qiyy - qixx)*gradfield(2,1,ii)
+     &        + qixy*gradfield(1,1,ii) + qiyz*gradfield(3,1,ii)
+     &        - qixy*gradfield(2,2,ii) - qixz*gradfield(3,2,ii))
 c     dipole
          trq(1,ii) = trq(1,ii) + diz*fieldm(2,ii) - diy*fieldm(3,ii)
          trq(2,ii) = trq(2,ii) + dix*fieldm(3,ii) - diz*fieldm(1,ii)
          trq(3,ii) = trq(3,ii) + diy*fieldm(1,ii) - dix*fieldm(2,ii)
 c     quadrupole
-         trq(1,ii) = trq(1,ii) + 2.0d0*(qizz - qiyy)*gradfieldm(2,3,ii)
-     &        + qixz*gradfieldm(1,2,ii) + qiyz*gradfieldm(2,2,ii)
-     &        - qixy*gradfieldm(1,3,ii) - qiyz*gradfieldm(3,3,ii)
-         trq(2,ii) = trq(2,ii) + 2.0d0*(qixx - qizz)*gradfieldm(1,3,ii)
-     &        + qixy*gradfieldm(2,3,ii) + qixz*gradfieldm(3,3,ii)
-     &        - qixz*gradfieldm(1,1,ii) - qiyz*gradfieldm(1,2,ii)
-         trq(3,ii) = trq(3,ii) + 2.0d0*(qiyy - qixx)*gradfieldm(1,2,ii)
-     &        + qixy*gradfieldm(1,1,ii) + qiyz*gradfieldm(1,3,ii)
-     &        - qixy*gradfieldm(2,2,ii) - qixz*gradfieldm(2,3,ii)
+         trq(1,ii) = trq(1,ii) + 2.0d0*(qizz - qiyy)*gradfieldm(3,2,ii)
+     &        + qixz*gradfieldm(2,1,ii) + qiyz*gradfieldm(2,2,ii)
+     &        - qixy*gradfieldm(3,1,ii) - qiyz*gradfieldm(3,3,ii)
+         trq(2,ii) = trq(2,ii) + 2.0d0*(qixx - qizz)*gradfieldm(3,1,ii)
+     &        + qixy*gradfieldm(3,2,ii) + qixz*gradfieldm(3,3,ii)
+     &        - qixz*gradfieldm(1,1,ii) - qiyz*gradfieldm(2,1,ii)
+         trq(3,ii) = trq(3,ii) + 2.0d0*(qiyy - qixx)*gradfieldm(2,1,ii)
+     &        + qixy*gradfieldm(1,1,ii) + qiyz*gradfieldm(3,1,ii)
+     &        - qixy*gradfieldm(2,2,ii) - qixz*gradfieldm(3,2,ii)
 c     dipole
          trq(1,ii) = trq(1,ii) + diz*field_recip(2,ii) - 
      &        diy*field_recip(3,ii)
@@ -631,23 +626,23 @@ c     dipole
      &        dix*field_recip(2,ii)
 c     quadrupole
          trq(1,ii) = trq(1,ii) + 
-     &        2.0d0*(qizz - qiyy)*gradfield_recip(2,3,ii)
-     &        + qixz*gradfield_recip(1,2,ii) + 
+     &        2.0d0*(qizz - qiyy)*gradfield_recip(3,2,ii)
+     &        + qixz*gradfield_recip(2,1,ii) + 
      &        qiyz*gradfield_recip(2,2,ii)
-     &        - qixy*gradfield_recip(1,3,ii) - 
+     &        - qixy*gradfield_recip(3,1,ii) - 
      &        qiyz*gradfield_recip(3,3,ii)
          trq(2,ii) = trq(2,ii) + 
-     &        2.0d0*(qixx - qizz)*gradfield_recip(1,3,ii)
-     &        + qixy*gradfield_recip(2,3,ii) + 
+     &        2.0d0*(qixx - qizz)*gradfield_recip(3,1,ii)
+     &        + qixy*gradfield_recip(3,2,ii) + 
      &        qixz*gradfield_recip(3,3,ii)
      &        - qixz*gradfield_recip(1,1,ii) - 
-     &        qiyz*gradfield_recip(1,2,ii)
+     &        qiyz*gradfield_recip(2,1,ii)
          trq(3,ii) = trq(3,ii) + 
-     &        2.0d0*(qiyy - qixx)*gradfield_recip(1,2,ii)
+     &        2.0d0*(qiyy - qixx)*gradfield_recip(2,1,ii)
      &        + qixy*gradfield_recip(1,1,ii) + 
-     &        qiyz*gradfield_recip(1,3,ii)
+     &        qiyz*gradfield_recip(3,1,ii)
      &        - qixy*gradfield_recip(2,2,ii) - 
-     &        qixz*gradfield_recip(2,3,ii)
+     &        qixz*gradfield_recip(3,2,ii)
 c
          trq(1,ii) = f * trq(1,ii)
          trq(2,ii) = f * trq(2,ii)

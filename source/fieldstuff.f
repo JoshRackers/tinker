@@ -72,12 +72,12 @@ c     from dipoles
       poti = poti + t1(1)*dkx + t1(2)*dky + t1(3)*dkz
       potk = potk - t1(1)*dix - t1(2)*diy - t1(3)*diz
 c     from quadrupoles
-      poti = poti + t2(1,1)*qkxx + t2(1,2)*qkxy + 
-     &     t2(1,3)*qkxz + t2(2,2)*qkyy + 
-     &     t2(2,3)*qkyz + t2(3,3)*qkzz
-      potk = potk + t2(1,1)*qixx + t2(1,2)*qixy +
-     &     t2(1,3)*qixz + t2(2,2)*qiyy + 
-     &     t2(2,3)*qiyz + t2(3,3)*qizz
+      poti = poti + t2(1,1)*qkxx + t2(2,1)*qkxy + 
+     &     t2(3,1)*qkxz + t2(2,2)*qkyy + 
+     &     t2(3,2)*qkyz + t2(3,3)*qkzz
+      potk = potk + t2(1,1)*qixx + t2(2,1)*qixy +
+     &     t2(3,1)*qixz + t2(2,2)*qiyy + 
+     &     t2(3,2)*qiyz + t2(3,3)*qizz
       return
       end
 c
@@ -187,38 +187,38 @@ c
       fieldk(2) = t1(2)*ci
       fieldk(3) = t1(3)*ci
 c     from dipoles
-      fieldi(1) = fieldi(1) - t2(1,1)*dkx - t2(1,2)*dky - 
-     &     t2(1,3)*dkz
+      fieldi(1) = fieldi(1) - t2(1,1)*dkx - t2(2,1)*dky - 
+     &     t2(3,1)*dkz
       fieldi(2) = fieldi(2) - t2(2,1)*dkx - t2(2,2)*dky - 
-     &     t2(2,3)*dkz
+     &     t2(3,2)*dkz
       fieldi(3) = fieldi(3) - t2(3,1)*dkx - t2(3,2)*dky -
      &     t2(3,3)*dkz
 c     
-      fieldk(1) = fieldk(1) - t2(1,1)*dix - t2(1,2)*diy -
-     &     t2(1,3)*diz
+      fieldk(1) = fieldk(1) - t2(1,1)*dix - t2(2,1)*diy -
+     &     t2(3,1)*diz
       fieldk(2) = fieldk(2) - t2(2,1)*dix - t2(2,2)*diy -
-     &     t2(2,3)*diz
+     &     t2(3,2)*diz
       fieldk(3) = fieldk(3) - t2(3,1)*dix - t2(3,2)*diy -
      &     t2(3,3)*diz
 c     from quadrupoles
-      fieldi(1) = fieldi(1)- t3(1,1,1)*qkxx - t3(1,1,2)*qkxy
-     &     -t3(1,1,3)*qkxz - t3(1,2,2)*qkyy - t3(1,2,3)*qkyz 
-     &     -t3(1,3,3)*qkzz
-      fieldi(2) = fieldi(2)- t3(2,1,1)*qkxx - t3(2,1,2)*qkxy
-     &     -t3(2,1,3)*qkxz - t3(2,2,2)*qkyy - t3(2,2,3)*qkyz
-     &     -t3(2,3,3)*qkzz
-      fieldi(3) = fieldi(3)- t3(3,1,1)*qkxx - t3(3,1,2)*qkxy
-     &     -t3(3,1,3)*qkxz - t3(3,2,2)*qkyy - t3(3,2,3)*qkyz
+      fieldi(1) = fieldi(1)- t3(1,1,1)*qkxx - t3(2,1,1)*qkxy
+     &     -t3(3,1,1)*qkxz - t3(2,2,1)*qkyy - t3(3,2,1)*qkyz 
+     &     -t3(3,3,1)*qkzz
+      fieldi(2) = fieldi(2)- t3(2,1,1)*qkxx - t3(2,2,1)*qkxy
+     &     -t3(3,2,1)*qkxz - t3(2,2,2)*qkyy - t3(3,2,2)*qkyz
+     &     -t3(3,3,2)*qkzz
+      fieldi(3) = fieldi(3)- t3(3,1,1)*qkxx - t3(3,2,1)*qkxy
+     &     -t3(3,3,1)*qkxz - t3(3,2,2)*qkyy - t3(3,3,2)*qkyz
      &     -t3(3,3,3)*qkzz
 c     
-      fieldk(1) = fieldk(1)+ t3(1,1,1)*qixx + t3(1,1,2)*qixy
-     &     +t3(1,1,3)*qixz + t3(1,2,2)*qiyy + t3(1,2,3)*qiyz
-     &     +t3(1,3,3)*qizz
-      fieldk(2) = fieldk(2)+ t3(2,1,1)*qixx + t3(2,1,2)*qixy
-     &     +t3(2,1,3)*qixz + t3(2,2,2)*qiyy + t3(2,2,3)*qiyz
-     &     +t3(2,3,3)*qizz
-      fieldk(3) = fieldk(3)+ t3(3,1,1)*qixx + t3(3,1,2)*qixy
-     &     +t3(3,1,3)*qixz + t3(3,2,2)*qiyy + t3(3,2,3)*qiyz
+      fieldk(1) = fieldk(1)+ t3(1,1,1)*qixx + t3(2,1,1)*qixy
+     &     +t3(3,1,1)*qixz + t3(2,2,1)*qiyy + t3(3,2,1)*qiyz
+     &     +t3(3,3,1)*qizz
+      fieldk(2) = fieldk(2)+ t3(2,1,1)*qixx + t3(2,2,1)*qixy
+     &     +t3(3,2,1)*qixz + t3(2,2,2)*qiyy + t3(3,2,2)*qiyz
+     &     +t3(3,3,2)*qizz
+      fieldk(3) = fieldk(3)+ t3(3,1,1)*qixx + t3(3,2,1)*qixy
+     &     +t3(3,3,1)*qixz + t3(3,2,2)*qiyy + t3(3,3,2)*qiyz
      &     +t3(3,3,3)*qizz
       return
       end
@@ -263,31 +263,31 @@ c
 c
 c     calculate the electric field
 c     
-      fieldid(1) = -t2(1,1)*dukx - t2(1,2)*duky - 
-     &     t2(1,3)*dukz
+      fieldid(1) = -t2(1,1)*dukx - t2(2,1)*duky - 
+     &     t2(3,1)*dukz
       fieldid(2) = -t2(2,1)*dukx - t2(2,2)*duky - 
-     &     t2(2,3)*dukz
+     &     t2(3,2)*dukz
       fieldid(3) = -t2(3,1)*dukx - t2(3,2)*duky -
      &     t2(3,3)*dukz
 c     
-      fieldkd(1) = -t2(1,1)*duix - t2(1,2)*duiy -
-     &     t2(1,3)*duiz
+      fieldkd(1) = -t2(1,1)*duix - t2(2,1)*duiy -
+     &     t2(3,1)*duiz
       fieldkd(2) = -t2(2,1)*duix - t2(2,2)*duiy -
-     &     t2(2,3)*duiz
+     &     t2(3,2)*duiz
       fieldkd(3) = -t2(3,1)*duix - t2(3,2)*duiy -
      &     t2(3,3)*duiz
 c
-      fieldip(1) = -t2(1,1)*pukx - t2(1,2)*puky -
-     &     t2(1,3)*pukz
+      fieldip(1) = -t2(1,1)*pukx - t2(2,1)*puky -
+     &     t2(3,1)*pukz
       fieldip(2) = -t2(2,1)*pukx - t2(2,2)*puky -
-     &     t2(2,3)*pukz
+     &     t2(3,2)*pukz
       fieldip(3) = -t2(3,1)*pukx - t2(3,2)*puky -
      &     t2(3,3)*pukz
 c
-      fieldkp(1) = -t2(1,1)*puix - t2(1,2)*puiy -
-     &     t2(1,3)*puiz
+      fieldkp(1) = -t2(1,1)*puix - t2(2,1)*puiy -
+     &     t2(3,1)*puiz
       fieldkp(2) = -t2(2,1)*puix - t2(2,2)*puiy -
-     &     t2(2,3)*puiz
+     &     t2(3,2)*puiz
       fieldkp(3) = -t2(3,1)*puix - t2(3,2)*puiy -
      &     t2(3,3)*puiz
       return
@@ -344,138 +344,138 @@ c     calculate electric field gradient
 c
 c     from charges
       gradfieldi(1,1) = t2(1,1)*ck
-      gradfieldi(1,2) = t2(1,2)*ck
-      gradfieldi(1,3) = t2(1,3)*ck
       gradfieldi(2,1) = t2(2,1)*ck
-      gradfieldi(2,2) = t2(2,2)*ck
-      gradfieldi(2,3) = t2(2,3)*ck
       gradfieldi(3,1) = t2(3,1)*ck
+c      gradfieldi(2,1) = t2(2,1)*ck
+      gradfieldi(2,2) = t2(2,2)*ck
       gradfieldi(3,2) = t2(3,2)*ck
+c      gradfieldi(3,1) = t2(3,1)*ck
+c      gradfieldi(3,2) = t2(3,2)*ck
       gradfieldi(3,3) = t2(3,3)*ck
 c     
       gradfieldk(1,1) = t2(1,1)*ci
-      gradfieldk(1,2) = t2(1,2)*ci
-      gradfieldk(1,3) = t2(1,3)*ci
       gradfieldk(2,1) = t2(2,1)*ci
-      gradfieldk(2,2) = t2(2,2)*ci
-      gradfieldk(2,3) = t2(2,3)*ci
       gradfieldk(3,1) = t2(3,1)*ci
+c      gradfieldk(2,1) = t2(2,1)*ci
+      gradfieldk(2,2) = t2(2,2)*ci
       gradfieldk(3,2) = t2(3,2)*ci
+c      gradfieldk(3,1) = t2(3,1)*ci
+c      gradfieldk(3,2) = t2(3,2)*ci
       gradfieldk(3,3) = t2(3,3)*ci
 c     from dipoles
 c     WHERE SHOULD THE NEGATIVES BE???
       gradfieldi(1,1) = gradfieldi(1,1) + t3(1,1,1)*dkx + 
-     &     t3(1,1,2)*dky + t3(1,1,3)*dkz
-      gradfieldi(1,2) = gradfieldi(1,2) + t3(1,2,1)*dkx +
-     &     t3(1,2,2)*dky + t3(1,2,3)*dkz
-      gradfieldi(1,3) = gradfieldi(1,3) + t3(1,3,1)*dkx +
-     &     t3(1,3,2)*dky + t3(1,3,3)*dkz
+     &     t3(2,1,1)*dky + t3(3,1,1)*dkz
       gradfieldi(2,1) = gradfieldi(2,1) + t3(2,1,1)*dkx +
-     &     t3(2,1,2)*dky + t3(2,1,3)*dkz
-      gradfieldi(2,2) = gradfieldi(2,2) + t3(2,2,1)*dkx +
-     &     t3(2,2,2)*dky + t3(2,2,3)*dkz
-      gradfieldi(2,3) = gradfieldi(2,3) + t3(2,3,1)*dkx +
-     &     t3(2,3,2)*dky + t3(2,3,3)*dkz
+     &     t3(2,2,1)*dky + t3(3,2,1)*dkz
       gradfieldi(3,1) = gradfieldi(3,1) + t3(3,1,1)*dkx +
-     &     t3(3,1,2)*dky + t3(3,1,3)*dkz
+     &     t3(3,2,1)*dky + t3(3,3,1)*dkz
+c      gradfieldi(2,1) = gradfieldi(2,1) + t3(2,1,1)*dkx +
+c     &     t3(2,2,1)*dky + t3(3,2,1)*dkz
+      gradfieldi(2,2) = gradfieldi(2,2) + t3(2,2,1)*dkx +
+     &     t3(2,2,2)*dky + t3(3,2,2)*dkz
       gradfieldi(3,2) = gradfieldi(3,2) + t3(3,2,1)*dkx +
-     &     t3(3,2,2)*dky + t3(3,2,3)*dkz
+     &     t3(3,2,2)*dky + t3(3,3,2)*dkz
+c      gradfieldi(3,1) = gradfieldi(3,1) + t3(3,1,1)*dkx +
+c     &     t3(3,2,1)*dky + t3(3,3,1)*dkz
+c      gradfieldi(3,2) = gradfieldi(3,2) + t3(3,2,1)*dkx +
+c     &     t3(3,2,2)*dky + t3(3,3,2)*dkz
       gradfieldi(3,3) = gradfieldi(3,3) + t3(3,3,1)*dkx +
      &     t3(3,3,2)*dky + t3(3,3,3)*dkz
 c     
       gradfieldk(1,1) = gradfieldk(1,1) - t3(1,1,1)*dix -
-     &     t3(1,1,2)*diy - t3(1,1,3)*diz
-      gradfieldk(1,2) = gradfieldk(1,2) - t3(1,2,1)*dix -
-     &     t3(1,2,2)*diy - t3(1,2,3)*diz
-      gradfieldk(1,3) = gradfieldk(1,3) - t3(1,3,1)*dix -
-     &     t3(1,3,2)*diy - t3(1,3,3)*diz
+     &     t3(2,1,1)*diy - t3(3,1,1)*diz
       gradfieldk(2,1) = gradfieldk(2,1) - t3(2,1,1)*dix -
-     &                 t3(2,1,2)*diy - t3(2,1,3)*diz
-      gradfieldk(2,2) = gradfieldk(2,2) - t3(2,2,1)*dix -
-     &     t3(2,2,2)*diy - t3(2,2,3)*diz
-      gradfieldk(2,3) = gradfieldk(2,3) - t3(2,3,1)*dix -
-     &     t3(2,3,2)*diy - t3(2,3,3)*diz
+     &     t3(2,2,1)*diy - t3(3,2,1)*diz
       gradfieldk(3,1) = gradfieldk(3,1) - t3(3,1,1)*dix -
-     &     t3(3,1,2)*diy - t3(3,1,3)*diz
+     &     t3(3,2,1)*diy - t3(3,3,1)*diz
+c      gradfieldk(2,1) = gradfieldk(2,1) - t3(2,1,1)*dix -
+c     &                 t3(2,2,1)*diy - t3(3,2,1)*diz
+      gradfieldk(2,2) = gradfieldk(2,2) - t3(2,2,1)*dix -
+     &     t3(2,2,2)*diy - t3(3,2,2)*diz
       gradfieldk(3,2) = gradfieldk(3,2) - t3(3,2,1)*dix -
-     &     t3(3,2,2)*diy - t3(3,2,3)*diz
+     &     t3(3,2,2)*diy - t3(3,3,2)*diz
+c      gradfieldk(3,1) = gradfieldk(3,1) - t3(3,1,1)*dix -
+c     &     t3(3,2,1)*diy - t3(3,3,1)*diz
+c      gradfieldk(3,2) = gradfieldk(3,2) - t3(3,2,1)*dix -
+c     &     t3(3,2,2)*diy - t3(3,3,2)*diz
       gradfieldk(3,3) = gradfieldk(3,3) - t3(3,3,1)*dix -
-     &                        t3(3,3,2)*diy - t3(3,3,3)*diz
+     &     t3(3,3,2)*diy - t3(3,3,3)*diz
 c     from quadrupoles
 cccccccccccccc THESE ARE RIGHT. THIS MEANS THAT GRADFIELD SHOULD BE THE
 cccccccccccccc NEGATIVE DERIVATIVE OF FIELD.  (GRADFIELD = --dV/dxdx)
       gradfieldi(1,1) = gradfieldi(1,1) + t4(1,1,1,1)*qkxx +
-     &     t4(1,1,1,2)*qkxy + t4(1,1,1,3)*qkxz + 
-     &     t4(1,1,2,2)*qkyy + t4(1,1,2,3)*qkyz + 
-     &     t4(1,1,3,3)*qkzz
-      gradfieldi(1,2) = gradfieldi(1,2) + t4(1,2,1,1)*qkxx +
-     &     t4(1,2,1,2)*qkxy + t4(1,2,1,3)*qkxz +
-     &     t4(1,2,2,2)*qkyy + t4(1,2,2,3)*qkyz +
-     &     t4(1,2,3,3)*qkzz
-      gradfieldi(1,3) = gradfieldi(1,3) + t4(1,3,1,1)*qkxx +
-     &     t4(1,3,1,2)*qkxy + t4(1,3,1,3)*qkxz +
-     &     t4(1,3,2,2)*qkyy + t4(1,3,2,3)*qkyz +
-     &     t4(1,3,3,3)*qkzz
+     &     t4(2,1,1,1)*qkxy + t4(3,1,1,1)*qkxz + 
+     &     t4(2,2,1,1)*qkyy + t4(3,2,1,1)*qkyz + 
+     &     t4(3,3,1,1)*qkzz
       gradfieldi(2,1) = gradfieldi(2,1) + t4(2,1,1,1)*qkxx +
-     &     t4(2,1,1,2)*qkxy + t4(2,1,1,3)*qkxz +
-     &     t4(2,1,2,2)*qkyy + t4(2,1,2,3)*qkyz +
-     &     t4(2,1,3,3)*qkzz
-      gradfieldi(2,2) = gradfieldi(2,2) + t4(2,2,1,1)*qkxx +
-     &     t4(2,2,1,2)*qkxy + t4(2,2,1,3)*qkxz +
-     &     t4(2,2,2,2)*qkyy + t4(2,2,2,3)*qkyz +
-     &     t4(2,2,3,3)*qkzz
-      gradfieldi(2,3) = gradfieldi(2,3) + t4(2,3,1,1)*qkxx +
-     &     t4(2,3,1,2)*qkxy + t4(2,3,1,3)*qkxz +
-     &     t4(2,3,2,2)*qkyy + t4(2,3,2,3)*qkyz +
-     &     t4(2,3,3,3)*qkzz
+     &     t4(2,2,1,1)*qkxy + t4(3,2,1,1)*qkxz +
+     &     t4(2,2,2,1)*qkyy + t4(3,2,2,1)*qkyz +
+     &     t4(3,3,2,1)*qkzz
       gradfieldi(3,1) = gradfieldi(3,1) + t4(3,1,1,1)*qkxx +
-     &     t4(3,1,1,2)*qkxy + t4(3,1,1,3)*qkxz +
-     &     t4(3,1,2,2)*qkyy + t4(3,1,2,3)*qkyz +
-     &     t4(3,1,3,3)*qkzz
+     &     t4(3,2,1,1)*qkxy + t4(3,3,1,1)*qkxz +
+     &     t4(3,2,2,1)*qkyy + t4(3,3,2,1)*qkyz +
+     &     t4(3,3,3,1)*qkzz
+c      gradfieldi(2,1) = gradfieldi(2,1) + t4(2,1,1,1)*qkxx +
+c     &     t4(2,2,1,1)*qkxy + t4(3,2,1,1)*qkxz +
+c     &     t4(2,2,2,1)*qkyy + t4(3,2,2,1)*qkyz +
+c     &     t4(3,3,2,1)*qkzz
+      gradfieldi(2,2) = gradfieldi(2,2) + t4(2,2,1,1)*qkxx +
+     &     t4(2,2,2,1)*qkxy + t4(3,2,2,1)*qkxz +
+     &     t4(2,2,2,2)*qkyy + t4(3,2,2,2)*qkyz +
+     &     t4(3,3,2,2)*qkzz
       gradfieldi(3,2) = gradfieldi(3,2) + t4(3,2,1,1)*qkxx +
-     &     t4(3,2,1,2)*qkxy + t4(3,2,1,3)*qkxz +
-     &     t4(3,2,2,2)*qkyy + t4(3,2,2,3)*qkyz +
-     &     t4(3,2,3,3)*qkzz
+     &     t4(3,2,2,1)*qkxy + t4(3,3,2,1)*qkxz +
+     &     t4(3,2,2,2)*qkyy + t4(3,3,2,2)*qkyz +
+     &     t4(3,3,3,2)*qkzz
+c      gradfieldi(3,1) = gradfieldi(3,1) + t4(3,1,1,1)*qkxx +
+c     &     t4(3,2,1,1)*qkxy + t4(3,3,1,1)*qkxz +
+c     &     t4(3,2,2,1)*qkyy + t4(3,3,2,1)*qkyz +
+c     &     t4(3,3,3,1)*qkzz
+c      gradfieldi(3,2) = gradfieldi(3,2) + t4(3,2,1,1)*qkxx +
+c     &     t4(3,2,2,1)*qkxy + t4(3,3,2,1)*qkxz +
+c     &     t4(3,2,2,2)*qkyy + t4(3,3,2,2)*qkyz +
+c     &     t4(3,3,3,2)*qkzz
       gradfieldi(3,3) = gradfieldi(3,3) + t4(3,3,1,1)*qkxx +
-     &     t4(3,3,1,2)*qkxy + t4(3,3,1,3)*qkxz +
-     &     t4(3,3,2,2)*qkyy + t4(3,3,2,3)*qkyz +
+     &     t4(3,3,2,1)*qkxy + t4(3,3,3,1)*qkxz +
+     &     t4(3,3,2,2)*qkyy + t4(3,3,3,2)*qkyz +
      &     t4(3,3,3,3)*qkzz
 c     
       gradfieldk(1,1) = gradfieldk(1,1) + t4(1,1,1,1)*qixx +
-     &     t4(1,1,1,2)*qixy + t4(1,1,1,3)*qixz +
-     &     t4(1,1,2,2)*qiyy + t4(1,1,2,3)*qiyz +
-     &     t4(1,1,3,3)*qizz
-      gradfieldk(1,2) = gradfieldk(1,2) + t4(1,2,1,1)*qixx +
-     &     t4(1,2,1,2)*qixy + t4(1,2,1,3)*qixz +
-     &     t4(1,2,2,2)*qiyy + t4(1,2,2,3)*qiyz +
-     &     t4(1,2,3,3)*qizz
-      gradfieldk(1,3) = gradfieldk(1,3) + t4(1,3,1,1)*qixx +
-     &     t4(1,3,1,2)*qixy + t4(1,3,1,3)*qixz +
-     &     t4(1,3,2,2)*qiyy + t4(1,3,2,3)*qiyz +
-     &     t4(1,3,3,3)*qizz
+     &     t4(2,1,1,1)*qixy + t4(3,1,1,1)*qixz +
+     &     t4(2,2,1,1)*qiyy + t4(3,2,1,1)*qiyz +
+     &     t4(3,3,1,1)*qizz
       gradfieldk(2,1) = gradfieldk(2,1) + t4(2,1,1,1)*qixx +
-     &     t4(2,1,1,2)*qixy + t4(2,1,1,3)*qixz +
-     &     t4(2,1,2,2)*qiyy + t4(2,1,2,3)*qiyz +
-     &     t4(2,1,3,3)*qizz
-      gradfieldk(2,2) = gradfieldk(2,2) + t4(2,2,1,1)*qixx +
-     &     t4(2,2,1,2)*qixy + t4(2,2,1,3)*qixz +
-     &     t4(2,2,2,2)*qiyy + t4(2,2,2,3)*qiyz +
-     &     t4(2,2,3,3)*qizz
-      gradfieldk(2,3) = gradfieldk(2,3) + t4(2,3,1,1)*qixx +
-     &     t4(2,3,1,2)*qixy + t4(2,3,1,3)*qixz +
-     &     t4(2,3,2,2)*qiyy + t4(2,3,2,3)*qiyz +
-     &     t4(2,3,3,3)*qizz
+     &     t4(2,2,1,1)*qixy + t4(3,2,1,1)*qixz +
+     &     t4(2,2,2,1)*qiyy + t4(3,2,2,1)*qiyz +
+     &     t4(3,3,2,1)*qizz
       gradfieldk(3,1) = gradfieldk(3,1) + t4(3,1,1,1)*qixx +
-     &     t4(3,1,1,2)*qixy + t4(3,1,1,3)*qixz +
-     &     t4(3,1,2,2)*qiyy + t4(3,1,2,3)*qiyz +
-     &     t4(3,1,3,3)*qizz
+     &     t4(3,2,1,1)*qixy + t4(3,3,1,1)*qixz +
+     &     t4(3,2,2,1)*qiyy + t4(3,3,2,1)*qiyz +
+     &     t4(3,3,3,1)*qizz
+c      gradfieldk(2,1) = gradfieldk(2,1) + t4(2,1,1,1)*qixx +
+c     &     t4(2,2,1,1)*qixy + t4(3,2,1,1)*qixz +
+c     &     t4(2,2,2,1)*qiyy + t4(3,2,2,1)*qiyz +
+c     &     t4(3,3,2,1)*qizz
+      gradfieldk(2,2) = gradfieldk(2,2) + t4(2,2,1,1)*qixx +
+     &     t4(2,2,2,1)*qixy + t4(3,2,2,1)*qixz +
+     &     t4(2,2,2,2)*qiyy + t4(3,2,2,2)*qiyz +
+     &     t4(3,3,2,2)*qizz
       gradfieldk(3,2) = gradfieldk(3,2) + t4(3,2,1,1)*qixx +
-     &     t4(3,2,1,2)*qixy + t4(3,2,1,3)*qixz +
-     &     t4(3,2,2,2)*qiyy + t4(3,2,2,3)*qiyz +
-     &     t4(3,2,3,3)*qizz
+     &     t4(3,2,2,1)*qixy + t4(3,3,2,1)*qixz +
+     &     t4(3,2,2,2)*qiyy + t4(3,3,2,2)*qiyz +
+     &     t4(3,3,3,2)*qizz
+c      gradfieldk(3,1) = gradfieldk(3,1) + t4(3,1,1,1)*qixx +
+c     &     t4(3,2,1,1)*qixy + t4(3,3,1,1)*qixz +
+c     &     t4(3,2,2,1)*qiyy + t4(3,3,2,1)*qiyz +
+c     &     t4(3,3,3,1)*qizz
+c      gradfieldk(3,2) = gradfieldk(3,2) + t4(3,2,1,1)*qixx +
+c     &     t4(3,2,2,1)*qixy + t4(3,3,2,1)*qixz +
+c     &     t4(3,2,2,2)*qiyy + t4(3,3,2,2)*qiyz +
+c     &     t4(3,3,3,2)*qizz
       gradfieldk(3,3) = gradfieldk(3,3) + t4(3,3,1,1)*qixx +
-     &     t4(3,3,1,2)*qixy + t4(3,3,1,3)*qixz +
-     &     t4(3,3,2,2)*qiyy + t4(3,3,2,3)*qiyz +
+     &     t4(3,3,2,1)*qixy + t4(3,3,3,1)*qixz +
+     &     t4(3,3,2,2)*qiyy + t4(3,3,3,2)*qiyz +
      &     t4(3,3,3,3)*qizz
       return
       end
@@ -522,80 +522,80 @@ c
 c     calculate electric field gradient
 c
       gradfieldid(1,1) = t3(1,1,1)*dukx + 
-     &     t3(1,1,2)*duky + t3(1,1,3)*dukz
-      gradfieldid(1,2) = t3(1,2,1)*dukx +
-     &     t3(1,2,2)*duky + t3(1,2,3)*dukz
-      gradfieldid(1,3) = t3(1,3,1)*dukx +
-     &     t3(1,3,2)*duky + t3(1,3,3)*dukz
+     &     t3(2,1,1)*duky + t3(3,1,1)*dukz
       gradfieldid(2,1) = t3(2,1,1)*dukx +
-     &     t3(2,1,2)*duky + t3(2,1,3)*dukz
-      gradfieldid(2,2) = t3(2,2,1)*dukx +
-     &     t3(2,2,2)*duky + t3(2,2,3)*dukz
-      gradfieldid(2,3) = t3(2,3,1)*dukx +
-     &     t3(2,3,2)*duky + t3(2,3,3)*dukz
+     &     t3(2,2,1)*duky + t3(3,2,1)*dukz
       gradfieldid(3,1) = t3(3,1,1)*dukx +
-     &     t3(3,1,2)*duky + t3(3,1,3)*dukz
+     &     t3(3,2,1)*duky + t3(3,3,1)*dukz
+c      gradfieldid(2,1) = t3(2,1,1)*dukx +
+c     &     t3(2,2,1)*duky + t3(3,2,1)*dukz
+      gradfieldid(2,2) = t3(2,2,1)*dukx +
+     &     t3(2,2,2)*duky + t3(3,2,2)*dukz
       gradfieldid(3,2) = t3(3,2,1)*dukx +
-     &     t3(3,2,2)*duky + t3(3,2,3)*dukz
+     &     t3(3,2,2)*duky + t3(3,3,2)*dukz
+c      gradfieldid(3,1) = t3(3,1,1)*dukx +
+c     &     t3(3,2,1)*duky + t3(3,3,1)*dukz
+c      gradfieldid(3,2) = t3(3,2,1)*dukx +
+c     &     t3(3,2,2)*duky + t3(3,3,2)*dukz
       gradfieldid(3,3) = t3(3,3,1)*dukx +
      &     t3(3,3,2)*duky + t3(3,3,3)*dukz
 c     
       gradfieldkd(1,1) = -t3(1,1,1)*duix -
-     &     t3(1,1,2)*duiy - t3(1,1,3)*duiz
-      gradfieldkd(1,2) = -t3(1,2,1)*duix -
-     &     t3(1,2,2)*duiy - t3(1,2,3)*duiz
-      gradfieldkd(1,3) = -t3(1,3,1)*duix -
-     &     t3(1,3,2)*duiy - t3(1,3,3)*duiz
+     &     t3(2,1,1)*duiy - t3(3,1,1)*duiz
       gradfieldkd(2,1) = -t3(2,1,1)*duix -
-     &     t3(2,1,2)*duiy - t3(2,1,3)*duiz
-      gradfieldkd(2,2) = -t3(2,2,1)*duix -
-     &     t3(2,2,2)*duiy - t3(2,2,3)*duiz
-      gradfieldkd(2,3) = -t3(2,3,1)*duix -
-     &     t3(2,3,2)*duiy - t3(2,3,3)*duiz
+     &     t3(2,2,1)*duiy - t3(3,2,1)*duiz
       gradfieldkd(3,1) = -t3(3,1,1)*duix -
-     &     t3(3,1,2)*duiy - t3(3,1,3)*duiz
+     &     t3(3,2,1)*duiy - t3(3,3,1)*duiz
+c      gradfieldkd(2,1) = -t3(2,1,1)*duix -
+c     &     t3(2,2,1)*duiy - t3(3,2,1)*duiz
+      gradfieldkd(2,2) = -t3(2,2,1)*duix -
+     &     t3(2,2,2)*duiy - t3(3,2,2)*duiz
       gradfieldkd(3,2) = -t3(3,2,1)*duix -
-     &     t3(3,2,2)*duiy - t3(3,2,3)*duiz
+     &     t3(3,2,2)*duiy - t3(3,3,2)*duiz
+c      gradfieldkd(3,1) = -t3(3,1,1)*duix -
+c     &     t3(3,2,1)*duiy - t3(3,3,1)*duiz
+c      gradfieldkd(3,2) = -t3(3,2,1)*duix -
+c     &     t3(3,2,2)*duiy - t3(3,3,2)*duiz
       gradfieldkd(3,3) = -t3(3,3,1)*duix -
      &     t3(3,3,2)*duiy - t3(3,3,3)*duiz
 c
 c     p induced dipoles
 c
       gradfieldip(1,1) = t3(1,1,1)*pukx +
-     &     t3(1,1,2)*puky + t3(1,1,3)*pukz
-      gradfieldip(1,2) = t3(1,2,1)*pukx +
-     &     t3(1,2,2)*puky + t3(1,2,3)*pukz
-      gradfieldip(1,3) = t3(1,3,1)*pukx +
-     &     t3(1,3,2)*puky + t3(1,3,3)*pukz
+     &     t3(2,1,1)*puky + t3(3,1,1)*pukz
       gradfieldip(2,1) = t3(2,1,1)*pukx +
-     &     t3(2,1,2)*puky + t3(2,1,3)*pukz
-      gradfieldip(2,2) = t3(2,2,1)*pukx +
-     &     t3(2,2,2)*puky + t3(2,2,3)*pukz
-      gradfieldip(2,3) = t3(2,3,1)*pukx +
-     &     t3(2,3,2)*puky + t3(2,3,3)*pukz
+     &     t3(2,2,1)*puky + t3(3,2,1)*pukz
       gradfieldip(3,1) = t3(3,1,1)*pukx +
-     &     t3(3,1,2)*puky + t3(3,1,3)*pukz
+     &     t3(3,2,1)*puky + t3(3,3,1)*pukz
+c      gradfieldip(2,1) = t3(2,1,1)*pukx +
+c     &     t3(2,2,1)*puky + t3(3,2,1)*pukz
+      gradfieldip(2,2) = t3(2,2,1)*pukx +
+     &     t3(2,2,2)*puky + t3(3,2,2)*pukz
       gradfieldip(3,2) = t3(3,2,1)*pukx +
-     &     t3(3,2,2)*puky + t3(3,2,3)*pukz
+     &     t3(3,2,2)*puky + t3(3,3,2)*pukz
+c      gradfieldip(3,1) = t3(3,1,1)*pukx +
+c     &     t3(3,2,1)*puky + t3(3,3,1)*pukz
+c      gradfieldip(3,2) = t3(3,2,1)*pukx +
+c     &     t3(3,2,2)*puky + t3(3,3,2)*pukz
       gradfieldip(3,3) = t3(3,3,1)*pukx +
      &     t3(3,3,2)*puky + t3(3,3,3)*pukz
 c
       gradfieldkp(1,1) = -t3(1,1,1)*puix -
-     &     t3(1,1,2)*puiy - t3(1,1,3)*puiz
-      gradfieldkp(1,2) = -t3(1,2,1)*puix -
-     &     t3(1,2,2)*puiy - t3(1,2,3)*puiz
-      gradfieldkp(1,3) = -t3(1,3,1)*puix -
-     &     t3(1,3,2)*puiy - t3(1,3,3)*puiz
+     &     t3(2,1,1)*puiy - t3(3,1,1)*puiz
       gradfieldkp(2,1) = -t3(2,1,1)*puix -
-     &     t3(2,1,2)*puiy - t3(2,1,3)*puiz
-      gradfieldkp(2,2) = -t3(2,2,1)*puix -
-     &     t3(2,2,2)*puiy - t3(2,2,3)*puiz
-      gradfieldkp(2,3) = -t3(2,3,1)*puix -
-     &     t3(2,3,2)*puiy - t3(2,3,3)*puiz
+     &     t3(2,2,1)*puiy - t3(3,2,1)*puiz
       gradfieldkp(3,1) = -t3(3,1,1)*puix -
-     &     t3(3,1,2)*puiy - t3(3,1,3)*puiz
+     &     t3(3,2,1)*puiy - t3(3,3,1)*puiz
+c      gradfieldkp(2,1) = -t3(2,1,1)*puix -
+c     &     t3(2,2,1)*puiy - t3(3,2,1)*puiz
+      gradfieldkp(2,2) = -t3(2,2,1)*puix -
+     &     t3(2,2,2)*puiy - t3(3,2,2)*puiz
       gradfieldkp(3,2) = -t3(3,2,1)*puix -
-     &     t3(3,2,2)*puiy - t3(3,2,3)*puiz
+     &     t3(3,2,2)*puiy - t3(3,3,2)*puiz
+c      gradfieldkp(3,1) = -t3(3,1,1)*puix -
+c     &     t3(3,2,1)*puiy - t3(3,3,1)*puiz
+c      gradfieldkp(3,2) = -t3(3,2,1)*puix -
+c     &     t3(3,2,2)*puiy - t3(3,3,2)*puiz
       gradfieldkp(3,3) = -t3(3,3,1)*puix -
      &     t3(3,3,2)*puiy - t3(3,3,3)*puiz
       return
@@ -655,338 +655,338 @@ c     everything here is negative (hessfield = ---dV/drdrdr)
 c
 c     from charges
       hessfieldi(1,1,1) = -t3(1,1,1)*ck
-      hessfieldi(1,1,2) = -t3(1,1,2)*ck
-      hessfieldi(1,1,3) = -t3(1,1,3)*ck      
-      hessfieldi(1,2,1) = -t3(1,2,1)*ck
-      hessfieldi(1,2,2) = -t3(1,2,2)*ck
-      hessfieldi(1,2,3) = -t3(1,2,3)*ck
-      hessfieldi(1,3,1) = -t3(1,3,1)*ck
-      hessfieldi(1,3,2) = -t3(1,3,2)*ck
-      hessfieldi(1,3,3) = -t3(1,3,3)*ck
       hessfieldi(2,1,1) = -t3(2,1,1)*ck
-      hessfieldi(2,1,2) = -t3(2,1,2)*ck
-      hessfieldi(2,1,3) = -t3(2,1,3)*ck
+      hessfieldi(3,1,1) = -t3(3,1,1)*ck      
+c      hessfieldi(2,1,1) = -t3(2,1,1)*ck
       hessfieldi(2,2,1) = -t3(2,2,1)*ck
-      hessfieldi(2,2,2) = -t3(2,2,2)*ck
-      hessfieldi(2,2,3) = -t3(2,2,3)*ck
-      hessfieldi(2,3,1) = -t3(2,3,1)*ck
-      hessfieldi(2,3,2) = -t3(2,3,2)*ck
-      hessfieldi(2,3,3) = -t3(2,3,3)*ck
-      hessfieldi(3,1,1) = -t3(3,1,1)*ck
-      hessfieldi(3,1,2) = -t3(3,1,2)*ck
-      hessfieldi(3,1,3) = -t3(3,1,3)*ck
       hessfieldi(3,2,1) = -t3(3,2,1)*ck
-      hessfieldi(3,2,2) = -t3(3,2,2)*ck
-      hessfieldi(3,2,3) = -t3(3,2,3)*ck
+c      hessfieldi(3,1,1) = -t3(3,1,1)*ck
+c      hessfieldi(3,2,1) = -t3(3,2,1)*ck
       hessfieldi(3,3,1) = -t3(3,3,1)*ck
+c      hessfieldi(2,1,1) = -t3(2,1,1)*ck
+c      hessfieldi(2,2,1) = -t3(2,2,1)*ck
+c      hessfieldi(3,2,1) = -t3(3,2,1)*ck
+c      hessfieldi(2,2,1) = -t3(2,2,1)*ck
+      hessfieldi(2,2,2) = -t3(2,2,2)*ck
+      hessfieldi(3,2,2) = -t3(3,2,2)*ck
+c      hessfieldi(3,2,1) = -t3(3,2,1)*ck
+c      hessfieldi(3,2,2) = -t3(3,2,2)*ck
       hessfieldi(3,3,2) = -t3(3,3,2)*ck
+c      hessfieldi(3,1,1) = -t3(3,1,1)*ck
+c      hessfieldi(3,2,1) = -t3(3,2,1)*ck
+c      hessfieldi(3,3,1) = -t3(3,3,1)*ck
+c      hessfieldi(3,2,1) = -t3(3,2,1)*ck
+c      hessfieldi(3,2,2) = -t3(3,2,2)*ck
+c      hessfieldi(3,3,2) = -t3(3,3,2)*ck
+c      hessfieldi(3,3,1) = -t3(3,3,1)*ck
+c      hessfieldi(3,3,2) = -t3(3,3,2)*ck
       hessfieldi(3,3,3) = -t3(3,3,3)*ck
 c
       hessfieldk(1,1,1) = t3(1,1,1)*ci
-      hessfieldk(1,1,2) = t3(1,1,2)*ci
-      hessfieldk(1,1,3) = t3(1,1,3)*ci
-      hessfieldk(1,2,1) = t3(1,2,1)*ci
-      hessfieldk(1,2,2) = t3(1,2,2)*ci
-      hessfieldk(1,2,3) = t3(1,2,3)*ci
-      hessfieldk(1,3,1) = t3(1,3,1)*ci
-      hessfieldk(1,3,2) = t3(1,3,2)*ci
-      hessfieldk(1,3,3) = t3(1,3,3)*ci
       hessfieldk(2,1,1) = t3(2,1,1)*ci
-      hessfieldk(2,1,2) = t3(2,1,2)*ci
-      hessfieldk(2,1,3) = t3(2,1,3)*ci
-      hessfieldk(2,2,1) = t3(2,2,1)*ci
-      hessfieldk(2,2,2) = t3(2,2,2)*ci
-      hessfieldk(2,2,3) = t3(2,2,3)*ci
-      hessfieldk(2,3,1) = t3(2,3,1)*ci
-      hessfieldk(2,3,2) = t3(2,3,2)*ci
-      hessfieldk(2,3,3) = t3(2,3,3)*ci
       hessfieldk(3,1,1) = t3(3,1,1)*ci
-      hessfieldk(3,1,2) = t3(3,1,2)*ci
-      hessfieldk(3,1,3) = t3(3,1,3)*ci
+c      hessfieldk(2,1,1) = t3(2,1,1)*ci
+      hessfieldk(2,2,1) = t3(2,2,1)*ci
       hessfieldk(3,2,1) = t3(3,2,1)*ci
-      hessfieldk(3,2,2) = t3(3,2,2)*ci
-      hessfieldk(3,2,3) = t3(3,2,3)*ci
+c      hessfieldk(3,1,1) = t3(3,1,1)*ci
+c      hessfieldk(3,2,1) = t3(3,2,1)*ci
       hessfieldk(3,3,1) = t3(3,3,1)*ci
+c      hessfieldk(2,1,1) = t3(2,1,1)*ci
+c      hessfieldk(2,2,1) = t3(2,2,1)*ci
+c      hessfieldk(3,2,1) = t3(3,2,1)*ci
+c      hessfieldk(2,2,1) = t3(2,2,1)*ci
+      hessfieldk(2,2,2) = t3(2,2,2)*ci
+      hessfieldk(3,2,2) = t3(3,2,2)*ci
+c      hessfieldk(3,2,1) = t3(3,2,1)*ci
+c      hessfieldk(3,2,2) = t3(3,2,2)*ci
       hessfieldk(3,3,2) = t3(3,3,2)*ci
+c      hessfieldk(3,1,1) = t3(3,1,1)*ci
+c      hessfieldk(3,2,1) = t3(3,2,1)*ci
+c      hessfieldk(3,3,1) = t3(3,3,1)*ci
+c      hessfieldk(3,2,1) = t3(3,2,1)*ci
+c      hessfieldk(3,2,2) = t3(3,2,2)*ci
+c      hessfieldk(3,3,2) = t3(3,3,2)*ci
+c      hessfieldk(3,3,1) = t3(3,3,1)*ci
+c      hessfieldk(3,3,2) = t3(3,3,2)*ci
       hessfieldk(3,3,3) = t3(3,3,3)*ci
 c
 c     from dipoles
 c
       hessfieldi(1,1,1) = hessfieldi(1,1,1) - t4(1,1,1,1)*dkx - 
-     &     t4(1,1,1,2)*dky - t4(1,1,1,3)*dkz
-      hessfieldi(1,1,2) = hessfieldi(1,1,2) - t4(1,1,2,1)*dkx -
-     &     t4(1,1,2,2)*dky - t4(1,1,2,3)*dkz
-      hessfieldi(1,1,3) = hessfieldi(1,1,3) - t4(1,1,3,1)*dkx -
-     &     t4(1,1,3,2)*dky - t4(1,1,3,3)*dkz
-      hessfieldi(1,2,1) = hessfieldi(1,2,1) - t4(1,2,1,1)*dkx -
-     &     t4(1,2,1,2)*dky - t4(1,2,1,3)*dkz
-      hessfieldi(1,2,2) = hessfieldi(1,2,2) - t4(1,2,2,1)*dkx -
-     &     t4(1,2,2,2)*dky - t4(1,2,2,3)*dkz
-      hessfieldi(1,2,3) = hessfieldi(1,2,3) - t4(1,2,3,1)*dkx -
-     &     t4(1,2,3,2)*dky - t4(1,2,3,3)*dkz
-      hessfieldi(1,3,1) = hessfieldi(1,3,1) - t4(1,3,1,1)*dkx -
-     &     t4(1,3,1,2)*dky - t4(1,3,1,3)*dkz
-      hessfieldi(1,3,2) = hessfieldi(1,3,2) - t4(1,3,2,1)*dkx -
-     &     t4(1,3,2,2)*dky - t4(1,3,2,3)*dkz
-      hessfieldi(1,3,3) = hessfieldi(1,3,3) - t4(1,3,3,1)*dkx -
-     &     t4(1,3,3,2)*dky - t4(1,3,3,3)*dkz
+     &     t4(2,1,1,1)*dky - t4(3,1,1,1)*dkz
       hessfieldi(2,1,1) = hessfieldi(2,1,1) - t4(2,1,1,1)*dkx -
-     &     t4(2,1,1,2)*dky - t4(2,1,1,3)*dkz
-      hessfieldi(2,1,2) = hessfieldi(2,1,2) - t4(2,1,2,1)*dkx -
-     &     t4(2,1,2,2)*dky - t4(2,1,2,3)*dkz
-      hessfieldi(2,1,3) = hessfieldi(2,1,3) - t4(2,1,3,1)*dkx -
-     &     t4(2,1,3,2)*dky - t4(2,1,3,3)*dkz
-      hessfieldi(2,2,1) = hessfieldi(2,2,1) - t4(2,2,1,1)*dkx -
-     &     t4(2,2,1,2)*dky - t4(2,2,1,3)*dkz
-      hessfieldi(2,2,2) = hessfieldi(2,2,2) - t4(2,2,2,1)*dkx -
-     &     t4(2,2,2,2)*dky - t4(2,2,2,3)*dkz
-      hessfieldi(2,2,3) = hessfieldi(2,2,3) - t4(2,2,3,1)*dkx -
-     &     t4(2,2,3,2)*dky - t4(2,2,3,3)*dkz
-      hessfieldi(2,3,1) = hessfieldi(2,3,1) - t4(2,3,1,1)*dkx -
-     &     t4(2,3,1,2)*dky - t4(2,3,1,3)*dkz
-      hessfieldi(2,3,2) = hessfieldi(2,3,2) - t4(2,3,2,1)*dkx -
-     &     t4(2,3,2,2)*dky - t4(2,3,2,3)*dkz
-      hessfieldi(2,3,3) = hessfieldi(2,3,3) - t4(2,3,3,1)*dkx -
-     &     t4(2,3,3,2)*dky - t4(2,3,3,3)*dkz
+     &     t4(2,2,1,1)*dky - t4(3,2,1,1)*dkz
       hessfieldi(3,1,1) = hessfieldi(3,1,1) - t4(3,1,1,1)*dkx -
-     &     t4(3,1,1,2)*dky - t4(3,1,1,3)*dkz
-      hessfieldi(3,1,2) = hessfieldi(3,1,2) - t4(3,1,2,1)*dkx -
-     &     t4(3,1,2,2)*dky - t4(3,1,2,3)*dkz
-      hessfieldi(3,1,3) = hessfieldi(3,1,3) - t4(3,1,3,1)*dkx -
-     &     t4(3,1,3,2)*dky - t4(3,1,3,3)*dkz
+     &     t4(3,2,1,1)*dky - t4(3,3,1,1)*dkz
+c      hessfieldi(2,1,1) = hessfieldi(2,1,1) - t4(2,1,1,1)*dkx -
+c     &     t4(2,2,1,1)*dky - t4(3,2,1,1)*dkz
+      hessfieldi(2,2,1) = hessfieldi(2,2,1) - t4(2,2,1,1)*dkx -
+     &     t4(2,2,2,1)*dky - t4(3,2,2,1)*dkz
       hessfieldi(3,2,1) = hessfieldi(3,2,1) - t4(3,2,1,1)*dkx -
-     &     t4(3,2,1,2)*dky - t4(3,2,1,3)*dkz
-      hessfieldi(3,2,2) = hessfieldi(3,2,2) - t4(3,2,2,1)*dkx -
-     &     t4(3,2,2,2)*dky - t4(3,2,2,3)*dkz
-      hessfieldi(3,2,3) = hessfieldi(3,2,3) - t4(3,2,3,1)*dkx -
-     &     t4(3,2,3,2)*dky - t4(3,2,3,3)*dkz
+     &     t4(3,2,2,1)*dky - t4(3,3,2,1)*dkz
+c      hessfieldi(3,1,1) = hessfieldi(3,1,1) - t4(3,1,1,1)*dkx -
+c     &     t4(3,2,1,1)*dky - t4(3,3,1,1)*dkz
+c      hessfieldi(3,2,1) = hessfieldi(3,2,1) - t4(3,2,1,1)*dkx -
+c     &     t4(3,2,2,1)*dky - t4(3,3,2,1)*dkz
       hessfieldi(3,3,1) = hessfieldi(3,3,1) - t4(3,3,1,1)*dkx -
-     &     t4(3,3,1,2)*dky - t4(3,3,1,3)*dkz
+     &     t4(3,3,2,1)*dky - t4(3,3,3,1)*dkz
+c      hessfieldi(2,1,1) = hessfieldi(2,1,1) - t4(2,1,1,1)*dkx -
+c     &     t4(2,2,1,1)*dky - t4(3,2,1,1)*dkz
+c      hessfieldi(2,2,1) = hessfieldi(2,2,1) - t4(2,2,1,1)*dkx -
+c     &     t4(2,2,2,1)*dky - t4(3,2,2,1)*dkz
+c      hessfieldi(3,2,1) = hessfieldi(3,2,1) - t4(3,2,1,1)*dkx -
+c     &     t4(3,2,2,1)*dky - t4(3,3,2,1)*dkz
+c      hessfieldi(2,2,1) = hessfieldi(2,2,1) - t4(2,2,1,1)*dkx -
+c     &     t4(2,2,2,1)*dky - t4(3,2,2,1)*dkz
+      hessfieldi(2,2,2) = hessfieldi(2,2,2) - t4(2,2,2,1)*dkx -
+     &     t4(2,2,2,2)*dky - t4(3,2,2,2)*dkz
+      hessfieldi(3,2,2) = hessfieldi(3,2,2) - t4(3,2,2,1)*dkx -
+     &     t4(3,2,2,2)*dky - t4(3,3,2,2)*dkz
+c      hessfieldi(3,2,1) = hessfieldi(3,2,1) - t4(3,2,1,1)*dkx -
+c     &     t4(3,2,2,1)*dky - t4(3,3,2,1)*dkz
+c      hessfieldi(3,2,2) = hessfieldi(3,2,2) - t4(3,2,2,1)*dkx -
+c     &     t4(3,2,2,2)*dky - t4(3,3,2,2)*dkz
       hessfieldi(3,3,2) = hessfieldi(3,3,2) - t4(3,3,2,1)*dkx -
-     &     t4(3,3,2,2)*dky - t4(3,3,2,3)*dkz
+     &     t4(3,3,2,2)*dky - t4(3,3,3,2)*dkz
+c      hessfieldi(3,1,1) = hessfieldi(3,1,1) - t4(3,1,1,1)*dkx -
+c     &     t4(3,2,1,1)*dky - t4(3,3,1,1)*dkz
+c      hessfieldi(3,2,1) = hessfieldi(3,2,1) - t4(3,2,1,1)*dkx -
+c     &     t4(3,2,2,1)*dky - t4(3,3,2,1)*dkz
+c      hessfieldi(3,3,1) = hessfieldi(3,3,1) - t4(3,3,1,1)*dkx -
+c     &     t4(3,3,2,1)*dky - t4(3,3,3,1)*dkz
+c      hessfieldi(3,2,1) = hessfieldi(3,2,1) - t4(3,2,1,1)*dkx -
+c     &     t4(3,2,2,1)*dky - t4(3,3,2,1)*dkz
+c      hessfieldi(3,2,2) = hessfieldi(3,2,2) - t4(3,2,2,1)*dkx -
+c     &     t4(3,2,2,2)*dky - t4(3,3,2,2)*dkz
+c      hessfieldi(3,3,2) = hessfieldi(3,3,2) - t4(3,3,2,1)*dkx -
+c     &     t4(3,3,2,2)*dky - t4(3,3,3,2)*dkz
+c      hessfieldi(3,3,1) = hessfieldi(3,3,1) - t4(3,3,1,1)*dkx -
+c     &     t4(3,3,2,1)*dky - t4(3,3,3,1)*dkz
+c      hessfieldi(3,3,2) = hessfieldi(3,3,2) - t4(3,3,2,1)*dkx -
+c     &     t4(3,3,2,2)*dky - t4(3,3,3,2)*dkz
       hessfieldi(3,3,3) = hessfieldi(3,3,3) - t4(3,3,3,1)*dkx -
      &     t4(3,3,3,2)*dky - t4(3,3,3,3)*dkz
 c
       hessfieldk(1,1,1) = hessfieldk(1,1,1) - t4(1,1,1,1)*dix - 
-     &     t4(1,1,1,2)*diy - t4(1,1,1,3)*diz
-      hessfieldk(1,1,2) = hessfieldk(1,1,2) - t4(1,1,2,1)*dix -
-     &     t4(1,1,2,2)*diy - t4(1,1,2,3)*diz
-      hessfieldk(1,1,3) = hessfieldk(1,1,3) - t4(1,1,3,1)*dix -
-     &     t4(1,1,3,2)*diy - t4(1,1,3,3)*diz
-      hessfieldk(1,2,1) = hessfieldk(1,2,1) - t4(1,2,1,1)*dix -
-     &     t4(1,2,1,2)*diy - t4(1,2,1,3)*diz
-      hessfieldk(1,2,2) = hessfieldk(1,2,2) - t4(1,2,2,1)*dix -
-     &     t4(1,2,2,2)*diy - t4(1,2,2,3)*diz
-      hessfieldk(1,2,3) = hessfieldk(1,2,3) - t4(1,2,3,1)*dix -
-     &     t4(1,2,3,2)*diy - t4(1,2,3,3)*diz
-      hessfieldk(1,3,1) = hessfieldk(1,3,1) - t4(1,3,1,1)*dix -
-     &     t4(1,3,1,2)*diy - t4(1,3,1,3)*diz
-      hessfieldk(1,3,2) = hessfieldk(1,3,2) - t4(1,3,2,1)*dix -
-     &     t4(1,3,2,2)*diy - t4(1,3,2,3)*diz
-      hessfieldk(1,3,3) = hessfieldk(1,3,3) - t4(1,3,3,1)*dix -
-     &     t4(1,3,3,2)*diy - t4(1,3,3,3)*diz
+     &     t4(2,1,1,1)*diy - t4(3,1,1,1)*diz
       hessfieldk(2,1,1) = hessfieldk(2,1,1) - t4(2,1,1,1)*dix -
-     &     t4(2,1,1,2)*diy - t4(2,1,1,3)*diz
-      hessfieldk(2,1,2) = hessfieldk(2,1,2) - t4(2,1,2,1)*dix -
-     &     t4(2,1,2,2)*diy - t4(2,1,2,3)*diz
-      hessfieldk(2,1,3) = hessfieldk(2,1,3) - t4(2,1,3,1)*dix -
-     &     t4(2,1,3,2)*diy - t4(2,1,3,3)*diz
-      hessfieldk(2,2,1) = hessfieldk(2,2,1) - t4(2,2,1,1)*dix -
-     &     t4(2,2,1,2)*diy - t4(2,2,1,3)*diz
-      hessfieldk(2,2,2) = hessfieldk(2,2,2) - t4(2,2,2,1)*dix -
-     &     t4(2,2,2,2)*diy - t4(2,2,2,3)*diz
-      hessfieldk(2,2,3) = hessfieldk(2,2,3) - t4(2,2,3,1)*dix -
-     &     t4(2,2,3,2)*diy - t4(2,2,3,3)*diz
-      hessfieldk(2,3,1) = hessfieldk(2,3,1) - t4(2,3,1,1)*dix -
-     &     t4(2,3,1,2)*diy - t4(2,3,1,3)*diz
-      hessfieldk(2,3,2) = hessfieldk(2,3,2) - t4(2,3,2,1)*dix -
-     &     t4(2,3,2,2)*diy - t4(2,3,2,3)*diz
-      hessfieldk(2,3,3) = hessfieldk(2,3,3) - t4(2,3,3,1)*dix -
-     &     t4(2,3,3,2)*diy - t4(2,3,3,3)*diz
+     &     t4(2,2,1,1)*diy - t4(3,2,1,1)*diz
       hessfieldk(3,1,1) = hessfieldk(3,1,1) - t4(3,1,1,1)*dix -
-     &     t4(3,1,1,2)*diy - t4(3,1,1,3)*diz
-      hessfieldk(3,1,2) = hessfieldk(3,1,2) - t4(3,1,2,1)*dix -
-     &     t4(3,1,2,2)*diy - t4(3,1,2,3)*diz
-      hessfieldk(3,1,3) = hessfieldk(3,1,3) - t4(3,1,3,1)*dix -
-     &     t4(3,1,3,2)*diy - t4(3,1,3,3)*diz
+     &     t4(3,2,1,1)*diy - t4(3,3,1,1)*diz
+c      hessfieldk(2,1,1) = hessfieldk(2,1,1) - t4(2,1,1,1)*dix -
+c     &     t4(2,2,1,1)*diy - t4(3,2,1,1)*diz
+      hessfieldk(2,2,1) = hessfieldk(2,2,1) - t4(2,2,1,1)*dix -
+     &     t4(2,2,2,1)*diy - t4(3,2,2,1)*diz
       hessfieldk(3,2,1) = hessfieldk(3,2,1) - t4(3,2,1,1)*dix -
-     &     t4(3,2,1,2)*diy - t4(3,2,1,3)*diz
-      hessfieldk(3,2,2) = hessfieldk(3,2,2) - t4(3,2,2,1)*dix -
-     &     t4(3,2,2,2)*diy - t4(3,2,2,3)*diz
-      hessfieldk(3,2,3) = hessfieldk(3,2,3) - t4(3,2,3,1)*dix -
-     &     t4(3,2,3,2)*diy - t4(3,2,3,3)*diz
+     &     t4(3,2,2,1)*diy - t4(3,3,2,1)*diz
+c      hessfieldk(3,1,1) = hessfieldk(3,1,1) - t4(3,1,1,1)*dix -
+c     &     t4(3,2,1,1)*diy - t4(3,3,1,1)*diz
+c      hessfieldk(3,2,1) = hessfieldk(3,2,1) - t4(3,2,1,1)*dix -
+c     &     t4(3,2,2,1)*diy - t4(3,3,2,1)*diz
       hessfieldk(3,3,1) = hessfieldk(3,3,1) - t4(3,3,1,1)*dix -
-     &     t4(3,3,1,2)*diy - t4(3,3,1,3)*diz
+     &     t4(3,3,2,1)*diy - t4(3,3,3,1)*diz
+c      hessfieldk(2,1,1) = hessfieldk(2,1,1) - t4(2,1,1,1)*dix -
+c     &     t4(2,2,1,1)*diy - t4(3,2,1,1)*diz
+c      hessfieldk(2,2,1) = hessfieldk(2,2,1) - t4(2,2,1,1)*dix -
+c     &     t4(2,2,2,1)*diy - t4(3,2,2,1)*diz
+c      hessfieldk(3,2,1) = hessfieldk(3,2,1) - t4(3,2,1,1)*dix -
+c     &     t4(3,2,2,1)*diy - t4(3,3,2,1)*diz
+c      hessfieldk(2,2,1) = hessfieldk(2,2,1) - t4(2,2,1,1)*dix -
+c     &     t4(2,2,2,1)*diy - t4(3,2,2,1)*diz
+      hessfieldk(2,2,2) = hessfieldk(2,2,2) - t4(2,2,2,1)*dix -
+     &     t4(2,2,2,2)*diy - t4(3,2,2,2)*diz
+      hessfieldk(3,2,2) = hessfieldk(3,2,2) - t4(3,2,2,1)*dix -
+     &     t4(3,2,2,2)*diy - t4(3,3,2,2)*diz
+c      hessfieldk(3,2,1) = hessfieldk(3,2,1) - t4(3,2,1,1)*dix -
+c     &     t4(3,2,2,1)*diy - t4(3,3,2,1)*diz
+c      hessfieldk(3,2,2) = hessfieldk(3,2,2) - t4(3,2,2,1)*dix -
+c     &     t4(3,2,2,2)*diy - t4(3,3,2,2)*diz
       hessfieldk(3,3,2) = hessfieldk(3,3,2) - t4(3,3,2,1)*dix -
-     &     t4(3,3,2,2)*diy - t4(3,3,2,3)*diz
+     &     t4(3,3,2,2)*diy - t4(3,3,3,2)*diz
+c      hessfieldk(3,1,1) = hessfieldk(3,1,1) - t4(3,1,1,1)*dix -
+c     &     t4(3,2,1,1)*diy - t4(3,3,1,1)*diz
+c      hessfieldk(3,2,1) = hessfieldk(3,2,1) - t4(3,2,1,1)*dix -
+c     &     t4(3,2,2,1)*diy - t4(3,3,2,1)*diz
+c      hessfieldk(3,3,1) = hessfieldk(3,3,1) - t4(3,3,1,1)*dix -
+c     &     t4(3,3,2,1)*diy - t4(3,3,3,1)*diz
+c      hessfieldk(3,2,1) = hessfieldk(3,2,1) - t4(3,2,1,1)*dix -
+c     &     t4(3,2,2,1)*diy - t4(3,3,2,1)*diz
+c      hessfieldk(3,2,2) = hessfieldk(3,2,2) - t4(3,2,2,1)*dix -
+c     &     t4(3,2,2,2)*diy - t4(3,3,2,2)*diz
+c      hessfieldk(3,3,2) = hessfieldk(3,3,2) - t4(3,3,2,1)*dix -
+c     &     t4(3,3,2,2)*diy - t4(3,3,3,2)*diz
+c      hessfieldk(3,3,1) = hessfieldk(3,3,1) - t4(3,3,1,1)*dix -
+c     &     t4(3,3,2,1)*diy - t4(3,3,3,1)*diz
+c      hessfieldk(3,3,2) = hessfieldk(3,3,2) - t4(3,3,2,1)*dix -
+c     &     t4(3,3,2,2)*diy - t4(3,3,3,2)*diz
       hessfieldk(3,3,3) = hessfieldk(3,3,3) - t4(3,3,3,1)*dix -
      &     t4(3,3,3,2)*diy - t4(3,3,3,3)*diz
 c
 c     quadrupoles
 c
       hessfieldi(1,1,1) = hessfieldi(1,1,1) - t5(1,1,1,1,1)*qkxx - 
-     &     t5(1,1,1,1,2)*qkxy - t5(1,1,1,1,3)*qkxz - t5(1,1,1,2,2)*qkyy-
-     &     t5(1,1,1,2,3)*qkyz - t5(1,1,1,3,3)*qkzz
-      hessfieldi(1,1,2) = hessfieldi(1,1,2) - t5(1,1,2,1,1)*qkxx -
-     &     t5(1,1,2,1,2)*qkxy - t5(1,1,2,1,3)*qkxz - t5(1,1,2,2,2)*qkyy-
-     &     t5(1,1,2,2,3)*qkyz - t5(1,1,2,3,3)*qkzz
-      hessfieldi(1,1,3) = hessfieldi(1,1,3) - t5(1,1,3,1,1)*qkxx -
-     &     t5(1,1,3,1,2)*qkxy - t5(1,1,3,1,3)*qkxz - t5(1,1,3,2,2)*qkyy-
-     &     t5(1,1,3,2,3)*qkyz - t5(1,1,3,3,3)*qkzz
-      hessfieldi(1,2,1) = hessfieldi(1,2,1) - t5(1,2,1,1,1)*qkxx -
-     &     t5(1,2,1,1,2)*qkxy - t5(1,2,1,1,3)*qkxz - t5(1,2,1,2,2)*qkyy-
-     &     t5(1,2,1,2,3)*qkyz - t5(1,2,1,3,3)*qkzz
-      hessfieldi(1,2,2) = hessfieldi(1,2,2) - t5(1,2,2,1,1)*qkxx -
-     &     t5(1,2,2,1,2)*qkxy - t5(1,2,2,1,3)*qkxz - t5(1,2,2,2,2)*qkyy-
-     &     t5(1,2,2,2,3)*qkyz - t5(1,2,2,3,3)*qkzz
-      hessfieldi(1,2,3) = hessfieldi(1,2,3) - t5(1,2,3,1,1)*qkxx -
-     &     t5(1,2,3,1,2)*qkxy - t5(1,2,3,1,3)*qkxz - t5(1,2,3,2,2)*qkyy-
-     &     t5(1,2,3,2,3)*qkyz - t5(1,2,3,3,3)*qkzz
-      hessfieldi(1,3,1) = hessfieldi(1,3,1) - t5(1,3,1,1,1)*qkxx -
-     &     t5(1,3,1,1,2)*qkxy - t5(1,3,1,1,3)*qkxz - t5(1,3,1,2,2)*qkyy-
-     &     t5(1,3,1,2,3)*qkyz - t5(1,3,1,3,3)*qkzz
-      hessfieldi(1,3,2) = hessfieldi(1,3,2) - t5(1,3,2,1,1)*qkxx -
-     &     t5(1,3,2,1,2)*qkxy - t5(1,3,2,1,3)*qkxz - t5(1,3,2,2,2)*qkyy-
-     &     t5(1,3,2,2,3)*qkyz - t5(1,3,2,3,3)*qkzz
-      hessfieldi(1,3,3) = hessfieldi(1,3,3) - t5(1,3,3,1,1)*qkxx -
-     &     t5(1,3,3,1,2)*qkxy - t5(1,3,3,1,3)*qkxz - t5(1,3,3,2,2)*qkyy-
-     &     t5(1,3,3,2,3)*qkyz - t5(1,3,3,3,3)*qkzz
+     &     t5(2,1,1,1,1)*qkxy - t5(3,1,1,1,1)*qkxz - t5(2,2,1,1,1)*qkyy-
+     &     t5(3,2,1,1,1)*qkyz - t5(3,3,1,1,1)*qkzz
       hessfieldi(2,1,1) = hessfieldi(2,1,1) - t5(2,1,1,1,1)*qkxx -
-     &     t5(2,1,1,1,2)*qkxy - t5(2,1,1,1,3)*qkxz - t5(2,1,1,2,2)*qkyy-
-     &     t5(2,1,1,2,3)*qkyz - t5(2,1,1,3,3)*qkzz
-      hessfieldi(2,1,2) = hessfieldi(2,1,2) - t5(2,1,2,1,1)*qkxx -
-     &     t5(2,1,2,1,2)*qkxy - t5(2,1,2,1,3)*qkxz - t5(2,1,2,2,2)*qkyy-
-     &     t5(2,1,2,2,3)*qkyz - t5(2,1,2,3,3)*qkzz
-      hessfieldi(2,1,3) = hessfieldi(2,1,3) - t5(2,1,3,1,1)*qkxx -
-     &     t5(2,1,3,1,2)*qkxy - t5(2,1,3,1,3)*qkxz - t5(2,1,3,2,2)*qkyy-
-     &     t5(2,1,3,2,3)*qkyz - t5(2,1,3,3,3)*qkzz
-      hessfieldi(2,2,1) = hessfieldi(2,2,1) - t5(2,2,1,1,1)*qkxx -
-     &     t5(2,2,1,1,2)*qkxy - t5(2,2,1,1,3)*qkxz - t5(2,2,1,2,2)*qkyy-
-     &     t5(2,2,1,2,3)*qkyz - t5(2,2,1,3,3)*qkzz
-      hessfieldi(2,2,2) = hessfieldi(2,2,2) - t5(2,2,2,1,1)*qkxx -
-     &     t5(2,2,2,1,2)*qkxy - t5(2,2,2,1,3)*qkxz - t5(2,2,2,2,2)*qkyy-
-     &     t5(2,2,2,2,3)*qkyz - t5(2,2,2,3,3)*qkzz
-      hessfieldi(2,2,3) = hessfieldi(2,2,3) - t5(2,2,3,1,1)*qkxx -
-     &     t5(2,2,3,1,2)*qkxy - t5(2,2,3,1,3)*qkxz - t5(2,2,3,2,2)*qkyy-
-     &     t5(2,2,3,2,3)*qkyz - t5(2,2,3,3,3)*qkzz
-      hessfieldi(2,3,1) = hessfieldi(2,3,1) - t5(2,3,1,1,1)*qkxx -
-     &     t5(2,3,1,1,2)*qkxy - t5(2,3,1,1,3)*qkxz - t5(2,3,1,2,2)*qkyy-
-     &     t5(2,3,1,2,3)*qkyz - t5(2,3,1,3,3)*qkzz
-      hessfieldi(2,3,2) = hessfieldi(2,3,2) - t5(2,3,2,1,1)*qkxx -
-     &     t5(2,3,2,1,2)*qkxy - t5(2,3,2,1,3)*qkxz - t5(2,3,2,2,2)*qkyy-
-     &     t5(2,3,2,2,3)*qkyz - t5(2,3,2,3,3)*qkzz
-      hessfieldi(2,3,3) = hessfieldi(2,3,3) - t5(2,3,3,1,1)*qkxx -
-     &     t5(2,3,3,1,2)*qkxy - t5(2,3,3,1,3)*qkxz - t5(2,3,3,2,2)*qkyy-
-     &     t5(2,3,3,2,3)*qkyz - t5(2,3,3,3,3)*qkzz
+     &     t5(2,2,1,1,1)*qkxy - t5(3,2,1,1,1)*qkxz - t5(2,2,2,1,1)*qkyy-
+     &     t5(3,2,2,1,1)*qkyz - t5(3,3,2,1,1)*qkzz
       hessfieldi(3,1,1) = hessfieldi(3,1,1) - t5(3,1,1,1,1)*qkxx -
-     &     t5(3,1,1,1,2)*qkxy - t5(3,1,1,1,3)*qkxz - t5(3,1,1,2,2)*qkyy-
-     &     t5(3,1,1,2,3)*qkyz - t5(3,1,1,3,3)*qkzz
-      hessfieldi(3,1,2) = hessfieldi(3,1,2) - t5(3,1,2,1,1)*qkxx -
-     &     t5(3,1,2,1,2)*qkxy - t5(3,1,2,1,3)*qkxz - t5(3,1,2,2,2)*qkyy-
-     &     t5(3,1,2,2,3)*qkyz - t5(3,1,2,3,3)*qkzz
-      hessfieldi(3,1,3) = hessfieldi(3,1,3) - t5(3,1,3,1,1)*qkxx -
-     &     t5(3,1,3,1,2)*qkxy - t5(3,1,3,1,3)*qkxz - t5(3,1,3,2,2)*qkyy-
-     &     t5(3,1,3,2,3)*qkyz - t5(3,1,3,3,3)*qkzz
+     &     t5(3,2,1,1,1)*qkxy - t5(3,3,1,1,1)*qkxz - t5(3,2,2,1,1)*qkyy-
+     &     t5(3,3,2,1,1)*qkyz - t5(3,3,3,1,1)*qkzz
+c      hessfieldi(2,1,1) = hessfieldi(2,1,1) - t5(2,1,1,1,1)*qkxx -
+c     &     t5(2,2,1,1,1)*qkxy - t5(3,2,1,1,1)*qkxz - t5(2,2,2,1,1)*qkyy-
+c     &     t5(3,2,2,1,1)*qkyz - t5(3,3,2,1,1)*qkzz
+      hessfieldi(2,2,1) = hessfieldi(2,2,1) - t5(2,2,1,1,1)*qkxx -
+     &     t5(2,2,2,1,1)*qkxy - t5(3,2,2,1,1)*qkxz - t5(2,2,2,2,1)*qkyy-
+     &     t5(3,2,2,2,1)*qkyz - t5(3,3,2,2,1)*qkzz
       hessfieldi(3,2,1) = hessfieldi(3,2,1) - t5(3,2,1,1,1)*qkxx -
-     &     t5(3,2,1,1,2)*qkxy - t5(3,2,1,1,3)*qkxz - t5(3,2,1,2,2)*qkyy-
-     &     t5(3,2,1,2,3)*qkyz - t5(3,2,1,3,3)*qkzz
-      hessfieldi(3,2,2) = hessfieldi(3,2,2) - t5(3,2,2,1,1)*qkxx -
-     &     t5(3,2,2,1,2)*qkxy - t5(3,2,2,1,3)*qkxz - t5(3,2,2,2,2)*qkyy-
-     &     t5(3,2,2,2,3)*qkyz - t5(3,2,2,3,3)*qkzz
-      hessfieldi(3,2,3) = hessfieldi(3,2,3) - t5(3,2,3,1,1)*qkxx -
-     &     t5(3,2,3,1,2)*qkxy - t5(3,2,3,1,3)*qkxz - t5(3,2,3,2,2)*qkyy-
-     &     t5(3,2,3,2,3)*qkyz - t5(3,2,3,3,3)*qkzz
+     &     t5(3,2,2,1,1)*qkxy - t5(3,3,2,1,1)*qkxz - t5(3,2,2,2,1)*qkyy-
+     &     t5(3,3,2,2,1)*qkyz - t5(3,3,3,2,1)*qkzz
+c      hessfieldi(3,1,1) = hessfieldi(3,1,1) - t5(3,1,1,1,1)*qkxx -
+c     &     t5(3,2,1,1,1)*qkxy - t5(3,3,1,1,1)*qkxz - t5(3,2,2,1,1)*qkyy-
+c     &     t5(3,3,2,1,1)*qkyz - t5(3,3,3,1,1)*qkzz
+c      hessfieldi(3,2,1) = hessfieldi(3,2,1) - t5(3,2,1,1,1)*qkxx -
+c     &     t5(3,2,2,1,1)*qkxy - t5(3,3,2,1,1)*qkxz - t5(3,2,2,2,1)*qkyy-
+c     &     t5(3,3,2,2,1)*qkyz - t5(3,3,3,2,1)*qkzz
       hessfieldi(3,3,1) = hessfieldi(3,3,1) - t5(3,3,1,1,1)*qkxx -
-     &     t5(3,3,1,1,2)*qkxy - t5(3,3,1,1,3)*qkxz - t5(3,3,1,2,2)*qkyy-
-     &     t5(3,3,1,2,3)*qkyz - t5(3,3,1,3,3)*qkzz
+     &     t5(3,3,2,1,1)*qkxy - t5(3,3,3,1,1)*qkxz - t5(3,3,2,2,1)*qkyy-
+     &     t5(3,3,3,2,1)*qkyz - t5(3,3,3,3,1)*qkzz
+c      hessfieldi(2,1,1) = hessfieldi(2,1,1) - t5(2,1,1,1,1)*qkxx -
+c     &     t5(2,2,1,1,1)*qkxy - t5(3,2,1,1,1)*qkxz - t5(2,2,2,1,1)*qkyy-
+c     &     t5(3,2,2,1,1)*qkyz - t5(3,3,2,1,1)*qkzz
+c      hessfieldi(2,2,1) = hessfieldi(2,2,1) - t5(2,2,1,1,1)*qkxx -
+c     &     t5(2,2,2,1,1)*qkxy - t5(3,2,2,1,1)*qkxz - t5(2,2,2,2,1)*qkyy-
+c     &     t5(3,2,2,2,1)*qkyz - t5(3,3,2,2,1)*qkzz
+c      hessfieldi(3,2,1) = hessfieldi(3,2,1) - t5(3,2,1,1,1)*qkxx -
+c     &     t5(3,2,2,1,1)*qkxy - t5(3,3,2,1,1)*qkxz - t5(3,2,2,2,1)*qkyy-
+c     &     t5(3,3,2,2,1)*qkyz - t5(3,3,3,2,1)*qkzz
+c      hessfieldi(2,2,1) = hessfieldi(2,2,1) - t5(2,2,1,1,1)*qkxx -
+c     &     t5(2,2,2,1,1)*qkxy - t5(3,2,2,1,1)*qkxz - t5(2,2,2,2,1)*qkyy-
+c     &     t5(3,2,2,2,1)*qkyz - t5(3,3,2,2,1)*qkzz
+      hessfieldi(2,2,2) = hessfieldi(2,2,2) - t5(2,2,2,1,1)*qkxx -
+     &     t5(2,2,2,2,1)*qkxy - t5(3,2,2,2,1)*qkxz - t5(2,2,2,2,2)*qkyy-
+     &     t5(3,2,2,2,2)*qkyz - t5(3,3,2,2,2)*qkzz
+      hessfieldi(3,2,2) = hessfieldi(3,2,2) - t5(3,2,2,1,1)*qkxx -
+     &     t5(3,2,2,2,1)*qkxy - t5(3,3,2,2,1)*qkxz - t5(3,2,2,2,2)*qkyy-
+     &     t5(3,3,2,2,2)*qkyz - t5(3,3,3,2,2)*qkzz
+c      hessfieldi(3,2,1) = hessfieldi(3,2,1) - t5(3,2,1,1,1)*qkxx -
+c     &     t5(3,2,2,1,1)*qkxy - t5(3,3,2,1,1)*qkxz - t5(3,2,2,2,1)*qkyy-
+c     &     t5(3,3,2,2,1)*qkyz - t5(3,3,3,2,1)*qkzz
+c      hessfieldi(3,2,2) = hessfieldi(3,2,2) - t5(3,2,2,1,1)*qkxx -
+c     &     t5(3,2,2,2,1)*qkxy - t5(3,3,2,2,1)*qkxz - t5(3,2,2,2,2)*qkyy-
+c     &     t5(3,3,2,2,2)*qkyz - t5(3,3,3,2,2)*qkzz
       hessfieldi(3,3,2) = hessfieldi(3,3,2) - t5(3,3,2,1,1)*qkxx -
-     &     t5(3,3,2,1,2)*qkxy - t5(3,3,2,1,3)*qkxz - t5(3,3,2,2,2)*qkyy-
-     &     t5(3,3,2,2,3)*qkyz - t5(3,3,2,3,3)*qkzz
+     &     t5(3,3,2,2,1)*qkxy - t5(3,3,3,2,1)*qkxz - t5(3,3,2,2,2)*qkyy-
+     &     t5(3,3,3,2,2)*qkyz - t5(3,3,3,3,2)*qkzz
+c      hessfieldi(3,1,1) = hessfieldi(3,1,1) - t5(3,1,1,1,1)*qkxx -
+c     &     t5(3,2,1,1,1)*qkxy - t5(3,3,1,1,1)*qkxz - t5(3,2,2,1,1)*qkyy-
+c     &     t5(3,3,2,1,1)*qkyz - t5(3,3,3,1,1)*qkzz
+c      hessfieldi(3,2,1) = hessfieldi(3,2,1) - t5(3,2,1,1,1)*qkxx -
+c     &     t5(3,2,2,1,1)*qkxy - t5(3,3,2,1,1)*qkxz - t5(3,2,2,2,1)*qkyy-
+c     &     t5(3,3,2,2,1)*qkyz - t5(3,3,3,2,1)*qkzz
+c      hessfieldi(3,3,1) = hessfieldi(3,3,1) - t5(3,3,1,1,1)*qkxx -
+c     &     t5(3,3,2,1,1)*qkxy - t5(3,3,3,1,1)*qkxz - t5(3,3,2,2,1)*qkyy-
+c     &     t5(3,3,3,2,1)*qkyz - t5(3,3,3,3,1)*qkzz
+c      hessfieldi(3,2,1) = hessfieldi(3,2,1) - t5(3,2,1,1,1)*qkxx -
+c     &     t5(3,2,2,1,1)*qkxy - t5(3,3,2,1,1)*qkxz - t5(3,2,2,2,1)*qkyy-
+c     &     t5(3,3,2,2,1)*qkyz - t5(3,3,3,2,1)*qkzz
+c      hessfieldi(3,2,2) = hessfieldi(3,2,2) - t5(3,2,2,1,1)*qkxx -
+c     &     t5(3,2,2,2,1)*qkxy - t5(3,3,2,2,1)*qkxz - t5(3,2,2,2,2)*qkyy-
+c     &     t5(3,3,2,2,2)*qkyz - t5(3,3,3,2,2)*qkzz
+c      hessfieldi(3,3,2) = hessfieldi(3,3,2) - t5(3,3,2,1,1)*qkxx -
+c     &     t5(3,3,2,2,1)*qkxy - t5(3,3,3,2,1)*qkxz - t5(3,3,2,2,2)*qkyy-
+c     &     t5(3,3,3,2,2)*qkyz - t5(3,3,3,3,2)*qkzz
+c      hessfieldi(3,3,1) = hessfieldi(3,3,1) - t5(3,3,1,1,1)*qkxx -
+c     &     t5(3,3,2,1,1)*qkxy - t5(3,3,3,1,1)*qkxz - t5(3,3,2,2,1)*qkyy-
+c     &     t5(3,3,3,2,1)*qkyz - t5(3,3,3,3,1)*qkzz
+c      hessfieldi(3,3,2) = hessfieldi(3,3,2) - t5(3,3,2,1,1)*qkxx -
+c     &     t5(3,3,2,2,1)*qkxy - t5(3,3,3,2,1)*qkxz - t5(3,3,2,2,2)*qkyy-
+c     &     t5(3,3,3,2,2)*qkyz - t5(3,3,3,3,2)*qkzz
       hessfieldi(3,3,3) = hessfieldi(3,3,3) -  t5(3,3,3,1,1)*qkxx -
-     &     t5(3,3,3,1,2)*qkxy - t5(3,3,3,1,3)*qkxz - t5(3,3,3,2,2)*qkyy-
-     &     t5(3,3,3,2,3)*qkyz - t5(3,3,3,3,3)*qkzz
+     &     t5(3,3,3,2,1)*qkxy - t5(3,3,3,3,1)*qkxz - t5(3,3,3,2,2)*qkyy-
+     &     t5(3,3,3,3,2)*qkyz - t5(3,3,3,3,3)*qkzz
 c
       hessfieldk(1,1,1) = hessfieldk(1,1,1) + t5(1,1,1,1,1)*qixx + 
-     &     t5(1,1,1,1,2)*qixy + t5(1,1,1,1,3)*qixz + t5(1,1,1,2,2)*qiyy+
-     &     t5(1,1,1,2,3)*qiyz + t5(1,1,1,3,3)*qizz
-      hessfieldk(1,1,2) = hessfieldk(1,1,2) + t5(1,1,2,1,1)*qixx +
-     &     t5(1,1,2,1,2)*qixy + t5(1,1,2,1,3)*qixz + t5(1,1,2,2,2)*qiyy+
-     &     t5(1,1,2,2,3)*qiyz + t5(1,1,2,3,3)*qizz
-      hessfieldk(1,1,3) = hessfieldk(1,1,3) + t5(1,1,3,1,1)*qixx +
-     &     t5(1,1,3,1,2)*qixy + t5(1,1,3,1,3)*qixz + t5(1,1,3,2,2)*qiyy+
-     &     t5(1,1,3,2,3)*qiyz + t5(1,1,3,3,3)*qizz
-      hessfieldk(1,2,1) = hessfieldk(1,2,1) + t5(1,2,1,1,1)*qixx +
-     &     t5(1,2,1,1,2)*qixy + t5(1,2,1,1,3)*qixz + t5(1,2,1,2,2)*qiyy+
-     &     t5(1,2,1,2,3)*qiyz + t5(1,2,1,3,3)*qizz
-      hessfieldk(1,2,2) = hessfieldk(1,2,2) + t5(1,2,2,1,1)*qixx +
-     &     t5(1,2,2,1,2)*qixy + t5(1,2,2,1,3)*qixz + t5(1,2,2,2,2)*qiyy+
-     &     t5(1,2,2,2,3)*qiyz + t5(1,2,2,3,3)*qizz
-      hessfieldk(1,2,3) = hessfieldk(1,2,3) + t5(1,2,3,1,1)*qixx +
-     &     t5(1,2,3,1,2)*qixy + t5(1,2,3,1,3)*qixz + t5(1,2,3,2,2)*qiyy+
-     &     t5(1,2,3,2,3)*qiyz + t5(1,2,3,3,3)*qizz
-      hessfieldk(1,3,1) = hessfieldk(1,3,1) + t5(1,3,1,1,1)*qixx +
-     &     t5(1,3,1,1,2)*qixy + t5(1,3,1,1,3)*qixz + t5(1,3,1,2,2)*qiyy+
-     &     t5(1,3,1,2,3)*qiyz + t5(1,3,1,3,3)*qizz
-      hessfieldk(1,3,2) = hessfieldk(1,3,2) + t5(1,3,2,1,1)*qixx +
-     &     t5(1,3,2,1,2)*qixy + t5(1,3,2,1,3)*qixz + t5(1,3,2,2,2)*qiyy+
-     &     t5(1,3,2,2,3)*qiyz + t5(1,3,2,3,3)*qizz
-      hessfieldk(1,3,3) = hessfieldk(1,3,3) + t5(1,3,3,1,1)*qixx +
-     &     t5(1,3,3,1,2)*qixy + t5(1,3,3,1,3)*qixz + t5(1,3,3,2,2)*qiyy+
-     &     t5(1,3,3,2,3)*qiyz + t5(1,3,3,3,3)*qizz
+     &     t5(2,1,1,1,1)*qixy + t5(3,1,1,1,1)*qixz + t5(2,2,1,1,1)*qiyy+
+     &     t5(3,2,1,1,1)*qiyz + t5(3,3,1,1,1)*qizz
       hessfieldk(2,1,1) = hessfieldk(2,1,1) + t5(2,1,1,1,1)*qixx +
-     &     t5(2,1,1,1,2)*qixy + t5(2,1,1,1,3)*qixz + t5(2,1,1,2,2)*qiyy+
-     &     t5(2,1,1,2,3)*qiyz + t5(2,1,1,3,3)*qizz
-      hessfieldk(2,1,2) = hessfieldk(2,1,2) + t5(2,1,2,1,1)*qixx +
-     &     t5(2,1,2,1,2)*qixy + t5(2,1,2,1,3)*qixz + t5(2,1,2,2,2)*qiyy+
-     &     t5(2,1,2,2,3)*qiyz + t5(2,1,2,3,3)*qizz
-      hessfieldk(2,1,3) = hessfieldk(2,1,3) + t5(2,1,3,1,1)*qixx +
-     &     t5(2,1,3,1,2)*qixy + t5(2,1,3,1,3)*qixz + t5(2,1,3,2,2)*qiyy+
-     &     t5(2,1,3,2,3)*qiyz + t5(2,1,3,3,3)*qizz
-      hessfieldk(2,2,1) = hessfieldk(2,2,1) + t5(2,2,1,1,1)*qixx +
-     &     t5(2,2,1,1,2)*qixy + t5(2,2,1,1,3)*qixz + t5(2,2,1,2,2)*qiyy+
-     &     t5(2,2,1,2,3)*qiyz + t5(2,2,1,3,3)*qizz
-      hessfieldk(2,2,2) = hessfieldk(2,2,2) + t5(2,2,2,1,1)*qixx +
-     &     t5(2,2,2,1,2)*qixy + t5(2,2,2,1,3)*qixz + t5(2,2,2,2,2)*qiyy+
-     &     t5(2,2,2,2,3)*qiyz + t5(2,2,2,3,3)*qizz
-      hessfieldk(2,2,3) = hessfieldk(2,2,3) + t5(2,2,3,1,1)*qixx +
-     &     t5(2,2,3,1,2)*qixy + t5(2,2,3,1,3)*qixz + t5(2,2,3,2,2)*qiyy+
-     &     t5(2,2,3,2,3)*qiyz + t5(2,2,3,3,3)*qizz
-      hessfieldk(2,3,1) = hessfieldk(2,3,1) + t5(2,3,1,1,1)*qixx +
-     &     t5(2,3,1,1,2)*qixy + t5(2,3,1,1,3)*qixz + t5(2,3,1,2,2)*qiyy+
-     &     t5(2,3,1,2,3)*qiyz + t5(2,3,1,3,3)*qizz
-      hessfieldk(2,3,2) = hessfieldk(2,3,2) + t5(2,3,2,1,1)*qixx +
-     &     t5(2,3,2,1,2)*qixy + t5(2,3,2,1,3)*qixz + t5(2,3,2,2,2)*qiyy+
-     &     t5(2,3,2,2,3)*qiyz + t5(2,3,2,3,3)*qizz
-      hessfieldk(2,3,3) = hessfieldk(2,3,3) + t5(2,3,3,1,1)*qixx +
-     &     t5(2,3,3,1,2)*qixy + t5(2,3,3,1,3)*qixz + t5(2,3,3,2,2)*qiyy+
-     &     t5(2,3,3,2,3)*qiyz + t5(2,3,3,3,3)*qizz
+     &     t5(2,2,1,1,1)*qixy + t5(3,2,1,1,1)*qixz + t5(2,2,2,1,1)*qiyy+
+     &     t5(3,2,2,1,1)*qiyz + t5(3,3,2,1,1)*qizz
       hessfieldk(3,1,1) = hessfieldk(3,1,1) + t5(3,1,1,1,1)*qixx +
-     &     t5(3,1,1,1,2)*qixy + t5(3,1,1,1,3)*qixz + t5(3,1,1,2,2)*qiyy+
-     &     t5(3,1,1,2,3)*qiyz + t5(3,1,1,3,3)*qizz
-      hessfieldk(3,1,2) = hessfieldk(3,1,2) + t5(3,1,2,1,1)*qixx +
-     &     t5(3,1,2,1,2)*qixy + t5(3,1,2,1,3)*qixz + t5(3,1,2,2,2)*qiyy+
-     &     t5(3,1,2,2,3)*qiyz + t5(3,1,2,3,3)*qizz
-      hessfieldk(3,1,3) = hessfieldk(3,1,3) + t5(3,1,3,1,1)*qixx +
-     &     t5(3,1,3,1,2)*qixy + t5(3,1,3,1,3)*qixz + t5(3,1,3,2,2)*qiyy+
-     &     t5(3,1,3,2,3)*qiyz + t5(3,1,3,3,3)*qizz
+     &     t5(3,2,1,1,1)*qixy + t5(3,3,1,1,1)*qixz + t5(3,2,2,1,1)*qiyy+
+     &     t5(3,3,2,1,1)*qiyz + t5(3,3,3,1,1)*qizz
+c      hessfieldk(2,1,1) = hessfieldk(2,1,1) + t5(2,1,1,1,1)*qixx +
+c     &     t5(2,2,1,1,1)*qixy + t5(3,2,1,1,1)*qixz + t5(2,2,2,1,1)*qiyy+
+c     &     t5(3,2,2,1,1)*qiyz + t5(3,3,2,1,1)*qizz
+      hessfieldk(2,2,1) = hessfieldk(2,2,1) + t5(2,2,1,1,1)*qixx +
+     &     t5(2,2,2,1,1)*qixy + t5(3,2,2,1,1)*qixz + t5(2,2,2,2,1)*qiyy+
+     &     t5(3,2,2,2,1)*qiyz + t5(3,3,2,2,1)*qizz
       hessfieldk(3,2,1) = hessfieldk(3,2,1) + t5(3,2,1,1,1)*qixx +
-     &     t5(3,2,1,1,2)*qixy + t5(3,2,1,1,3)*qixz + t5(3,2,1,2,2)*qiyy+
-     &     t5(3,2,1,2,3)*qiyz + t5(3,2,1,3,3)*qizz
-      hessfieldk(3,2,2) = hessfieldk(3,2,2) + t5(3,2,2,1,1)*qixx +
-     &     t5(3,2,2,1,2)*qixy + t5(3,2,2,1,3)*qixz + t5(3,2,2,2,2)*qiyy+
-     &     t5(3,2,2,2,3)*qiyz + t5(3,2,2,3,3)*qizz
-      hessfieldk(3,2,3) = hessfieldk(3,2,3) + t5(3,2,3,1,1)*qixx +
-     &     t5(3,2,3,1,2)*qixy + t5(3,2,3,1,3)*qixz + t5(3,2,3,2,2)*qiyy+
-     &     t5(3,2,3,2,3)*qiyz + t5(3,2,3,3,3)*qizz
+     &     t5(3,2,2,1,1)*qixy + t5(3,3,2,1,1)*qixz + t5(3,2,2,2,1)*qiyy+
+     &     t5(3,3,2,2,1)*qiyz + t5(3,3,3,2,1)*qizz
+c      hessfieldk(3,1,1) = hessfieldk(3,1,1) + t5(3,1,1,1,1)*qixx +
+c     &     t5(3,2,1,1,1)*qixy + t5(3,3,1,1,1)*qixz + t5(3,2,2,1,1)*qiyy+
+c     &     t5(3,3,2,1,1)*qiyz + t5(3,3,3,1,1)*qizz
+c      hessfieldk(3,2,1) = hessfieldk(3,2,1) + t5(3,2,1,1,1)*qixx +
+c     &     t5(3,2,2,1,1)*qixy + t5(3,3,2,1,1)*qixz + t5(3,2,2,2,1)*qiyy+
+c     &     t5(3,3,2,2,1)*qiyz + t5(3,3,3,2,1)*qizz
       hessfieldk(3,3,1) = hessfieldk(3,3,1) + t5(3,3,1,1,1)*qixx +
-     &     t5(3,3,1,1,2)*qixy + t5(3,3,1,1,3)*qixz + t5(3,3,1,2,2)*qiyy+
-     &     t5(3,3,1,2,3)*qiyz + t5(3,3,1,3,3)*qizz
+     &     t5(3,3,2,1,1)*qixy + t5(3,3,3,1,1)*qixz + t5(3,3,2,2,1)*qiyy+
+     &     t5(3,3,3,2,1)*qiyz + t5(3,3,3,3,1)*qizz
+c      hessfieldk(2,1,1) = hessfieldk(2,1,1) + t5(2,1,1,1,1)*qixx +
+c     &     t5(2,2,1,1,1)*qixy + t5(3,2,1,1,1)*qixz + t5(2,2,2,1,1)*qiyy+
+c     &     t5(3,2,2,1,1)*qiyz + t5(3,3,2,1,1)*qizz
+c      hessfieldk(2,2,1) = hessfieldk(2,2,1) + t5(2,2,1,1,1)*qixx +
+c     &     t5(2,2,2,1,1)*qixy + t5(3,2,2,1,1)*qixz + t5(2,2,2,2,1)*qiyy+
+c     &     t5(3,2,2,2,1)*qiyz + t5(3,3,2,2,1)*qizz
+c      hessfieldk(3,2,1) = hessfieldk(3,2,1) + t5(3,2,1,1,1)*qixx +
+c     &     t5(3,2,2,1,1)*qixy + t5(3,3,2,1,1)*qixz + t5(3,2,2,2,1)*qiyy+
+c     &     t5(3,3,2,2,1)*qiyz + t5(3,3,3,2,1)*qizz
+c      hessfieldk(2,2,1) = hessfieldk(2,2,1) + t5(2,2,1,1,1)*qixx +
+c     &     t5(2,2,2,1,1)*qixy + t5(3,2,2,1,1)*qixz + t5(2,2,2,2,1)*qiyy+
+c     &     t5(3,2,2,2,1)*qiyz + t5(3,3,2,2,1)*qizz
+      hessfieldk(2,2,2) = hessfieldk(2,2,2) + t5(2,2,2,1,1)*qixx +
+     &     t5(2,2,2,2,1)*qixy + t5(3,2,2,2,1)*qixz + t5(2,2,2,2,2)*qiyy+
+     &     t5(3,2,2,2,2)*qiyz + t5(3,3,2,2,2)*qizz
+      hessfieldk(3,2,2) = hessfieldk(3,2,2) + t5(3,2,2,1,1)*qixx +
+     &     t5(3,2,2,2,1)*qixy + t5(3,3,2,2,1)*qixz + t5(3,2,2,2,2)*qiyy+
+     &     t5(3,3,2,2,2)*qiyz + t5(3,3,3,2,2)*qizz
+c      hessfieldk(3,2,1) = hessfieldk(3,2,1) + t5(3,2,1,1,1)*qixx +
+c     &     t5(3,2,2,1,1)*qixy + t5(3,3,2,1,1)*qixz + t5(3,2,2,2,1)*qiyy+
+c     &     t5(3,3,2,2,1)*qiyz + t5(3,3,3,2,1)*qizz
+c      hessfieldk(3,2,2) = hessfieldk(3,2,2) + t5(3,2,2,1,1)*qixx +
+c     &     t5(3,2,2,2,1)*qixy + t5(3,3,2,2,1)*qixz + t5(3,2,2,2,2)*qiyy+
+c     &     t5(3,3,2,2,2)*qiyz + t5(3,3,3,2,2)*qizz
       hessfieldk(3,3,2) = hessfieldk(3,3,2) + t5(3,3,2,1,1)*qixx +
-     &     t5(3,3,2,1,2)*qixy + t5(3,3,2,1,3)*qixz + t5(3,3,2,2,2)*qiyy+
-     &     t5(3,3,2,2,3)*qiyz + t5(3,3,2,3,3)*qizz
+     &     t5(3,3,2,2,1)*qixy + t5(3,3,3,2,1)*qixz + t5(3,3,2,2,2)*qiyy+
+     &     t5(3,3,3,2,2)*qiyz + t5(3,3,3,3,2)*qizz
+c      hessfieldk(3,1,1) = hessfieldk(3,1,1) + t5(3,1,1,1,1)*qixx +
+c     &     t5(3,2,1,1,1)*qixy + t5(3,3,1,1,1)*qixz + t5(3,2,2,1,1)*qiyy+
+c     &     t5(3,3,2,1,1)*qiyz + t5(3,3,3,1,1)*qizz
+c      hessfieldk(3,2,1) = hessfieldk(3,2,1) + t5(3,2,1,1,1)*qixx +
+c     &     t5(3,2,2,1,1)*qixy + t5(3,3,2,1,1)*qixz + t5(3,2,2,2,1)*qiyy+
+c     &     t5(3,3,2,2,1)*qiyz + t5(3,3,3,2,1)*qizz
+c      hessfieldk(3,3,1) = hessfieldk(3,3,1) + t5(3,3,1,1,1)*qixx +
+c     &     t5(3,3,2,1,1)*qixy + t5(3,3,3,1,1)*qixz + t5(3,3,2,2,1)*qiyy+
+c     &     t5(3,3,3,2,1)*qiyz + t5(3,3,3,3,1)*qizz
+c      hessfieldk(3,2,1) = hessfieldk(3,2,1) + t5(3,2,1,1,1)*qixx +
+c     &     t5(3,2,2,1,1)*qixy + t5(3,3,2,1,1)*qixz + t5(3,2,2,2,1)*qiyy+
+c     &     t5(3,3,2,2,1)*qiyz + t5(3,3,3,2,1)*qizz
+c      hessfieldk(3,2,2) = hessfieldk(3,2,2) + t5(3,2,2,1,1)*qixx +
+c     &     t5(3,2,2,2,1)*qixy + t5(3,3,2,2,1)*qixz + t5(3,2,2,2,2)*qiyy+
+c     &     t5(3,3,2,2,2)*qiyz + t5(3,3,3,2,2)*qizz
+c      hessfieldk(3,3,2) = hessfieldk(3,3,2) + t5(3,3,2,1,1)*qixx +
+c     &     t5(3,3,2,2,1)*qixy + t5(3,3,3,2,1)*qixz + t5(3,3,2,2,2)*qiyy+
+c     &     t5(3,3,3,2,2)*qiyz + t5(3,3,3,3,2)*qizz
+c      hessfieldk(3,3,1) = hessfieldk(3,3,1) + t5(3,3,1,1,1)*qixx +
+c     &     t5(3,3,2,1,1)*qixy + t5(3,3,3,1,1)*qixz + t5(3,3,2,2,1)*qiyy+
+c     &     t5(3,3,3,2,1)*qiyz + t5(3,3,3,3,1)*qizz
+c      hessfieldk(3,3,2) = hessfieldk(3,3,2) + t5(3,3,2,1,1)*qixx +
+c     &     t5(3,3,2,2,1)*qixy + t5(3,3,3,2,1)*qixz + t5(3,3,2,2,2)*qiyy+
+c     &     t5(3,3,3,2,2)*qiyz + t5(3,3,3,3,2)*qizz
       hessfieldk(3,3,3) = hessfieldk(3,3,3) +  t5(3,3,3,1,1)*qixx +
-     &     t5(3,3,3,1,2)*qixy + t5(3,3,3,1,3)*qixz + t5(3,3,3,2,2)*qiyy+
-     &     t5(3,3,3,2,3)*qiyz + t5(3,3,3,3,3)*qizz
+     &     t5(3,3,3,2,1)*qixy + t5(3,3,3,3,1)*qixz + t5(3,3,3,2,2)*qiyy+
+     &     t5(3,3,3,3,2)*qiyz + t5(3,3,3,3,3)*qizz
       return
       end
 c
@@ -1032,224 +1032,224 @@ c
 c     calculate electric field hessian
 c
       hessfieldid(1,1,1) = -t4(1,1,1,1)*dukx - 
-     &     t4(1,1,1,2)*duky - t4(1,1,1,3)*dukz
-      hessfieldid(1,1,2) = -t4(1,1,2,1)*dukx -
-     &     t4(1,1,2,2)*duky - t4(1,1,2,3)*dukz
-      hessfieldid(1,1,3) = -t4(1,1,3,1)*dukx -
-     &     t4(1,1,3,2)*duky - t4(1,1,3,3)*dukz
-      hessfieldid(1,2,1) = -t4(1,2,1,1)*dukx -
-     &     t4(1,2,1,2)*duky - t4(1,2,1,3)*dukz
-      hessfieldid(1,2,2) = -t4(1,2,2,1)*dukx -
-     &     t4(1,2,2,2)*duky - t4(1,2,2,3)*dukz
-      hessfieldid(1,2,3) = -t4(1,2,3,1)*dukx -
-     &     t4(1,2,3,2)*duky - t4(1,2,3,3)*dukz
-      hessfieldid(1,3,1) = -t4(1,3,1,1)*dukx -
-     &     t4(1,3,1,2)*duky - t4(1,3,1,3)*dukz
-      hessfieldid(1,3,2) = -t4(1,3,2,1)*dukx -
-     &     t4(1,3,2,2)*duky - t4(1,3,2,3)*dukz
-      hessfieldid(1,3,3) = -t4(1,3,3,1)*dukx -
-     &     t4(1,3,3,2)*duky - t4(1,3,3,3)*dukz
+     &     t4(2,1,1,1)*duky - t4(3,1,1,1)*dukz
       hessfieldid(2,1,1) = -t4(2,1,1,1)*dukx -
-     &     t4(2,1,1,2)*duky - t4(2,1,1,3)*dukz
-      hessfieldid(2,1,2) = -t4(2,1,2,1)*dukx -
-     &     t4(2,1,2,2)*duky - t4(2,1,2,3)*dukz
-      hessfieldid(2,1,3) = -t4(2,1,3,1)*dukx -
-     &     t4(2,1,3,2)*duky - t4(2,1,3,3)*dukz
-      hessfieldid(2,2,1) = -t4(2,2,1,1)*dukx -
-     &     t4(2,2,1,2)*duky - t4(2,2,1,3)*dukz
-      hessfieldid(2,2,2) = -t4(2,2,2,1)*dukx -
-     &     t4(2,2,2,2)*duky - t4(2,2,2,3)*dukz
-      hessfieldid(2,2,3) = -t4(2,2,3,1)*dukx -
-     &     t4(2,2,3,2)*duky - t4(2,2,3,3)*dukz
-      hessfieldid(2,3,1) = -t4(2,3,1,1)*dukx -
-     &     t4(2,3,1,2)*duky - t4(2,3,1,3)*dukz
-      hessfieldid(2,3,2) = -t4(2,3,2,1)*dukx -
-     &     t4(2,3,2,2)*duky - t4(2,3,2,3)*dukz
-      hessfieldid(2,3,3) = -t4(2,3,3,1)*dukx -
-     &     t4(2,3,3,2)*duky - t4(2,3,3,3)*dukz
+     &     t4(2,2,1,1)*duky - t4(3,2,1,1)*dukz
       hessfieldid(3,1,1) = -t4(3,1,1,1)*dukx -
-     &     t4(3,1,1,2)*duky - t4(3,1,1,3)*dukz
-      hessfieldid(3,1,2) = -t4(3,1,2,1)*dukx -
-     &     t4(3,1,2,2)*duky - t4(3,1,2,3)*dukz
-      hessfieldid(3,1,3) = -t4(3,1,3,1)*dukx -
-     &     t4(3,1,3,2)*duky - t4(3,1,3,3)*dukz
+     &     t4(3,2,1,1)*duky - t4(3,3,1,1)*dukz
+c      hessfieldid(2,1,1) = -t4(2,1,1,1)*dukx -
+c     &     t4(2,2,1,1)*duky - t4(3,2,1,1)*dukz
+      hessfieldid(2,2,1) = -t4(2,2,1,1)*dukx -
+     &     t4(2,2,2,1)*duky - t4(3,2,2,1)*dukz
       hessfieldid(3,2,1) = -t4(3,2,1,1)*dukx -
-     &     t4(3,2,1,2)*duky - t4(3,2,1,3)*dukz
-      hessfieldid(3,2,2) = -t4(3,2,2,1)*dukx -
-     &     t4(3,2,2,2)*duky - t4(3,2,2,3)*dukz
-      hessfieldid(3,2,3) = -t4(3,2,3,1)*dukx -
-     &     t4(3,2,3,2)*duky - t4(3,2,3,3)*dukz
+     &     t4(3,2,2,1)*duky - t4(3,3,2,1)*dukz
+c      hessfieldid(3,1,1) = -t4(3,1,1,1)*dukx -
+c     &     t4(3,2,1,1)*duky - t4(3,3,1,1)*dukz
+c      hessfieldid(3,2,1) = -t4(3,2,1,1)*dukx -
+c     &     t4(3,2,2,1)*duky - t4(3,3,2,1)*dukz
       hessfieldid(3,3,1) = -t4(3,3,1,1)*dukx -
-     &     t4(3,3,1,2)*duky - t4(3,3,1,3)*dukz
+     &     t4(3,3,2,1)*duky - t4(3,3,3,1)*dukz
+c      hessfieldid(2,1,1) = -t4(2,1,1,1)*dukx -
+c     &     t4(2,2,1,1)*duky - t4(3,2,1,1)*dukz
+c      hessfieldid(2,2,1) = -t4(2,2,1,1)*dukx -
+c     &     t4(2,2,2,1)*duky - t4(3,2,2,1)*dukz
+c      hessfieldid(3,2,1) = -t4(3,2,1,1)*dukx -
+c     &     t4(3,2,2,1)*duky - t4(3,3,2,1)*dukz
+c      hessfieldid(2,2,1) = -t4(2,2,1,1)*dukx -
+c     &     t4(2,2,2,1)*duky - t4(3,2,2,1)*dukz
+      hessfieldid(2,2,2) = -t4(2,2,2,1)*dukx -
+     &     t4(2,2,2,2)*duky - t4(3,2,2,2)*dukz
+      hessfieldid(3,2,2) = -t4(3,2,2,1)*dukx -
+     &     t4(3,2,2,2)*duky - t4(3,3,2,2)*dukz
+c      hessfieldid(3,2,1) = -t4(3,2,1,1)*dukx -
+c     &     t4(3,2,2,1)*duky - t4(3,3,2,1)*dukz
+c      hessfieldid(3,2,2) = -t4(3,2,2,1)*dukx -
+c     &     t4(3,2,2,2)*duky - t4(3,3,2,2)*dukz
       hessfieldid(3,3,2) = -t4(3,3,2,1)*dukx -
-     &     t4(3,3,2,2)*duky - t4(3,3,2,3)*dukz
+     &     t4(3,3,2,2)*duky - t4(3,3,3,2)*dukz
+c      hessfieldid(3,1,1) = -t4(3,1,1,1)*dukx -
+c     &     t4(3,2,1,1)*duky - t4(3,3,1,1)*dukz
+c      hessfieldid(3,2,1) = -t4(3,2,1,1)*dukx -
+c     &     t4(3,2,2,1)*duky - t4(3,3,2,1)*dukz
+c      hessfieldid(3,3,1) = -t4(3,3,1,1)*dukx -
+c     &     t4(3,3,2,1)*duky - t4(3,3,3,1)*dukz
+c      hessfieldid(3,2,1) = -t4(3,2,1,1)*dukx -
+c     &     t4(3,2,2,1)*duky - t4(3,3,2,1)*dukz
+c      hessfieldid(3,2,2) = -t4(3,2,2,1)*dukx -
+c     &     t4(3,2,2,2)*duky - t4(3,3,2,2)*dukz
+c      hessfieldid(3,3,2) = -t4(3,3,2,1)*dukx -
+c     &     t4(3,3,2,2)*duky - t4(3,3,3,2)*dukz
+c      hessfieldid(3,3,1) = -t4(3,3,1,1)*dukx -
+c     &     t4(3,3,2,1)*duky - t4(3,3,3,1)*dukz
+c      hessfieldid(3,3,2) = -t4(3,3,2,1)*dukx -
+c     &     t4(3,3,2,2)*duky - t4(3,3,3,2)*dukz
       hessfieldid(3,3,3) = -t4(3,3,3,1)*dukx -
      &     t4(3,3,3,2)*duky - t4(3,3,3,3)*dukz
 c
       hessfieldkd(1,1,1) = -t4(1,1,1,1)*duix - 
-     &     t4(1,1,1,2)*duiy - t4(1,1,1,3)*duiz
-      hessfieldkd(1,1,2) = -t4(1,1,2,1)*duix -
-     &     t4(1,1,2,2)*duiy - t4(1,1,2,3)*duiz
-      hessfieldkd(1,1,3) = -t4(1,1,3,1)*duix -
-     &     t4(1,1,3,2)*duiy - t4(1,1,3,3)*duiz
-      hessfieldkd(1,2,1) = -t4(1,2,1,1)*duix -
-     &     t4(1,2,1,2)*duiy - t4(1,2,1,3)*duiz
-      hessfieldkd(1,2,2) = -t4(1,2,2,1)*duix -
-     &     t4(1,2,2,2)*duiy - t4(1,2,2,3)*duiz
-      hessfieldkd(1,2,3) = -t4(1,2,3,1)*duix -
-     &     t4(1,2,3,2)*duiy - t4(1,2,3,3)*duiz
-      hessfieldkd(1,3,1) = -t4(1,3,1,1)*duix -
-     &     t4(1,3,1,2)*duiy - t4(1,3,1,3)*duiz
-      hessfieldkd(1,3,2) = -t4(1,3,2,1)*duix -
-     &     t4(1,3,2,2)*duiy - t4(1,3,2,3)*duiz
-      hessfieldkd(1,3,3) = -t4(1,3,3,1)*duix -
-     &     t4(1,3,3,2)*duiy - t4(1,3,3,3)*duiz
+     &     t4(2,1,1,1)*duiy - t4(3,1,1,1)*duiz
       hessfieldkd(2,1,1) = -t4(2,1,1,1)*duix -
-     &     t4(2,1,1,2)*duiy - t4(2,1,1,3)*duiz
-      hessfieldkd(2,1,2) = -t4(2,1,2,1)*duix -
-     &     t4(2,1,2,2)*duiy - t4(2,1,2,3)*duiz
-      hessfieldkd(2,1,3) = -t4(2,1,3,1)*duix -
-     &     t4(2,1,3,2)*duiy - t4(2,1,3,3)*duiz
-      hessfieldkd(2,2,1) = -t4(2,2,1,1)*duix -
-     &     t4(2,2,1,2)*duiy - t4(2,2,1,3)*duiz
-      hessfieldkd(2,2,2) = -t4(2,2,2,1)*duix -
-     &     t4(2,2,2,2)*duiy - t4(2,2,2,3)*duiz
-      hessfieldkd(2,2,3) = -t4(2,2,3,1)*duix -
-     &     t4(2,2,3,2)*duiy - t4(2,2,3,3)*duiz
-      hessfieldkd(2,3,1) = -t4(2,3,1,1)*duix -
-     &     t4(2,3,1,2)*duiy - t4(2,3,1,3)*duiz
-      hessfieldkd(2,3,2) = -t4(2,3,2,1)*duix -
-     &     t4(2,3,2,2)*duiy - t4(2,3,2,3)*duiz
-      hessfieldkd(2,3,3) = -t4(2,3,3,1)*duix -
-     &     t4(2,3,3,2)*duiy - t4(2,3,3,3)*duiz
+     &     t4(2,2,1,1)*duiy - t4(3,2,1,1)*duiz
       hessfieldkd(3,1,1) = -t4(3,1,1,1)*duix -
-     &     t4(3,1,1,2)*duiy - t4(3,1,1,3)*duiz
-      hessfieldkd(3,1,2) = -t4(3,1,2,1)*duix -
-     &     t4(3,1,2,2)*duiy - t4(3,1,2,3)*duiz
-      hessfieldkd(3,1,3) = -t4(3,1,3,1)*duix -
-     &     t4(3,1,3,2)*duiy - t4(3,1,3,3)*duiz
+     &     t4(3,2,1,1)*duiy - t4(3,3,1,1)*duiz
+c      hessfieldkd(2,1,1) = -t4(2,1,1,1)*duix -
+c     &     t4(2,2,1,1)*duiy - t4(3,2,1,1)*duiz
+      hessfieldkd(2,2,1) = -t4(2,2,1,1)*duix -
+     &     t4(2,2,2,1)*duiy - t4(3,2,2,1)*duiz
       hessfieldkd(3,2,1) = -t4(3,2,1,1)*duix -
-     &     t4(3,2,1,2)*duiy - t4(3,2,1,3)*duiz
-      hessfieldkd(3,2,2) = -t4(3,2,2,1)*duix -
-     &     t4(3,2,2,2)*duiy - t4(3,2,2,3)*duiz
-      hessfieldkd(3,2,3) = -t4(3,2,3,1)*duix -
-     &     t4(3,2,3,2)*duiy - t4(3,2,3,3)*duiz
+     &     t4(3,2,2,1)*duiy - t4(3,3,2,1)*duiz
+c      hessfieldkd(3,1,1) = -t4(3,1,1,1)*duix -
+c     &     t4(3,2,1,1)*duiy - t4(3,3,1,1)*duiz
+c      hessfieldkd(3,2,1) = -t4(3,2,1,1)*duix -
+c     &     t4(3,2,2,1)*duiy - t4(3,3,2,1)*duiz
       hessfieldkd(3,3,1) = -t4(3,3,1,1)*duix -
-     &     t4(3,3,1,2)*duiy - t4(3,3,1,3)*duiz
+     &     t4(3,3,2,1)*duiy - t4(3,3,3,1)*duiz
+c      hessfieldkd(2,1,1) = -t4(2,1,1,1)*duix -
+c     &     t4(2,2,1,1)*duiy - t4(3,2,1,1)*duiz
+c      hessfieldkd(2,2,1) = -t4(2,2,1,1)*duix -
+c     &     t4(2,2,2,1)*duiy - t4(3,2,2,1)*duiz
+c      hessfieldkd(3,2,1) = -t4(3,2,1,1)*duix -
+c     &     t4(3,2,2,1)*duiy - t4(3,3,2,1)*duiz
+c      hessfieldkd(2,2,1) = -t4(2,2,1,1)*duix -
+c     &     t4(2,2,2,1)*duiy - t4(3,2,2,1)*duiz
+      hessfieldkd(2,2,2) = -t4(2,2,2,1)*duix -
+     &     t4(2,2,2,2)*duiy - t4(3,2,2,2)*duiz
+      hessfieldkd(3,2,2) = -t4(3,2,2,1)*duix -
+     &     t4(3,2,2,2)*duiy - t4(3,3,2,2)*duiz
+c      hessfieldkd(3,2,1) = -t4(3,2,1,1)*duix -
+c     &     t4(3,2,2,1)*duiy - t4(3,3,2,1)*duiz
+c      hessfieldkd(3,2,2) = -t4(3,2,2,1)*duix -
+c     &     t4(3,2,2,2)*duiy - t4(3,3,2,2)*duiz
       hessfieldkd(3,3,2) = -t4(3,3,2,1)*duix -
-     &     t4(3,3,2,2)*duiy - t4(3,3,2,3)*duiz
+     &     t4(3,3,2,2)*duiy - t4(3,3,3,2)*duiz
+c      hessfieldkd(3,1,1) = -t4(3,1,1,1)*duix -
+c     &     t4(3,2,1,1)*duiy - t4(3,3,1,1)*duiz
+c      hessfieldkd(3,2,1) = -t4(3,2,1,1)*duix -
+c     &     t4(3,2,2,1)*duiy - t4(3,3,2,1)*duiz
+c      hessfieldkd(3,3,1) = -t4(3,3,1,1)*duix -
+c     &     t4(3,3,2,1)*duiy - t4(3,3,3,1)*duiz
+c      hessfieldkd(3,2,1) = -t4(3,2,1,1)*duix -
+c     &     t4(3,2,2,1)*duiy - t4(3,3,2,1)*duiz
+c      hessfieldkd(3,2,2) = -t4(3,2,2,1)*duix -
+c     &     t4(3,2,2,2)*duiy - t4(3,3,2,2)*duiz
+c      hessfieldkd(3,3,2) = -t4(3,3,2,1)*duix -
+c     &     t4(3,3,2,2)*duiy - t4(3,3,3,2)*duiz
+c      hessfieldkd(3,3,1) = -t4(3,3,1,1)*duix -
+c     &     t4(3,3,2,1)*duiy - t4(3,3,3,1)*duiz
+c      hessfieldkd(3,3,2) = -t4(3,3,2,1)*duix -
+c     &     t4(3,3,2,2)*duiy - t4(3,3,3,2)*duiz
       hessfieldkd(3,3,3) = -t4(3,3,3,1)*duix -
      &     t4(3,3,3,2)*duiy - t4(3,3,3,3)*duiz
 c
 c     p induced dipoles
 c
       hessfieldip(1,1,1) = -t4(1,1,1,1)*pukx - 
-     &     t4(1,1,1,2)*puky - t4(1,1,1,3)*pukz
-      hessfieldip(1,1,2) = -t4(1,1,2,1)*pukx -
-     &     t4(1,1,2,2)*puky - t4(1,1,2,3)*pukz
-      hessfieldip(1,1,3) = -t4(1,1,3,1)*pukx -
-     &     t4(1,1,3,2)*puky - t4(1,1,3,3)*pukz
-      hessfieldip(1,2,1) = -t4(1,2,1,1)*pukx -
-     &     t4(1,2,1,2)*puky - t4(1,2,1,3)*pukz
-      hessfieldip(1,2,2) = -t4(1,2,2,1)*pukx -
-     &     t4(1,2,2,2)*puky - t4(1,2,2,3)*pukz
-      hessfieldip(1,2,3) = -t4(1,2,3,1)*pukx -
-     &     t4(1,2,3,2)*puky - t4(1,2,3,3)*pukz
-      hessfieldip(1,3,1) = -t4(1,3,1,1)*pukx -
-     &     t4(1,3,1,2)*puky - t4(1,3,1,3)*pukz
-      hessfieldip(1,3,2) = -t4(1,3,2,1)*pukx -
-     &     t4(1,3,2,2)*puky - t4(1,3,2,3)*pukz
-      hessfieldip(1,3,3) = -t4(1,3,3,1)*pukx -
-     &     t4(1,3,3,2)*puky - t4(1,3,3,3)*pukz
+     &     t4(2,1,1,1)*puky - t4(3,1,1,1)*pukz
       hessfieldip(2,1,1) = -t4(2,1,1,1)*pukx -
-     &     t4(2,1,1,2)*puky - t4(2,1,1,3)*pukz
-      hessfieldip(2,1,2) = -t4(2,1,2,1)*pukx -
-     &     t4(2,1,2,2)*puky - t4(2,1,2,3)*pukz
-      hessfieldip(2,1,3) = -t4(2,1,3,1)*pukx -
-     &     t4(2,1,3,2)*puky - t4(2,1,3,3)*pukz
-      hessfieldip(2,2,1) = -t4(2,2,1,1)*pukx -
-     &     t4(2,2,1,2)*puky - t4(2,2,1,3)*pukz
-      hessfieldip(2,2,2) = -t4(2,2,2,1)*pukx -
-     &     t4(2,2,2,2)*puky - t4(2,2,2,3)*pukz
-      hessfieldip(2,2,3) = -t4(2,2,3,1)*pukx -
-     &     t4(2,2,3,2)*puky - t4(2,2,3,3)*pukz
-      hessfieldip(2,3,1) = -t4(2,3,1,1)*pukx -
-     &     t4(2,3,1,2)*puky - t4(2,3,1,3)*pukz
-      hessfieldip(2,3,2) = -t4(2,3,2,1)*pukx -
-     &     t4(2,3,2,2)*puky - t4(2,3,2,3)*pukz
-      hessfieldip(2,3,3) = -t4(2,3,3,1)*pukx -
-     &     t4(2,3,3,2)*puky - t4(2,3,3,3)*pukz
+     &     t4(2,2,1,1)*puky - t4(3,2,1,1)*pukz
       hessfieldip(3,1,1) = -t4(3,1,1,1)*pukx -
-     &     t4(3,1,1,2)*puky - t4(3,1,1,3)*pukz
-      hessfieldip(3,1,2) = -t4(3,1,2,1)*pukx -
-     &     t4(3,1,2,2)*puky - t4(3,1,2,3)*pukz
-      hessfieldip(3,1,3) = -t4(3,1,3,1)*pukx -
-     &     t4(3,1,3,2)*puky - t4(3,1,3,3)*pukz
+     &     t4(3,2,1,1)*puky - t4(3,3,1,1)*pukz
+c      hessfieldip(2,1,1) = -t4(2,1,1,1)*pukx -
+c     &     t4(2,2,1,1)*puky - t4(3,2,1,1)*pukz
+      hessfieldip(2,2,1) = -t4(2,2,1,1)*pukx -
+     &     t4(2,2,2,1)*puky - t4(3,2,2,1)*pukz
       hessfieldip(3,2,1) = -t4(3,2,1,1)*pukx -
-     &     t4(3,2,1,2)*puky - t4(3,2,1,3)*pukz
-      hessfieldip(3,2,2) = -t4(3,2,2,1)*pukx -
-     &     t4(3,2,2,2)*puky - t4(3,2,2,3)*pukz
-      hessfieldip(3,2,3) = -t4(3,2,3,1)*pukx -
-     &     t4(3,2,3,2)*puky - t4(3,2,3,3)*pukz
+     &     t4(3,2,2,1)*puky - t4(3,3,2,1)*pukz
+c      hessfieldip(3,1,1) = -t4(3,1,1,1)*pukx -
+c     &     t4(3,2,1,1)*puky - t4(3,3,1,1)*pukz
+c      hessfieldip(3,2,1) = -t4(3,2,1,1)*pukx -
+c     &     t4(3,2,2,1)*puky - t4(3,3,2,1)*pukz
       hessfieldip(3,3,1) = -t4(3,3,1,1)*pukx -
-     &     t4(3,3,1,2)*puky - t4(3,3,1,3)*pukz
+     &     t4(3,3,2,1)*puky - t4(3,3,3,1)*pukz
+c      hessfieldip(2,1,1) = -t4(2,1,1,1)*pukx -
+c     &     t4(2,2,1,1)*puky - t4(3,2,1,1)*pukz
+c      hessfieldip(2,2,1) = -t4(2,2,1,1)*pukx -
+c     &     t4(2,2,2,1)*puky - t4(3,2,2,1)*pukz
+c      hessfieldip(3,2,1) = -t4(3,2,1,1)*pukx -
+c     &     t4(3,2,2,1)*puky - t4(3,3,2,1)*pukz
+c      hessfieldip(2,2,1) = -t4(2,2,1,1)*pukx -
+c     &     t4(2,2,2,1)*puky - t4(3,2,2,1)*pukz
+      hessfieldip(2,2,2) = -t4(2,2,2,1)*pukx -
+     &     t4(2,2,2,2)*puky - t4(3,2,2,2)*pukz
+      hessfieldip(3,2,2) = -t4(3,2,2,1)*pukx -
+     &     t4(3,2,2,2)*puky - t4(3,3,2,2)*pukz
+c      hessfieldip(3,2,1) = -t4(3,2,1,1)*pukx -
+c     &     t4(3,2,2,1)*puky - t4(3,3,2,1)*pukz
+c      hessfieldip(3,2,2) = -t4(3,2,2,1)*pukx -
+c     &     t4(3,2,2,2)*puky - t4(3,3,2,2)*pukz
       hessfieldip(3,3,2) = -t4(3,3,2,1)*pukx -
-     &     t4(3,3,2,2)*puky - t4(3,3,2,3)*pukz
+     &     t4(3,3,2,2)*puky - t4(3,3,3,2)*pukz
+c      hessfieldip(3,1,1) = -t4(3,1,1,1)*pukx -
+c     &     t4(3,2,1,1)*puky - t4(3,3,1,1)*pukz
+c      hessfieldip(3,2,1) = -t4(3,2,1,1)*pukx -
+c     &     t4(3,2,2,1)*puky - t4(3,3,2,1)*pukz
+c      hessfieldip(3,3,1) = -t4(3,3,1,1)*pukx -
+c     &     t4(3,3,2,1)*puky - t4(3,3,3,1)*pukz
+c      hessfieldip(3,2,1) = -t4(3,2,1,1)*pukx -
+c     &     t4(3,2,2,1)*puky - t4(3,3,2,1)*pukz
+c      hessfieldip(3,2,2) = -t4(3,2,2,1)*pukx -
+c     &     t4(3,2,2,2)*puky - t4(3,3,2,2)*pukz
+c      hessfieldip(3,3,2) = -t4(3,3,2,1)*pukx -
+c     &     t4(3,3,2,2)*puky - t4(3,3,3,2)*pukz
+c      hessfieldip(3,3,1) = -t4(3,3,1,1)*pukx -
+c     &     t4(3,3,2,1)*puky - t4(3,3,3,1)*pukz
+c      hessfieldip(3,3,2) = -t4(3,3,2,1)*pukx -
+c     &     t4(3,3,2,2)*puky - t4(3,3,3,2)*pukz
       hessfieldip(3,3,3) = -t4(3,3,3,1)*pukx -
      &     t4(3,3,3,2)*puky - t4(3,3,3,3)*pukz
 c
       hessfieldkp(1,1,1) = -t4(1,1,1,1)*puix - 
-     &     t4(1,1,1,2)*puiy - t4(1,1,1,3)*puiz
-      hessfieldkp(1,1,2) = -t4(1,1,2,1)*puix -
-     &     t4(1,1,2,2)*puiy - t4(1,1,2,3)*puiz
-      hessfieldkp(1,1,3) = -t4(1,1,3,1)*puix -
-     &     t4(1,1,3,2)*puiy - t4(1,1,3,3)*puiz
-      hessfieldkp(1,2,1) = -t4(1,2,1,1)*puix -
-     &     t4(1,2,1,2)*puiy - t4(1,2,1,3)*puiz
-      hessfieldkp(1,2,2) = -t4(1,2,2,1)*puix -
-     &     t4(1,2,2,2)*puiy - t4(1,2,2,3)*puiz
-      hessfieldkp(1,2,3) = -t4(1,2,3,1)*puix -
-     &     t4(1,2,3,2)*puiy - t4(1,2,3,3)*puiz
-      hessfieldkp(1,3,1) = -t4(1,3,1,1)*puix -
-     &     t4(1,3,1,2)*puiy - t4(1,3,1,3)*puiz
-      hessfieldkp(1,3,2) = -t4(1,3,2,1)*puix -
-     &     t4(1,3,2,2)*puiy - t4(1,3,2,3)*puiz
-      hessfieldkp(1,3,3) = -t4(1,3,3,1)*puix -
-     &     t4(1,3,3,2)*puiy - t4(1,3,3,3)*puiz
+     &     t4(2,1,1,1)*puiy - t4(3,1,1,1)*puiz
       hessfieldkp(2,1,1) = -t4(2,1,1,1)*puix -
-     &     t4(2,1,1,2)*puiy - t4(2,1,1,3)*puiz
-      hessfieldkp(2,1,2) = -t4(2,1,2,1)*puix -
-     &     t4(2,1,2,2)*puiy - t4(2,1,2,3)*puiz
-      hessfieldkp(2,1,3) = -t4(2,1,3,1)*puix -
-     &     t4(2,1,3,2)*puiy - t4(2,1,3,3)*puiz
-      hessfieldkp(2,2,1) = -t4(2,2,1,1)*puix -
-     &     t4(2,2,1,2)*puiy - t4(2,2,1,3)*puiz
-      hessfieldkp(2,2,2) = -t4(2,2,2,1)*puix -
-     &     t4(2,2,2,2)*puiy - t4(2,2,2,3)*puiz
-      hessfieldkp(2,2,3) = -t4(2,2,3,1)*puix -
-     &     t4(2,2,3,2)*puiy - t4(2,2,3,3)*puiz
-      hessfieldkp(2,3,1) = -t4(2,3,1,1)*puix -
-     &     t4(2,3,1,2)*puiy - t4(2,3,1,3)*puiz
-      hessfieldkp(2,3,2) = -t4(2,3,2,1)*puix -
-     &     t4(2,3,2,2)*puiy - t4(2,3,2,3)*puiz
-      hessfieldkp(2,3,3) = -t4(2,3,3,1)*puix -
-     &     t4(2,3,3,2)*puiy - t4(2,3,3,3)*puiz
+     &     t4(2,2,1,1)*puiy - t4(3,2,1,1)*puiz
       hessfieldkp(3,1,1) = -t4(3,1,1,1)*puix -
-     &     t4(3,1,1,2)*puiy - t4(3,1,1,3)*puiz
-      hessfieldkp(3,1,2) = -t4(3,1,2,1)*puix -
-     &     t4(3,1,2,2)*puiy - t4(3,1,2,3)*puiz
-      hessfieldkp(3,1,3) = -t4(3,1,3,1)*puix -
-     &     t4(3,1,3,2)*puiy - t4(3,1,3,3)*puiz
+     &     t4(3,2,1,1)*puiy - t4(3,3,1,1)*puiz
+c      hessfieldkp(2,1,1) = -t4(2,1,1,1)*puix -
+c     &     t4(2,2,1,1)*puiy - t4(3,2,1,1)*puiz
+      hessfieldkp(2,2,1) = -t4(2,2,1,1)*puix -
+     &     t4(2,2,2,1)*puiy - t4(3,2,2,1)*puiz
       hessfieldkp(3,2,1) = -t4(3,2,1,1)*puix -
-     &     t4(3,2,1,2)*puiy - t4(3,2,1,3)*puiz
-      hessfieldkp(3,2,2) = -t4(3,2,2,1)*puix -
-     &     t4(3,2,2,2)*puiy - t4(3,2,2,3)*puiz
-      hessfieldkp(3,2,3) = -t4(3,2,3,1)*puix -
-     &     t4(3,2,3,2)*puiy - t4(3,2,3,3)*puiz
+     &     t4(3,2,2,1)*puiy - t4(3,3,2,1)*puiz
+c      hessfieldkp(3,1,1) = -t4(3,1,1,1)*puix -
+c     &     t4(3,2,1,1)*puiy - t4(3,3,1,1)*puiz
+c      hessfieldkp(3,2,1) = -t4(3,2,1,1)*puix -
+c     &     t4(3,2,2,1)*puiy - t4(3,3,2,1)*puiz
       hessfieldkp(3,3,1) = -t4(3,3,1,1)*puix -
-     &     t4(3,3,1,2)*puiy - t4(3,3,1,3)*puiz
+     &     t4(3,3,2,1)*puiy - t4(3,3,3,1)*puiz
+c      hessfieldkp(2,1,1) = -t4(2,1,1,1)*puix -
+c     &     t4(2,2,1,1)*puiy - t4(3,2,1,1)*puiz
+c      hessfieldkp(2,2,1) = -t4(2,2,1,1)*puix -
+c     &     t4(2,2,2,1)*puiy - t4(3,2,2,1)*puiz
+c      hessfieldkp(3,2,1) = -t4(3,2,1,1)*puix -
+c     &     t4(3,2,2,1)*puiy - t4(3,3,2,1)*puiz
+c      hessfieldkp(2,2,1) = -t4(2,2,1,1)*puix -
+c     &     t4(2,2,2,1)*puiy - t4(3,2,2,1)*puiz
+      hessfieldkp(2,2,2) = -t4(2,2,2,1)*puix -
+     &     t4(2,2,2,2)*puiy - t4(3,2,2,2)*puiz
+      hessfieldkp(3,2,2) = -t4(3,2,2,1)*puix -
+     &     t4(3,2,2,2)*puiy - t4(3,3,2,2)*puiz
+c      hessfieldkp(3,2,1) = -t4(3,2,1,1)*puix -
+c     &     t4(3,2,2,1)*puiy - t4(3,3,2,1)*puiz
+c      hessfieldkp(3,2,2) = -t4(3,2,2,1)*puix -
+c     &     t4(3,2,2,2)*puiy - t4(3,3,2,2)*puiz
       hessfieldkp(3,3,2) = -t4(3,3,2,1)*puix -
-     &     t4(3,3,2,2)*puiy - t4(3,3,2,3)*puiz
+     &     t4(3,3,2,2)*puiy - t4(3,3,3,2)*puiz
+c      hessfieldkp(3,1,1) = -t4(3,1,1,1)*puix -
+c     &     t4(3,2,1,1)*puiy - t4(3,3,1,1)*puiz
+c      hessfieldkp(3,2,1) = -t4(3,2,1,1)*puix -
+c     &     t4(3,2,2,1)*puiy - t4(3,3,2,1)*puiz
+c      hessfieldkp(3,3,1) = -t4(3,3,1,1)*puix -
+c     &     t4(3,3,2,1)*puiy - t4(3,3,3,1)*puiz
+c      hessfieldkp(3,2,1) = -t4(3,2,1,1)*puix -
+c     &     t4(3,2,2,1)*puiy - t4(3,3,2,1)*puiz
+c      hessfieldkp(3,2,2) = -t4(3,2,2,1)*puix -
+c     &     t4(3,2,2,2)*puiy - t4(3,3,2,2)*puiz
+c      hessfieldkp(3,3,2) = -t4(3,3,2,1)*puix -
+c     &     t4(3,3,2,2)*puiy - t4(3,3,3,2)*puiz
+c      hessfieldkp(3,3,1) = -t4(3,3,1,1)*puix -
+c     &     t4(3,3,2,1)*puiy - t4(3,3,3,1)*puiz
+c      hessfieldkp(3,3,2) = -t4(3,3,2,1)*puix -
+c     &     t4(3,3,2,2)*puiy - t4(3,3,3,2)*puiz
       hessfieldkp(3,3,3) = -t4(3,3,3,1)*puix -
      &     t4(3,3,3,2)*puiy - t4(3,3,3,3)*puiz
       return

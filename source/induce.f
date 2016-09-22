@@ -286,6 +286,8 @@ c
             damp_ewald = .false.
             damp_thole = .true.
             call permfield3
+c            call permfield2
+c     cant use permfield2 because it doesnt have gradfield_thole
             fieldd_tot = fieldd_thole
             fieldp_tot = fieldp_thole
          end if
