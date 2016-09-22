@@ -41,7 +41,7 @@ c      use xtrpot
 c
 c     setup atomic multipole parameters if not already done
 c
-      if (.not. use_mpole)  call kmpole
+c      if (.not. use_mpole)  call kmpole
 c
 c     initialize cp parameter arrays
 c
@@ -64,6 +64,12 @@ c
          if (keyword(1:12) .eq. 'PENETRATION ') then
 c            call getword (record,penetration,next)
             read (string,*,err=10,end=10)  penetration
+         end if
+         if (keyword(1:15) .eq. 'DIRECT-DAMPING ') then
+            read (string,*,err=10,end=10)  directdamp
+         end if
+         if (keyword(1:15) .eq. 'MUTUAL-DAMPING ') then
+            read (string,*,err=10,end=10)  mutualdamp
          end if
          if (keyword(1:8) .eq. 'BFACTOR ') then
             read (string,*,err=10,end=10)  bfactor_mode
@@ -449,7 +455,7 @@ c     &           xpolr(cpclass(i))**(1.0d0/3.0d0)
 c            if (xpolr(cpclass(i)).eq.0.0d0) then
 c               xpolr(cpclass(i)) = polarity(i)
 c            end if
-            polarity(i) = xpolr(cpclass(i))
+ccccc            polarity(i) = xpolr(cpclass(i))
 c            print *,"atom",i,"cpclass",cpclass(i)
 c            print *,"xpolr",xpolr(cpclass(i))
 c            print *,"polfactor",polfactor(cpclass(i))

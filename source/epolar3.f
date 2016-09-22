@@ -91,12 +91,14 @@ c      use polpot
 c      use shunt
       use usage
       implicit none
-      integer i
+      integer i,j
       integer ii
       integer ix,iy,iz
       real*8 e,ei,fgrp
       real*8 f
       real*8 uix,uiy,uiz
+      real*8, allocatable :: fieldd_damp(:,:)
+      real*8, allocatable :: fieldp_damp(:,:)
       logical proceed
       logical header,huge
       logical usei,usek
@@ -114,15 +116,35 @@ c
       header = .true.
       if (npole .eq. 0)  return
 c
+c     perform dynamic allocation of some local arrays
+c
+      allocate (fieldd_damp(3,npole))
+      allocate (fieldp_damp(3,npole))
+      do i = 1, npole
+         do j = 1, 3
+            fieldd_damp(j,i) = 0.0d0
+            fieldp_damp(j,i) = 0.0d0
+         end do
+      end do
+c
 c     compute the induced dipoles at each polarizable atom
 c
+      print *,"calling induce"
       call induce
 c
-c     set conversion factor, cutoff and switching coefficients
+c     check what kind of damping was used
+c
+      if (directdamp .eq. "GORDON") then 
+         fieldp_damp = fieldp_gordon
+      else if (directdamp .eq. "PIQUEMAL") then 
+         fieldp_damp = fieldp_piquemal
+      else if (directdamp .eq. "THOLE") then 
+         fieldp_damp = fieldp_thole
+      end if
+c
+c     set conversion factor
 c
       f = electric / dielec
-      mode = 'MPOLE'
-      call switch (mode)
 c
 c     calculate the total multipole interaction energy
 c
@@ -134,13 +156,16 @@ c
 c
 c     contract induced dipoles with gordon damped permanent field
 c
-         ei = 0.5*(uix*fieldp_gordon(1,ii) + uiy*fieldp_gordon(2,ii) +
-     &        uiz*fieldp_gordon(3,ii))
-         if (regularize .eq. "YES") then
-            ei = 0.5*(uix*fieldp_gordonreg(1,ii) + 
-     &           uiy*fieldp_gordonreg(2,ii) +
-     &           uiz*fieldp_gordonreg(3,ii))
-         end if
+         ei = 0.5*(uix*fieldp_damp(1,ii) + uiy*fieldp_damp(2,ii) +
+     &        uiz*fieldp_damp(3,ii))
+c
+c     according to Misquitta, one should use the unregularized field here
+c
+c         if (regularize .eq. "YES") then
+c            ei = 0.5*(uix*fieldp_dampreg(1,ii) + 
+c     &           uiy*fieldp_dampreg(2,ii) +
+c     &           uiz*fieldp_dampreg(3,ii))
+c         end if
 c
 c     apply f constant
 c

@@ -63,6 +63,25 @@ c
       real*8, allocatable :: fieldd_gordonreg(:,:)
       real*8, allocatable :: fieldp_gordonreg(:,:)
 c
+      real*8, allocatable :: potm_piquemal(:)
+      real*8, allocatable :: fieldm_piquemal(:,:)
+      real*8, allocatable :: gradfieldm_piquemal(:,:,:)
+      real*8, allocatable :: hessfieldm_piquemal(:,:,:,:)
+c
+      real*8, allocatable :: nucpotm_piquemal(:)
+      real*8, allocatable :: nucfieldm_piquemal(:,:)
+c
+      real*8, allocatable :: fieldd_piquemal(:,:)
+      real*8, allocatable :: fieldp_piquemal(:,:)
+      real*8, allocatable :: gradfieldd_piquemal(:,:,:)
+      real*8, allocatable :: gradfieldp_piquemal(:,:,:)
+c
+      real*8, allocatable :: udfield_piquemal(:,:)
+      real*8, allocatable :: upfield_piquemal(:,:)
+c
+      real*8, allocatable :: fieldd_piquemalreg(:,:)
+      real*8, allocatable :: fieldp_piquemalreg(:,:)
+c
 c      real*8, allocatable :: potm_piquemalone(:)
 c      real*8, allocatable :: fieldm_piquemalone(:,:)
 c      real*8, allocatable :: fieldd_piquemalone(:,:)

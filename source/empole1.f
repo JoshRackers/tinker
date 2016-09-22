@@ -33,11 +33,12 @@ c     choose polarization damping if necessary
 c     NEED TO RESET IN EPOLAR ROUTINES IF USING DIFFERENT TYPES OF DAMPING
 c
       if (use_polar) then
-         if (penetration .eq. "GORDON") then
+         if (directdamp .eq. "GORDON") then
             damp_gordon = .true.
-         else if (penetration .eq. "PIQUEMAL") then
+            if (regularize .eq. "YES") damp_gordonreg = .true.
+         else if (directdamp .eq. "PIQUEMAL") then
             damp_piquemal = .true.
-         else
+         else if (directdamp .eq. "THOLE") then
             damp_thole = .true.
          end if
       end if

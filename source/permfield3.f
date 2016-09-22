@@ -251,12 +251,12 @@ c
       do i = 1, n
          mscale(i) = 1.0d0
          pscale(i) = 1.0d0
+         dscale(i) = 1.0d0
       end do
 c
 c     find the electrostatic potential, field and field gradient 
 c     due to permanent multipoles
 c
-c      call settime
       do i = 1, npole-1
          ii = ipole(i)
          iz = zaxis(i)
@@ -775,8 +775,6 @@ c
             pscale(i15(j,ii)) = 1.0d0
          end do
       end do
-c      call gettime (wall,cpu)
-c      print *,"wall,cpu",wall,cpu
 c
 c     for periodic boundary conditions with large cutoffs
 c     neighbors must be found by the replicates method

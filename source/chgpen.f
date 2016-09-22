@@ -42,6 +42,8 @@ c     ignore these
 ccccccccc
       integer cpclass(maxatm)
       character*20 penetration
+      character*20 directdamp
+      character*20 mutualdamp
       character*20 bfactor_mode
       character*20 chgpen_mode
       character*20 num_ele

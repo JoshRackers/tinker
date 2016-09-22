@@ -199,8 +199,12 @@ c
       real*8, allocatable :: poli(:)
       real*8, allocatable :: fieldd_tot(:,:)
       real*8, allocatable :: fieldp_tot(:,:)
+      real*8, allocatable :: fieldd_damp(:,:)
+      real*8, allocatable :: fieldp_damp(:,:)
       real*8, allocatable :: udfield_tot(:,:)
       real*8, allocatable :: upfield_tot(:,:)
+      real*8, allocatable :: udfield_damp(:,:)
+      real*8, allocatable :: upfield_damp(:,:)
       real*8, allocatable :: udir(:,:)
       real*8, allocatable :: udirp(:,:)
       real*8, allocatable :: rsd(:,:)
@@ -231,6 +235,10 @@ c
       allocate (fieldp_tot(3,npole))
       allocate (udfield_tot(3,npole))
       allocate (upfield_tot(3,npole))
+      allocate (fieldd_damp(3,npole))
+      allocate (fieldp_damp(3,npole))
+      allocate (udfield_damp(3,npole))
+      allocate (upfield_damp(3,npole))
       allocate (udir(3,npole))
       allocate (udirp(3,npole))
 c
@@ -242,6 +250,10 @@ c
             fieldp_tot(j,i) = 0.0d0
             udfield_tot(j,i) = 0.0d0
             upfield_tot(j,i) = 0.0d0
+            fieldd_damp(j,i) = 0.0d0
+            fieldp_damp(j,i) = 0.0d0
+            udfield_damp(j,i) = 0.0d0
+            upfield_damp(j,i) = 0.0d0
          end do
       end do
 c
@@ -262,17 +274,32 @@ c     set flags for types of damping needed
 c
             damp_none = .true.
             damp_ewald = .true.
-            if (penetration .eq. "GORDON") then
+            if (directdamp .eq. "GORDON") then
                damp_gordon = .true.
-            else if (penetration .eq. "PIQUEMAL") then
+               if (regularize .eq. "YES") damp_gordonreg = .true.
+            else if (directdamp .eq. "PIQUEMAL") then
                damp_piquemal = .true.
-            else
+            else if (directdamp .eq. "THOLE") then
                damp_thole = .true.
             end if
 c
 c     get real space permanent field
 c
             call permfield3
+            if (directdamp .eq. "GORDON") then
+               fieldd_damp = fieldd_gordon
+               fieldp_damp = fieldp_gordon
+               if (regularize .eq. "YES") then
+                  fieldd_damp = fieldd_gordonreg
+                  fieldp_damp = fieldp_gordonreg
+               end if
+            else if (directdamp .eq. "PIQUEMAL") then
+               fieldd_damp = fieldd_piquemal
+               fieldp_damp = fieldp_piquemal
+            else if (directdamp.eq. "THOLE") then
+               fieldd_damp = fieldd_thole
+               fieldp_damp = fieldp_thole
+            end if
 c
 c     get permanent reciprocal field
 c
@@ -289,34 +316,40 @@ c     &           fieldd_thole + field_self
 c            fieldp_tot = field_recip + field_ewald - field + 
 c     &           fieldp_thole + field_self
             fieldd_tot = field_recip + field_ewald - field +
-     &           fieldd_gordon + field_self
+     &           fieldd_damp + field_self
             fieldp_tot = field_recip + field_ewald - field +
-     &           fieldp_gordon + field_self
-            if (regularize .eq. "YES") then
-               fieldd_tot = field_recip + field_ewald - field +
-     &              fieldd_gordonreg + field_self
-               fieldp_tot = field_recip + field_ewald - field +
-     &              fieldp_gordonreg + field_self
-            end if
+     &           fieldp_damp + field_self
          else
             damp_none = .true.
             damp_ewald = .false.
-            if (penetration .eq. "GORDON") then
+            if (directdamp .eq. "GORDON") then
                damp_gordon = .true.
-            else if (penetration .eq. "PIQUEMAL") then
+               if (regularize .eq. "YES") damp_gordonreg = .true.
+            else if (directdamp .eq. "PIQUEMAL") then
                damp_piquemal = .true.
-            else
+            else if (directdamp .eq. "THOLE") then
+               print *,"setting damp_thole"
                damp_thole = .true.
             end if
             call permfield3
+            if (directdamp .eq. "GORDON") then
+               fieldd_damp = fieldd_gordon
+               fieldp_damp = fieldp_gordon
+               if (regularize .eq. "YES") then
+                  fieldd_damp = fieldd_gordonreg
+                  fieldp_damp = fieldp_gordonreg
+               end if
+            else if (directdamp .eq. "PIQUEMAL") then
+               fieldd_damp = fieldd_piquemal
+               fieldp_damp = fieldp_piquemal
+            else if (directdamp .eq. "THOLE") then
+               fieldd_damp = fieldd_thole
+               fieldp_damp = fieldp_thole
+            end if
 c            fieldd_tot = fieldd_thole
 c            fieldp_tot = fieldp_thole
-            fieldd_tot = fieldd_gordon
-            fieldp_tot = fieldp_gordon
-            if (regularize .eq. "YES") then
-               fieldd_tot = fieldd_gordonreg
-               fieldp_tot = fieldp_gordonreg
-            end if
+            fieldd_tot = fieldd_damp
+            fieldp_tot = fieldp_damp
          end if
       else
          if (use_ewald) then
@@ -325,25 +358,43 @@ c            fieldd_tot = field_recip + field_ewald - field +
 c     &           fieldd_thole + field_self
 c            fieldp_tot = field_recip + field_ewald - field +
 c     &           fieldp_thole + field_self
-            fieldd_tot = field_recip + field_ewald - field +
-     &           fieldd_gordon + field_self
-            fieldp_tot = field_recip + field_ewald - field +
-     &           fieldp_gordon + field_self
-            if (regularize .eq. "YES") then
-               fieldd_tot = field_recip + field_ewald - field +
-     &              fieldd_gordonreg + field_self
-               fieldp_tot = field_recip + field_ewald - field +
-     &              fieldp_gordonreg + field_self
+            if (directdamp .eq. "GORDON") then
+               fieldd_damp = fieldd_gordon
+               fieldp_damp = fieldp_gordon
+               if (regularize .eq. "YES") then
+                  fieldd_damp = fieldd_gordonreg
+                  fieldp_damp = fieldp_gordonreg
+               end if
+            else if (directdamp .eq. "PIQUEMAL") then
+               fieldd_damp = fieldd_piquemal
+               fieldp_damp = fieldp_piquemal
+            else if (directdamp.eq. "THOLE") then
+               fieldd_damp = fieldd_thole
+               fieldp_damp = fieldp_thole
             end if
+            fieldd_tot = field_recip + field_ewald - field +
+     &           fieldd_damp + field_self
+            fieldp_tot = field_recip + field_ewald - field +
+     &           fieldp_damp + field_self
          else
+            if (directdamp .eq. "GORDON") then
+               fieldd_damp = fieldd_gordon
+               fieldp_damp = fieldp_gordon
+               if (regularize .eq. "YES") then
+                  fieldd_damp = fieldd_gordonreg
+                  fieldp_damp = fieldp_gordonreg
+               end if
+            else if (directdamp .eq. "PIQUEMAL") then
+               fieldd_damp = fieldd_piquemal
+               fieldp_damp = fieldp_piquemal
+            else if (directdamp .eq. "THOLE") then
+               fieldd_damp = fieldd_thole
+               fieldp_damp = fieldp_thole
+            end if
 c            fieldd_tot = fieldd_thole
 c            fieldp_tot = fieldp_thole
-            fieldd_tot = fieldd_gordon
-            fieldp_tot = fieldp_gordon
-            if (regularize .eq. "YES") then
-               fieldd_tot = fieldd_gordonreg
-               fieldp_tot = fieldp_gordonreg
-            end if
+            fieldd_tot = fieldd_damp
+            fieldp_tot = fieldp_damp
          end if
       end if
 c
@@ -403,7 +454,24 @@ c
 c
 c     get real space mutual field
 c
+            if (mutualdamp .eq. "GORDON") then
+               damp_gordon = .true.
+            else if (mutualdamp .eq. "PIQUEMAL") then
+               damp_piquemal = .true.
+            else if (mutualdamp .eq. "THOLE") then
+               damp_thole = .true.
+            end if
             call mutualfield1
+            if (mutualdamp .eq. "GORDON") then
+               udfield_damp = udfield_gordon
+               upfield_damp = upfield_gordon
+            else if (mutualdamp .eq. "PIQUEMAL") then
+               udfield_damp = udfield_piquemal
+               upfield_damp = upfield_piquemal
+            else if (mutualdamp.eq. "THOLE") then
+               udfield_damp = udfield_thole
+               upfield_damp = upfield_thole
+            end if
 c
 c     get mutual reciprocal field
 c
@@ -417,15 +485,32 @@ c     &           udfield + udfield_thole + udfield_self
 c            upfield_tot = upfield_recip + upfield_ewald -
 c     &           upfield + upfield_thole + upfield_self
             udfield_tot = udfield_recip + udfield_ewald -
-     &           udfield + udfield_gordon + udfield_self
+     &           udfield + udfield_damp + udfield_self
             upfield_tot = upfield_recip + upfield_ewald -
-     &           upfield + upfield_gordon + upfield_self
+     &           upfield + upfield_damp + upfield_self
          else
+            if (mutualdamp .eq. "GORDON") then
+               damp_gordon = .true.
+            else if (mutualdamp .eq. "PIQUEMAL") then
+               damp_piquemal = .true.
+            else if (mutualdamp .eq. "THOLE") then
+               damp_thole = .true.
+            end if
             call mutualfield1
+            if (mutualdamp .eq. "GORDON") then
+               udfield_damp = udfield_gordon
+               upfield_damp = upfield_gordon
+            else if (mutualdamp .eq. "PIQUEMAL") then
+               udfield_damp = udfield_piquemal
+               upfield_damp = upfield_piquemal
+            else if (mutualdamp.eq. "THOLE") then
+               udfield_damp = udfield_thole
+               upfield_damp = upfield_thole
+            end if
 c            udfield_tot = udfield_thole
 c            upfield_tot = upfield_thole
-            udfield_tot = udfield_gordon
-            upfield_tot = upfield_gordon
+            udfield_tot = udfield_damp
+            upfield_tot = upfield_damp
          end if
 c
 c     set initial conjugate gradient residual and conjugate vector
@@ -472,7 +557,24 @@ c
 c
 c     get real space mutual field
 c     
+               if (mutualdamp .eq. "GORDON") then
+                  damp_gordon = .true.
+               else if (mutualdamp .eq. "PIQUEMAL") then
+                  damp_piquemal = .true.
+               else if (mutualdamp .eq. "THOLE") then
+                  damp_thole = .true.
+               end if
                call mutualfield1
+               if (mutualdamp .eq. "GORDON") then
+                  udfield_damp = udfield_gordon
+                  upfield_damp = upfield_gordon
+               else if (mutualdamp .eq. "PIQUEMAL") then
+                  udfield_damp = udfield_piquemal
+                  upfield_damp = upfield_piquemal
+               else if (mutualdamp.eq. "THOLE") then
+                  udfield_damp = udfield_thole
+                  upfield_damp = upfield_thole
+               end if
 c     
 c     get mutual reciprocal field
 c
@@ -486,15 +588,32 @@ c     &              udfield + udfield_thole + udfield_self
 c               upfield_tot = upfield_recip + upfield_ewald -
 c     &              upfield + upfield_thole + upfield_self
                udfield_tot = udfield_recip + udfield_ewald -
-     &              udfield + udfield_gordon + udfield_self
+     &              udfield + udfield_damp + udfield_self
                upfield_tot = upfield_recip + upfield_ewald -
-     &              upfield + upfield_gordon + upfield_self
+     &              upfield + upfield_damp + upfield_self
             else
+               if (mutualdamp .eq. "GORDON") then
+                  damp_gordon = .true.
+               else if (mutualdamp .eq. "PIQUEMAL") then
+                  damp_piquemal = .true.
+               else if (mutualdamp .eq. "THOLE") then
+                  damp_thole = .true.
+               end if
                call mutualfield1
+               if (mutualdamp .eq. "GORDON") then
+                  udfield_damp = udfield_gordon
+                  upfield_damp = upfield_gordon
+               else if (mutualdamp .eq. "PIQUEMAL") then
+                  udfield_damp = udfield_piquemal
+                  upfield_damp = upfield_piquemal
+               else if (mutualdamp.eq. "THOLE") then
+                  udfield_damp = udfield_thole
+                  upfield_damp = upfield_thole
+               end if
 c               udfield_tot = udfield_thole
 c               upfield_tot = upfield_thole
-               udfield_tot = udfield_gordon
-               upfield_tot = upfield_gordon
+               udfield_tot = udfield_damp
+               upfield_tot = upfield_damp
             end if
             do i = 1, npole
                do j = 1, 3
