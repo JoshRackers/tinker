@@ -34,6 +34,7 @@ c
       real*8 xpolr(maxtyp)
       real*8 xathl(maxtyp)
       real*8 polfactor(maxtyp)
+      real*8 alphaf
 ccccccccc
 c     ignore these
       real*8 malpha

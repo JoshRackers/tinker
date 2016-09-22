@@ -23,8 +23,9 @@ c
       use potent
       use polar
       use chgpen
+c      use xtrpot
       implicit none
-      integer i,ii,j,jj,next,m
+      integer i,k,ii,j,jj,next,m
       real*8 alpha_atom(112)
       real*8 zeta_atom(112)
       real*8 factor
@@ -34,7 +35,6 @@ c
       integer c6(3),c7(25),c8(6),c9(37)
       integer c10(2),c11(3),c12(3),c13(7)
       integer c14(3),c15(8),c16(3),c17(2),c18(8)
-      integer c19(1)
       character*20 keyword
       character*120 record
       character*120 string
@@ -42,6 +42,16 @@ c
 c     setup atomic multipole parameters if not already done
 c
       if (.not. use_mpole)  call kmpole
+c
+c     initialize cp parameter arrays
+c
+      alphaf = 1.0d0
+      do k = 1, 18
+c         cpclass(k) = 0.0d0
+c         alpha(k) = 0.0d0
+c         regular(k) = 0.0d0
+c         xpolr(k) = 0.0d0
+      end do
 c
 c     check for keyword for charge penetration form
 c
@@ -101,6 +111,15 @@ c     read in polfactors by class
  40         continue
             if (ii .ne. 0)  alpha(ii) = pen
          end if
+         if (keyword(1:13) .eq. 'ALPHA-FACTOR ') then
+            ii = 0
+            pen = 0.0d0
+            string = record(next:120)
+            read (string,*,err=41,end=41)  pen
+ 41         continue
+            alphaf = pen
+            print *,"alphaf",alphaf
+         end if
          if (keyword(1:8) .eq. 'REGULAR ') then
             ii = 0
             pen = 0.0d0
@@ -109,11 +128,21 @@ c     read in polfactors by class
  50         continue
             if (ii .ne. 0)  regular(ii) = pen
          end if
+         if (keyword(1:8) .eq. 'CPCLASS ') then
+            ii = 0
+            pen = 0.0d0
+            string = record(next:120)
+            read (string,*,err=60,end=60)  ii,pen
+ 60         continue
+            do k = 1, n
+               if (type(k).eq.ii) cpclass(k) = pen
+            end do
+         end if
       end do
 c     
 c     set default parameters for gordon charge penetration form
 c     
-      if (penetration.eq.'GORDON ') then
+c      if (penetration.eq.'GORDON ') then
 c         alpha_atom(1) = 5.00d0
 c         alpha_atom(6) = 3.00d0
 c         alpha_atom(7) = 2.90d0
@@ -158,9 +187,6 @@ c         c14 = (/ 65,505,701 /)
          c16 = (/ 464,476,497 /)
          c17 = (/ 432,440 /)
          c18 = (/ 105,153,417,530,450,453,457,461 /)
-c     catch-all for test charges
-         c19 = (/ 7 /)
-
          polf = 1.0d0
          dampf = 1.0d0
          do i = 1, n
@@ -410,31 +436,26 @@ c               if (polfactor(18).eq.0.0d0) polfactor(18) =2.6154d0*dampf
                if (xpolr(18).eq.0.0d0) xpolr(18) = 0.2871d0
                if (polfactor(18).eq.0.0d0) polfactor(18) =2.5295d0
                cpclass(i) = 18
-c     test charges
-            else if (any(c19==ii)) then
-               if (alpha(19).eq.0.0d0) alpha(19) = 1000.0d0
-               if (regular(19).eq.0.0d0) regular(19) = 1000.0d0
-               cpclass(i) = 19
             end if
 c
 c     this allows polarizability and thole damping to vary by cpclass
 c            xpolr(cpclass(i)) = polarity(i)
-            xathl(cpclass(i)) = thole(i)
+c            xathl(cpclass(i)) = thole(i)
 c            polarity(i) = xpolr(cpclass(i))
-            thole(i) = xathl(cpclass(i))
+c            thole(i) = xathl(cpclass(i))
 c            alphap(cpclass(i)) = alpha(cpclass(i))
 c            alphap(cpclass(i)) = polfactor(cpclass(i)) *
 c     &           xpolr(cpclass(i))**(1.0d0/3.0d0)
-            if (polarity(i).eq.0.0d0) xpolr(cpclass(i)) = 0.0d0
-            if (polarity(i).ne.0.0d0) polarity(i) = xpolr(cpclass(i))
+c            if (xpolr(cpclass(i)).eq.0.0d0) then
+c               xpolr(cpclass(i)) = polarity(i)
+c            end if
+            polarity(i) = xpolr(cpclass(i))
 c            print *,"atom",i,"cpclass",cpclass(i)
 c            print *,"xpolr",xpolr(cpclass(i))
 c            print *,"polfactor",polfactor(cpclass(i))
 c            print *,"alphap",alphap(cpclass(i))
-            if (regular(cpclass(i)).eq.0.0d0) then
-               regular(cpclass(i)) = 1000.0d0
-            end if
+            if (regular(cpclass(i)).eq.0.0d0) regular(cpclass(i))= 3.0d0
          end do
-      end if
+c      end if
       return
       end

@@ -262,8 +262,13 @@ c     set flags for types of damping needed
 c
             damp_none = .true.
             damp_ewald = .true.
-            damp_thole = .true.
-            if (penetration .eq. "GORDON") damp_gordon = .true.
+            if (penetration .eq. "GORDON") then
+               damp_gordon = .true.
+            else if (penetration .eq. "PIQUEMAL") then
+               damp_piquemal = .true.
+            else
+               damp_thole = .true.
+            end if
 c
 c     get real space permanent field
 c
@@ -296,8 +301,13 @@ c     &           fieldp_thole + field_self
          else
             damp_none = .true.
             damp_ewald = .false.
-            damp_thole = .true.
-            if (penetration .eq. "GORDON") damp_gordon = .true.
+            if (penetration .eq. "GORDON") then
+               damp_gordon = .true.
+            else if (penetration .eq. "PIQUEMAL") then
+               damp_piquemal = .true.
+            else
+               damp_thole = .true.
+            end if
             call permfield3
 c            fieldd_tot = fieldd_thole
 c            fieldp_tot = fieldp_thole
@@ -416,10 +426,6 @@ c            udfield_tot = udfield_thole
 c            upfield_tot = upfield_thole
             udfield_tot = udfield_gordon
             upfield_tot = upfield_gordon
-            print *,"upfield_gordon"
-            print *,upfield_gordon
-            print *,"upfield_thole"
-            print *,upfield_thole
          end if
 c
 c     set initial conjugate gradient residual and conjugate vector

@@ -20,19 +20,40 @@ c
       subroutine empole3
       use sizes
       use analyz
+      use chgpen
       use energi
       use limits
       use mpole
       use potent
+      use potderivs
       implicit none
       integer i,ii
 c
 c
-c     choose the method for summing over multipole interactions
+c     choose polarization damping if necessary
+c     NEED TO RESET IN EPOLAR ROUTINES IF USING DIFFERENT TYPES OF DAMPING
+c
+      if (use_polar) then
+         if (penetration .eq. "GORDON") then
+            damp_gordon = .true.
+         else if (penetration .eq. "PIQUEMAL") then
+            damp_piquemal = .true.
+         else
+            damp_thole = .true.
+         end if
+      end if
+      if (penetration .eq. "GORDON") damp_gordon = .true.
+      if (penetration .eq. "PIQUEMAL") damp_piquemal = .true.
+c
+c     choose the method for summing over multipole interactions 
 c
       if (use_ewald) then
+         damp_none = .true.
+         damp_ewald = .true.
          call empole3b
       else
+         damp_none = .true.
+         damp_ewald = .false.
          call empole3a
       end if
 c
@@ -128,25 +149,14 @@ c     rotate the multipole components into the global frame
 c
       call rotpole
 c
-c     flags for types of damping needed
-c
-      damp_none = .true.
-      damp_ewald = .false.
-      damp_thole = .true.
-      if (penetration .eq. "GORDON") damp_gordon = .true.
-      if (penetration .eq. "PIQUEMAL") damp_piquemal = .true.
-      if (regularize .eq. "YES") damp_gordonreg = .true.
-c
 c     compute the permanent electric potential,
 c     field and field gradient at each multipole site
 c
       call permfield2
 c
-c     set conversion factor, cutoff and switching coefficients
+c     set conversion factor
 c
       f = electric / dielec
-      mode = 'MPOLE'
-      call switch (mode)
 c
 c     calculate the total multipole interaction energy
 c
@@ -191,9 +201,9 @@ c     permanent dipole
      &        (dix*fieldm(1,ii)+diy*fieldm(2,ii)+diz*fieldm(3,ii))
 c     quadrupole
          eold = eold + 0.5d0*
-     &        (qixx*gradfieldm(1,1,ii) + qixy*gradfieldm(1,2,ii) +
-     &        qixz*gradfieldm(1,3,ii) + qiyy*gradfieldm(2,2,ii) +
-     &        qiyz*gradfieldm(2,3,ii) + qizz*gradfieldm(3,3,ii))
+     &        (qixx*gradfieldm(1,1,ii) + qixy*gradfieldm(2,1,ii) +
+     &        qixz*gradfieldm(3,1,ii) + qiyy*gradfieldm(2,2,ii) +
+     &        qiyz*gradfieldm(3,2,ii) + qizz*gradfieldm(3,3,ii))
 c
 c     apply f constant
 c
@@ -212,10 +222,10 @@ c     permanent dipole
 c     quadrupole
          e = e + 0.5d0*
      &        (qixx*gradfieldm_gordon(1,1,ii) + 
-     &        qixy*gradfieldm_gordon(1,2,ii) +
-     &        qixz*gradfieldm_gordon(1,3,ii) + 
+     &        qixy*gradfieldm_gordon(2,1,ii) +
+     &        qixz*gradfieldm_gordon(3,1,ii) + 
      &        qiyy*gradfieldm_gordon(2,2,ii) +
-     &        qiyz*gradfieldm_gordon(2,3,ii) + 
+     &        qiyz*gradfieldm_gordon(3,2,ii) + 
      &        qizz*gradfieldm_gordon(3,3,ii))
 c
 c     apply f constant
@@ -299,11 +309,6 @@ c
 c     compute the permanent electric potential,
 c     field and field gradient at each multipole site
 c
-      damp_none = .true.
-      damp_ewald = .true.
-      damp_thole = .true.
-      damp_gordon = .false.
-      damp_piquemal = .false.
       call permfield2
 c
 c     get reciprocal space potential, field and field gradient
@@ -351,9 +356,9 @@ c     permanent dipole
      &        diy*field_ewald(2,ii) + diz*field_ewald(3,ii))
 c     quadrupole
          ereal = ereal + 0.5d0*(
-     &    qixx*gradfield_ewald(1,1,ii)+ qixy*gradfield_ewald(1,2,ii) +
-     &    qixz*gradfield_ewald(1,3,ii)+ qiyy*gradfield_ewald(2,2,ii) +
-     &    qiyz*gradfield_ewald(2,3,ii)+ qizz*gradfield_ewald(3,3,ii))
+     &    qixx*gradfield_ewald(1,1,ii)+ qixy*gradfield_ewald(2,1,ii) +
+     &    qixz*gradfield_ewald(3,1,ii)+ qiyy*gradfield_ewald(2,2,ii) +
+     &    qiyz*gradfield_ewald(3,2,ii)+ qizz*gradfield_ewald(3,3,ii))
 c
 c     self-energy
 c
@@ -365,9 +370,9 @@ c
          efix = efix + 0.5d0*(dix*field(1,ii) +
      &        diy*field(2,ii) + diz*field(3,ii))
          efix = efix + 0.5d0*(
-     &    qixx*gradfield(1,1,ii)+ qixy*gradfield(1,2,ii) +
-     &    qixz*gradfield(1,3,ii)+ qiyy*gradfield(2,2,ii) +
-     &    qiyz*gradfield(2,3,ii)+ qizz*gradfield(3,3,ii))
+     &    qixx*gradfield(1,1,ii)+ qixy*gradfield(2,1,ii) +
+     &    qixz*gradfield(3,1,ii)+ qiyy*gradfield(2,2,ii) +
+     &    qiyz*gradfield(3,2,ii)+ qizz*gradfield(3,3,ii))
 c
 c     scaled interactions
 c
@@ -375,9 +380,9 @@ c
          efix = efix - 0.5d0*(dix*fieldm(1,ii) +
      &        diy*fieldm(2,ii) + diz*fieldm(3,ii))
          efix = efix - 0.5d0*(
-     &    qixx*gradfieldm(1,1,ii)+ qixy*gradfieldm(1,2,ii) +
-     &    qixz*gradfieldm(1,3,ii)+ qiyy*gradfieldm(2,2,ii) +
-     &    qiyz*gradfieldm(2,3,ii)+ qizz*gradfieldm(3,3,ii))
+     &    qixx*gradfieldm(1,1,ii)+ qixy*gradfieldm(2,1,ii) +
+     &    qixz*gradfieldm(3,1,ii)+ qiyy*gradfieldm(2,2,ii) +
+     &    qiyz*gradfieldm(3,2,ii)+ qizz*gradfieldm(3,3,ii))
 c
 c     reciprocal space
 c
@@ -388,9 +393,9 @@ c     permanent dipole
      &        diy*field_recip(2,ii)+diz*field_recip(3,ii))
 c     quadrupole
          erecip = erecip + 0.5d0*(
-     &     qixx*gradfield_recip(1,1,ii) + qixy*gradfield_recip(1,2,ii) +
-     &     qixz*gradfield_recip(1,3,ii) + qiyy*gradfield_recip(2,2,ii) +
-     &     qiyz*gradfield_recip(2,3,ii) + qizz*gradfield_recip(3,3,ii))
+     &     qixx*gradfield_recip(1,1,ii) + qixy*gradfield_recip(2,1,ii) +
+     &     qixz*gradfield_recip(3,1,ii) + qiyy*gradfield_recip(2,2,ii) +
+     &     qiyz*gradfield_recip(3,2,ii) + qizz*gradfield_recip(3,3,ii))
 c
 c     apply f constant
 c
