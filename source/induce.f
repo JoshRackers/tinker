@@ -328,7 +328,6 @@ c     &           fieldp_thole + field_self
             else if (directdamp .eq. "PIQUEMAL") then
                damp_piquemal = .true.
             else if (directdamp .eq. "THOLE") then
-               print *,"setting damp_thole"
                damp_thole = .true.
             end if
             call permfield3

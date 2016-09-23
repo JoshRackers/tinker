@@ -57,8 +57,23 @@ c
       real*8, allocatable :: gradfieldd_gordon(:,:,:)
       real*8, allocatable :: gradfieldp_gordon(:,:,:)
 c
+      real*8, allocatable :: udnucfieldd_gordon(:,:)
+      real*8, allocatable :: upnucfieldp_gordon(:,:)
+c
       real*8, allocatable :: udfield_gordon(:,:)
       real*8, allocatable :: upfield_gordon(:,:)
+      real*8, allocatable :: udgradfield_gordon(:,:,:)
+      real*8, allocatable :: upgradfield_gordon(:,:,:)
+      real*8, allocatable :: udhessfield_gordon(:,:,:,:)
+      real*8, allocatable :: uphessfield_gordon(:,:,:,:)
+c
+      real*8, allocatable :: upfieldp_gordon(:,:)
+      real*8, allocatable :: upgradfieldp_gordon(:,:,:)
+      real*8, allocatable :: uphessfieldp_gordon(:,:,:,:)
+c
+      real*8, allocatable :: udfieldd_gordon(:,:)
+      real*8, allocatable :: udgradfieldd_gordon(:,:,:)
+      real*8, allocatable :: udhessfieldd_gordon(:,:,:,:)
 c
       real*8, allocatable :: fieldd_gordonreg(:,:)
       real*8, allocatable :: fieldp_gordonreg(:,:)
@@ -76,8 +91,23 @@ c
       real*8, allocatable :: gradfieldd_piquemal(:,:,:)
       real*8, allocatable :: gradfieldp_piquemal(:,:,:)
 c
+      real*8, allocatable :: udnucfieldd_piquemal(:,:)
+      real*8, allocatable :: upnucfieldp_piquemal(:,:)
+c
       real*8, allocatable :: udfield_piquemal(:,:)
       real*8, allocatable :: upfield_piquemal(:,:)
+      real*8, allocatable :: udgradfield_piquemal(:,:,:)
+      real*8, allocatable :: upgradfield_piquemal(:,:,:)
+      real*8, allocatable :: udhessfield_piquemal(:,:,:,:)
+      real*8, allocatable :: uphessfield_piquemal(:,:,:,:)
+c
+      real*8, allocatable :: upfieldp_piquemal(:,:)
+      real*8, allocatable :: upgradfieldp_piquemal(:,:,:)
+      real*8, allocatable :: uphessfieldp_piquemal(:,:,:,:)
+c
+      real*8, allocatable :: udfieldd_piquemal(:,:)
+      real*8, allocatable :: udgradfieldd_piquemal(:,:,:)
+      real*8, allocatable :: udhessfieldd_piquemal(:,:,:,:)
 c
       real*8, allocatable :: fieldd_piquemalreg(:,:)
       real*8, allocatable :: fieldp_piquemalreg(:,:)

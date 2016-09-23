@@ -592,6 +592,116 @@ c
       end
 c
 c
+c     ####################################################
+c     ##                                                ##
+c     ##  subroutine cp_ufieldik  --  electric field     ##
+c     ##                                                ##
+c     ####################################################
+c
+c
+c     "cp_ufieldik" computes the electric potential given two induced 
+c     dipoles and damped tmatrix
+c
+      subroutine cp_ufieldik(i,k,t2i,t2k,t2ik,
+     &     nucfieldid,nucfieldkd,elefieldid,elefieldkd,
+     &     nucfieldip,nucfieldkp,elefieldip,elefieldkp)
+      use atomid
+      use chgpen
+      use polar
+      implicit none
+      integer i,k
+      real*8 duix,duiy,duiz
+      real*8 dukx,duky,dukz
+      real*8 puix,puiy,puiz
+      real*8 pukx,puky,pukz
+      real*8 t2i(3,3)
+      real*8 t2k(3,3)
+      real*8 t2ik(3,3)
+      real*8 nucfieldid(3),nucfieldkd(3)
+      real*8 nucfieldip(3),nucfieldkp(3)
+      real*8 elefieldid(3),elefieldkd(3)
+      real*8 elefieldip(3),elefieldkp(3)
+c
+c     read in induced dipole values
+c
+      duix = uind(1,i)
+      duiy = uind(2,i)
+      duiz = uind(3,i)
+      dukx = uind(1,k)
+      duky = uind(2,k)
+      dukz = uind(3,k)
+      puix = uinp(1,i)
+      puiy = uinp(2,i)
+      puiz = uinp(3,i)
+      pukx = uinp(1,k)
+      puky = uinp(2,k)
+      pukz = uinp(3,k)
+c
+c     calculate the electric field at nuclei
+c
+c     from dipoles
+      nucfieldid(1) = -t2k(1,1)*dukx - t2k(2,1)*duky - 
+     &     t2k(3,1)*dukz
+      nucfieldid(2) = -t2k(2,1)*dukx - t2k(2,2)*duky - 
+     &     t2k(3,2)*dukz
+      nucfieldid(3) = -t2k(3,1)*dukx - t2k(3,2)*duky -
+     &     t2k(3,3)*dukz
+c     
+      nucfieldkd(1) = -t2i(1,1)*duix - t2i(2,1)*duiy -
+     &     t2i(3,1)*duiz
+      nucfieldkd(2) = -t2i(2,1)*duix - t2i(2,2)*duiy -
+     &     t2i(3,2)*duiz
+      nucfieldkd(3) = -t2i(3,1)*duix - t2i(3,2)*duiy -
+     &     t2i(3,3)*duiz
+c
+      nucfieldip(1) = -t2k(1,1)*pukx - t2k(2,1)*puky -
+     &     t2k(3,1)*pukz
+      nucfieldip(2) = -t2k(2,1)*pukx - t2k(2,2)*puky -
+     &     t2k(3,2)*pukz
+      nucfieldip(3) = -t2k(3,1)*pukx - t2k(3,2)*puky -
+     &     t2k(3,3)*pukz
+c
+      nucfieldkp(1) = -t2i(1,1)*puix - t2i(2,1)*puiy -
+     &     t2i(3,1)*puiz
+      nucfieldkp(2) = -t2i(2,1)*puix - t2i(2,2)*puiy -
+     &     t2i(3,2)*puiz
+      nucfieldkp(3) = -t2i(3,1)*puix - t2i(3,2)*puiy -
+     &     t2i(3,3)*puiz
+c
+c     calculate the electric field at electrons
+c     
+c     from dipoles
+      elefieldid(1) = -t2ik(1,1)*dukx - t2ik(2,1)*duky - 
+     &     t2ik(3,1)*dukz
+      elefieldid(2) = -t2ik(2,1)*dukx - t2ik(2,2)*duky - 
+     &     t2ik(3,2)*dukz
+      elefieldid(3) = -t2ik(3,1)*dukx - t2ik(3,2)*duky -
+     &     t2ik(3,3)*dukz
+c     
+      elefieldkd(1) = -t2ik(1,1)*duix - t2ik(2,1)*duiy -
+     &     t2ik(3,1)*duiz
+      elefieldkd(2) = -t2ik(2,1)*duix - t2ik(2,2)*duiy -
+     &     t2ik(3,2)*duiz
+      elefieldkd(3) = -t2ik(3,1)*duix - t2ik(3,2)*duiy -
+     &     t2ik(3,3)*duiz
+c
+      elefieldip(1) = -t2ik(1,1)*pukx - t2ik(2,1)*puky -
+     &     t2ik(3,1)*pukz
+      elefieldip(2) = -t2ik(2,1)*pukx - t2ik(2,2)*puky -
+     &     t2ik(3,2)*pukz
+      elefieldip(3) = -t2ik(3,1)*pukx - t2ik(3,2)*puky -
+     &     t2ik(3,3)*pukz
+c
+      elefieldkp(1) = -t2ik(1,1)*puix - t2ik(2,1)*puiy -
+     &     t2ik(3,1)*puiz
+      elefieldkp(2) = -t2ik(2,1)*puix - t2ik(2,2)*puiy -
+     &     t2ik(3,2)*puiz
+      elefieldkp(3) = -t2ik(3,1)*puix - t2ik(3,2)*puiy -
+     &     t2ik(3,3)*puiz
+      return
+      end
+c
+c
 c     ##########################################################
 c     ##                                                      ##
 c     ##  subroutine gradfieldik  --  electric field gradient ##

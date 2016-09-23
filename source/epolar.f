@@ -69,6 +69,7 @@ c      use atomid
       use bound
       use boxes
       use cell
+      use chgpen
       use chgpot
 c      use couple
       use energi
@@ -95,11 +96,9 @@ c      use shunt
       real*8 e,ei,fgrp
       real*8 f
       real*8 uix,uiy,uiz
-      logical proceed
-      logical header,huge
-      logical usei,usek
-      logical muse
-      character*6 mode
+      real*8, allocatable :: fieldd_damp(:,:)
+      real*8, allocatable :: fieldp_damp(:,:)
+      logical header
 c
 c
 c     zero out the polarization energy and partitioning
@@ -110,13 +109,29 @@ c
 c
 c     compute the induced dipoles at each polarizable atom
 c
+      damp_thole = .false.
+      damp_gordon = .false.
+      damp_piquemal = .false.
       call induce
 c
-c     set conversion factor, cutoff and switching coefficients
+c     perform dynamic allocation of some local arrays
+c
+      allocate (fieldd_damp(3,npole))
+      allocate (fieldp_damp(3,npole))
+c
+c     check what kind of damping was used
+c
+      if (directdamp .eq. "GORDON") then
+         fieldp_damp = fieldp_gordon
+      else if (directdamp .eq. "PIQUEMAL") then
+         fieldp_damp = fieldp_piquemal
+      else if (directdamp .eq. "THOLE") then
+         fieldp_damp = fieldp_thole
+      end if
+c
+c     set conversion factor
 c
       f = electric / dielec
-      mode = 'MPOLE'
-      call switch (mode)
 c
 c     calculate the total multipole interaction energy
 c
@@ -126,10 +141,10 @@ c
          uiy = uind(2,i)
          uiz = uind(3,i)
 c
-c     contract induced dipoles with thole damped permanent field
+c     contract induced dipoles with damp damped permanent field
 c
-         ei = 0.5*(uix*fieldp_thole(1,ii) + uiy*fieldp_thole(2,ii) + 
-     &        uiz*fieldp_thole(3,ii))
+         ei = 0.5*(uix*fieldp_damp(1,ii) + uiy*fieldp_damp(2,ii) + 
+     &        uiz*fieldp_damp(3,ii))
 c
 c     apply f constant
 c
@@ -161,6 +176,7 @@ c
       use analyz
       use atoms
       use boxes
+      use chgpen
       use chgpot
       use energi
       use ewald
@@ -183,6 +199,8 @@ c
       real*8 uix,uiy,uiz
       real*8 qixx,qixy,qixz
       real*8 qiyy,qiyz,qizz
+      real*8, allocatable :: fieldd_damp(:,:)
+      real*8, allocatable :: fieldp_damp(:,:)
 c
 c
 c     zero out the polarization energy and partitioning
@@ -201,7 +219,25 @@ c
 c
 c     compute the induced dipoles at each polarizable atom
 c
+      damp_thole = .false.
+      damp_gordon = .false.
+      damp_piquemal = .false.
       call induce
+c
+c     perform dynamic allocation of some local arrays
+c
+      allocate (fieldd_damp(3,npole))
+      allocate (fieldp_damp(3,npole))
+c
+c     check what kind of damping was used
+c
+      if (directdamp .eq. "GORDON") then
+         fieldp_damp = fieldp_gordon
+      else if (directdamp .eq. "PIQUEMAL") then
+         fieldp_damp = fieldp_piquemal
+      else if (directdamp .eq. "THOLE") then
+         fieldp_damp = fieldp_thole
+      end if
 c
 c     compute the real space, reciprocal space and self-energy 
 c     parts of the Ewald summation
@@ -232,8 +268,8 @@ c
      &        uiz*field(3,ii))
 c
          efix = efix - 0.5d0*(
-     &        uix*fieldp_thole(1,ii) + uiy*fieldp_thole(2,ii) +
-     &        uiz*fieldp_thole(3,ii))
+     &        uix*fieldp_damp(1,ii) + uiy*fieldp_damp(2,ii) +
+     &        uiz*fieldp_damp(3,ii))
 c
 c     self-energy
 c

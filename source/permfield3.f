@@ -96,6 +96,13 @@ c
       if (.not.allocated(gradfieldp_gordon))
      &     allocate (gradfieldp_gordon(3,3,npole))
 c
+c     gordon damping with nuclear regularization
+c
+      if (.not.allocated(fieldd_gordonreg))
+     &     allocate (fieldd_gordonreg(3,npole))
+      if (.not.allocated(fieldp_gordonreg))
+     &     allocate (fieldp_gordonreg(3,npole))
+c
 c     get the electrostatic potential, field and field gradient
 c     due to permanent multipoles
 c
@@ -194,6 +201,8 @@ c
             fieldm_gordon(j,i) = 0.0d0
             fieldd_gordon(j,i) = 0.0d0
             fieldp_gordon(j,i) = 0.0d0
+            fieldd_gordonreg(j,i) = 0.0d0
+            fieldp_gordonreg(j,i) = 0.0d0
             nucfieldm_gordon(j,i) = 0.0d0
             do k = 1, 3
                gradfield(k,j,i) = 0.0d0
@@ -549,6 +558,12 @@ c
                            gradfieldm_gordon(l,j,k) =
      &                          gradfieldm_gordon(l,j,k) +
      &                          elegradfieldk(l,j)*mscale(kk)
+                           gradfieldp_gordon(l,j,i) =
+     &                          gradfieldp_gordon(l,j,i) +
+     &                          elegradfieldi(l,j)*pscale(kk)
+                           gradfieldp_gordon(l,j,k) =
+     &                          gradfieldp_gordon(l,j,k) +
+     &                          elegradfieldk(l,j)*pscale(kk)
                            do h = 1, 3
                               hessfieldm_gordon(h,l,j,i) =
      &                             hessfieldm_gordon(h,l,j,i) +
@@ -558,6 +573,48 @@ c
      &                             elehessfieldk(h,l,j)*mscale(kk)
                            end do
                         end do
+                     end do
+                  end if
+c
+c     gordon damping + nuclear regularization
+c
+                  if (damp_gordonreg) then
+                     if (.not. damp_gordon) then
+                        call dampgordon(i,k,rorder,r,scalei,scalek,
+     &                       scaleik)
+                     end if
+                     call dampgordonreg(i,k,rorder,r,scalei,scalek)
+                     t1 = t1rr3
+                     t2 = t2rr3 + t2rr5
+                     t3 = t3rr5 + t3rr7
+                     t4 = t4rr5 + t4rr7 + t4rr9
+                     t1i = t1rr3*scalei(3)
+                     t2i = t2rr3*scalei(3) + t2rr5*scalei(5)
+                     t3i = t3rr5*scalei(5) + t3rr7*scalei(7)
+                     t4i = t4rr5*scalei(5) + t4rr7*scalei(7) +
+     &                     t4rr9*scalei(9)
+                     t1k = t1rr3*scalek(3)
+                     t2k = t2rr3*scalek(3) + t2rr5*scalek(5)
+                     t3k = t3rr5*scalek(5) + t3rr7*scalek(7)
+                     t4k = t4rr5*scalek(5) + t4rr7*scalek(7) +
+     &                     t4rr9*scalek(9)
+                     t1ik = t1rr3*scaleik(3)
+                     t2ik = t2rr3*scaleik(3) + t2rr5*scaleik(5)
+                     t3ik = t3rr5*scaleik(5) + t3rr7*scaleik(7)
+                     t4ik = t4rr5*scaleik(5) + t4rr7*scaleik(7) +
+     &                      t4rr9*scaleik(9)
+                     call cp_fieldik(i,k,
+     &                  t1,t2,t3,t1i,t2i,t3i,t1k,t2k,t3k,t1ik,t2ik,t3ik,
+     &                    nucfieldi,nucfieldk,elefieldi,elefieldk)
+                     do j = 1, 3
+                        fieldd_gordonreg(j,i) = fieldd_gordonreg(j,i) +
+     &                       elefieldi(j)*dscale(kk)
+                        fieldd_gordonreg(j,k) = fieldd_gordonreg(j,k) +
+     &                       elefieldk(j)*dscale(kk)
+                        fieldp_gordonreg(j,i) = fieldp_gordonreg(j,i) +
+     &                       elefieldi(j)*pscale(kk)
+                        fieldp_gordonreg(j,k) = fieldp_gordonreg(j,k) +
+     &                       elefieldk(j)*pscale(kk)
                      end do
                   end if
 c

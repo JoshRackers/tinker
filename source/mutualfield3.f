@@ -25,6 +25,7 @@ c
       subroutine mutualfield3
       use sizes
       use atoms
+      use chgpen
       use limits
       use mpole
       use mplpot
@@ -57,34 +58,65 @@ c
       if (.not.allocated(uphessfield_ewald))
      &     allocate (uphessfield_ewald(3,3,3,npole))
 c
-      if (.not.allocated(udfield_thole))
-     &     allocate (udfield_thole(3,npole))
-      if (.not.allocated(upfield_thole))
-     &     allocate (upfield_thole(3,npole))
-      if (.not.allocated(udgradfield_thole)) 
-     &     allocate (udgradfield_thole(3,3,npole))
-      if (.not.allocated(upgradfield_thole)) 
-     &     allocate (upgradfield_thole(3,3,npole))
-      if (.not.allocated(udhessfield_thole))
-     &     allocate (udhessfield_thole(3,3,3,npole))
-      if (.not.allocated(uphessfield_thole))
-     &     allocate (uphessfield_thole(3,3,3,npole))
+      if (mutualdamp .eq. "THOLE") then
+         if (.not.allocated(udfield_thole))
+     &        allocate (udfield_thole(3,npole))
+         if (.not.allocated(upfield_thole))
+     &        allocate (upfield_thole(3,npole))
+         if (.not.allocated(udgradfield_thole)) 
+     &        allocate (udgradfield_thole(3,3,npole))
+         if (.not.allocated(upgradfield_thole)) 
+     &        allocate (upgradfield_thole(3,3,npole))
+         if (.not.allocated(udhessfield_thole))
+     &        allocate (udhessfield_thole(3,3,3,npole))
+         if (.not.allocated(uphessfield_thole))
+     &        allocate (uphessfield_thole(3,3,3,npole))
 c
-      if (.not.allocated(udfieldd_thole))
-     &     allocate (udfieldd_thole(3,npole))
-      if (.not.allocated(udgradfieldd_thole))
-     &     allocate (udgradfieldd_thole(3,3,npole))
-      if (.not.allocated(udhessfieldd_thole))
-     &     allocate (udhessfieldd_thole(3,3,3,npole))
+         if (.not.allocated(udfieldd_thole))
+     &        allocate (udfieldd_thole(3,npole))
+         if (.not.allocated(udgradfieldd_thole))
+     &        allocate (udgradfieldd_thole(3,3,npole))
+         if (.not.allocated(udhessfieldd_thole))
+     &        allocate (udhessfieldd_thole(3,3,3,npole))
 c
-      if (.not.allocated(upfieldp_thole))
-     &     allocate (upfieldp_thole(3,npole))
-      if (.not.allocated(upgradfieldp_thole))
-     &     allocate (upgradfieldp_thole(3,3,npole))
-      if (.not.allocated(uphessfieldp_thole))
-     &     allocate (uphessfieldp_thole(3,3,3,npole))
-
-
+         if (.not.allocated(upfieldp_thole))
+     &        allocate (upfieldp_thole(3,npole))
+         if (.not.allocated(upgradfieldp_thole))
+     &        allocate (upgradfieldp_thole(3,3,npole))
+         if (.not.allocated(uphessfieldp_thole))
+     &        allocate (uphessfieldp_thole(3,3,3,npole))
+      else if (mutualdamp .eq. "GORDON") then
+         if (.not.allocated(udfield_gordon))
+     &        allocate (udfield_gordon(3,npole))
+         if (.not.allocated(upfield_gordon))
+     &        allocate (upfield_gordon(3,npole))
+         if (.not.allocated(udgradfield_gordon))
+     &        allocate (udgradfield_gordon(3,3,npole))
+         if (.not.allocated(upgradfield_gordon))
+     &        allocate (upgradfield_gordon(3,3,npole))
+         if (.not.allocated(udhessfield_gordon))
+     &        allocate (udhessfield_gordon(3,3,3,npole))
+         if (.not.allocated(uphessfield_gordon))
+     &        allocate (uphessfield_gordon(3,3,3,npole))
+c
+         if (.not.allocated(udnucfieldd_gordon))
+     &        allocate (udnucfieldd_gordon(3,npole))
+         if (.not.allocated(udfieldd_gordon))
+     &        allocate (udfieldd_gordon(3,npole))
+         if (.not.allocated(udgradfieldd_gordon))
+     &        allocate (udgradfieldd_gordon(3,3,npole))
+         if (.not.allocated(udhessfieldd_gordon))
+     &        allocate (udhessfieldd_gordon(3,3,3,npole))
+c
+         if (.not.allocated(upnucfieldp_gordon))
+     &        allocate (upnucfieldp_gordon(3,npole))
+         if (.not.allocated(upfieldp_gordon))
+     &        allocate (upfieldp_gordon(3,npole))
+         if (.not.allocated(upgradfieldp_gordon))
+     &        allocate (upgradfieldp_gordon(3,3,npole))
+         if (.not.allocated(uphessfieldp_gordon))
+     &        allocate (uphessfieldp_gordon(3,3,3,npole))
+      end if
 c
 c     get the electrostatic potential, field and field gradient
 c     due to the induced dipoles
@@ -115,6 +147,7 @@ c
       use atoms
       use bound
       use cell
+      use chgpen
       use couple
       use group
       use mplpot
@@ -135,16 +168,26 @@ c
       real*8 fgrp,r,r2
       real*8 rr1,rr3,rr5,rr7,rr9
       real*8 t2(3,3),t3(3,3,3),t4(3,3,3,3)
+      real*8 t2i(3,3),t3i(3,3,3),t4i(3,3,3,3)
+      real*8 t2k(3,3),t3k(3,3,3),t4k(3,3,3,3)
+      real*8 t2ik(3,3),t3ik(3,3,3),t4ik(3,3,3,3)
       real*8 t2rr3(3,3),t2rr5(3,3)
       real*8 t3rr5(3,3,3),t3rr7(3,3,3)
       real*8 t4rr5(3,3,3,3),t4rr7(3,3,3,3),t4rr9(3,3,3,3)
       real*8 fieldid(3),fieldkd(3)
       real*8 fieldip(3),fieldkp(3)
+      real*8 nucfieldid(3),nucfieldkd(3)
+      real*8 nucfieldip(3),nucfieldkp(3)
+      real*8 elefieldid(3),elefieldkd(3)
+      real*8 elefieldip(3),elefieldkp(3)
       real*8 gradfieldid(3,3),gradfieldkd(3,3)
       real*8 gradfieldip(3,3),gradfieldkp(3,3)
       real*8 hessfieldid(3,3,3),hessfieldkd(3,3,3)
       real*8 hessfieldip(3,3,3),hessfieldkp(3,3,3)
       real*8, allocatable :: scale(:)
+      real*8, allocatable :: scalei(:)
+      real*8, allocatable :: scalek(:)
+      real*8, allocatable :: scaleik(:)
       real*8, allocatable :: dscale(:)
       real*8, allocatable :: pscale(:)
       logical proceed
@@ -159,28 +202,51 @@ c
             upfield(j,i) = 0.0d0
             udfield_ewald(j,i) = 0.0d0
             upfield_ewald(j,i) = 0.0d0
-            udfield_thole(j,i) = 0.0d0
-            upfield_thole(j,i) = 0.0d0
-            udfieldd_thole(j,i) = 0.0d0
-            upfieldp_thole(j,i) = 0.0d0
+            if (mutualdamp .eq. "THOLE") then
+               udfield_thole(j,i) = 0.0d0
+               upfield_thole(j,i) = 0.0d0
+               udfieldd_thole(j,i) = 0.0d0
+               upfieldp_thole(j,i) = 0.0d0
+            else if (mutualdamp .eq. "GORDON") then
+               udfield_gordon(j,i) = 0.0d0
+               upfield_gordon(j,i) = 0.0d0
+               udnucfieldd_gordon(j,i) = 0.0d0
+               upnucfieldp_gordon(j,i) = 0.0d0
+               udfieldd_gordon(j,i) = 0.0d0
+               upfieldp_gordon(j,i) = 0.0d0
+            end if
             do k = 1, 3
                udgradfield(k,j,i) = 0.0d0
                upgradfield(k,j,i) = 0.0d0
                udgradfield_ewald(k,j,i) = 0.0d0
                upgradfield_ewald(k,j,i) = 0.0d0
-               udgradfield_thole(k,j,i) = 0.0d0
-               upgradfield_thole(k,j,i) = 0.0d0
-               udgradfieldd_thole(k,j,i) = 0.0d0
-               upgradfieldp_thole(k,j,i) = 0.0d0
+               if (mutualdamp .eq. "THOLE") then
+                  udgradfield_thole(k,j,i) = 0.0d0
+                  upgradfield_thole(k,j,i) = 0.0d0
+                  udgradfieldd_thole(k,j,i) = 0.0d0
+                  upgradfieldp_thole(k,j,i) = 0.0d0
+               else if (mutualdamp .eq. "GORDON") then
+                  udgradfield_gordon(k,j,i) = 0.0d0
+                  upgradfield_gordon(k,j,i) = 0.0d0
+                  udgradfieldd_gordon(k,j,i) = 0.0d0
+                  upgradfieldp_gordon(k,j,i) = 0.0d0
+               end if
                do l = 1, 3
                   udhessfield(l,k,j,i) = 0.0d0
                   uphessfield(l,k,j,i) = 0.0d0
                   udhessfield_ewald(l,k,j,i) = 0.0d0
                   uphessfield_ewald(l,k,j,i) = 0.0d0
-                  udhessfield_thole(l,k,j,i) = 0.0d0
-                  uphessfield_thole(l,k,j,i) = 0.0d0
-                  udhessfieldd_thole(l,k,j,i) = 0.0d0
-                  uphessfieldp_thole(l,k,j,i) = 0.0d0
+                  if (mutualdamp .eq. "THOLE") then
+                     udhessfield_thole(l,k,j,i) = 0.0d0
+                     uphessfield_thole(l,k,j,i) = 0.0d0
+                     udhessfieldd_thole(l,k,j,i) = 0.0d0
+                     uphessfieldp_thole(l,k,j,i) = 0.0d0
+                  else if (mutualdamp .eq. "GORDON") then
+                     udhessfield_gordon(l,k,j,i) = 0.0d0
+                     uphessfield_gordon(l,k,j,i) = 0.0d0
+                     udhessfieldd_gordon(l,k,j,i) = 0.0d0
+                     uphessfieldp_gordon(l,k,j,i) = 0.0d0
+                  end if
                end do
             end do
          end do
@@ -207,8 +273,14 @@ c
       order = 3
       rorder = order*2 + 3
       allocate (scale(rorder))
+      allocate (scalei(rorder))
+      allocate (scalek(rorder))
+      allocate (scaleik(rorder))
       do i = 1,rorder
           scale(i) = 0.0d0
+          scalei(i) = 0.0d0
+          scalek(i) = 0.0d0
+          scaleik(i) = 0.0d0
       end do
 c
 c     find the electrostatic potential, field and field gradient 
@@ -461,6 +533,107 @@ c
      &                             hessfieldip(h,l,j)*pscale(kk)
                               uphessfieldp_thole(h,l,j,k) =
      &                             uphessfieldp_thole(h,l,j,k) +
+     &                             hessfieldkp(h,l,j)*pscale(kk)
+                           end do
+                        end do
+                     end do
+                  end if
+c
+c     gordon damping
+c
+                  if (damp_gordon) then
+                     call dampgordon(i,k,rorder,r,scalei,scalek,scaleik)
+                     t2i = t2rr3*scalei(3) + t2rr5*scalei(5)
+                     t2k = t2rr3*scalek(3) + t2rr5*scalek(5)
+                     t2ik = t2rr3*scaleik(3) + t2rr5*scaleik(5)
+                     t3ik = t3rr5*scaleik(5) + t3rr7*scaleik(7)
+                     t4ik = t4rr5*scaleik(5) + t4rr7*scaleik(7) +
+     &                      t4rr9*scaleik(9)
+c     need this for field at nuclei from induced dipoles
+                     call cp_ufieldik(i,k,t2i,t2k,t2ik,
+     &                    nucfieldid,nucfieldkd,elefieldid,elefieldkd,
+     &                    nucfieldip,nucfieldkp,elefieldip,elefieldkp)
+c                     call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
+c     &                    fieldkp)
+                     call ugradfieldik(i,k,t3ik,gradfieldid,gradfieldkd
+     &                    ,gradfieldip,gradfieldkp)
+                     call uhessfieldik(i,k,t4ik,hessfieldid,hessfieldkd
+     &                    ,hessfieldip,hessfieldkp)
+                     do j = 1, 3
+                        udfield_gordon(j,i) = udfield_gordon(j,i) +
+     &                       elefieldid(j)
+                        udfield_gordon(j,k) = udfield_gordon(j,k) +
+     &                       elefieldkd(j)
+                        upfield_gordon(j,i) = upfield_gordon(j,i) +
+     &                       elefieldip(j)
+                        upfield_gordon(j,k) = upfield_gordon(j,k) +
+     &                       elefieldkp(j)
+                        udfieldd_gordon(j,i) = udfieldd_gordon(j,i) +
+     &                       elefieldid(j)*dscale(kk)
+                        udfieldd_gordon(j,k) = udfieldd_gordon(j,k) +
+     &                       elefieldkd(j)*dscale(kk)
+                        upfieldp_gordon(j,i) = upfieldp_gordon(j,i) +
+     &                       elefieldip(j)*pscale(kk)
+                        upfieldp_gordon(j,k) = upfieldp_gordon(j,k) +
+     &                       elefieldkp(j)*pscale(kk)
+c
+                        udnucfieldd_gordon(j,i)=udnucfieldd_gordon(j,i)+
+     &                       nucfieldid(j)*dscale(kk)
+                        udnucfieldd_gordon(j,k)=udnucfieldd_gordon(j,k)+
+     &                       nucfieldkd(j)*dscale(kk)
+                        upnucfieldp_gordon(j,i)=upnucfieldp_gordon(j,i)+
+     &                       nucfieldip(j)*pscale(kk)
+                        upnucfieldp_gordon(j,k)=upnucfieldp_gordon(j,k)+
+     &                       nucfieldkp(j)*pscale(kk)
+                        do l = 1, 3
+                           udgradfield_gordon(l,j,i) = 
+     &                          udgradfield_gordon(l,j,i) +
+     &                          gradfieldid(l,j)
+                           udgradfield_gordon(l,j,k) = 
+     &                          udgradfield_gordon(l,j,k) +
+     &                          gradfieldkd(l,j)
+                           upgradfield_gordon(l,j,i) = 
+     &                          upgradfield_gordon(l,j,i) +
+     &                          gradfieldip(l,j)
+                           upgradfield_gordon(l,j,k) = 
+     &                          upgradfield_gordon(l,j,k) +
+     &                          gradfieldkp(l,j)
+                           udgradfieldd_gordon(l,j,i) =
+     &                          udgradfieldd_gordon(l,j,i) +
+     &                          gradfieldid(l,j)*dscale(kk)
+                           udgradfieldd_gordon(l,j,k) =
+     &                          udgradfieldd_gordon(l,j,k) +
+     &                          gradfieldkd(l,j)*dscale(kk)
+                           upgradfieldp_gordon(l,j,i) =
+     &                          upgradfieldp_gordon(l,j,i) +
+     &                          gradfieldip(l,j)*pscale(kk)
+                           upgradfieldp_gordon(l,j,k) =
+     &                          upgradfieldp_gordon(l,j,k) +
+     &                          gradfieldkp(l,j)*pscale(kk)
+                           do h = 1, 3
+                              udhessfield_gordon(h,l,j,i) =
+     &                             udhessfield_gordon(h,l,j,i) +
+     &                             hessfieldid(h,l,j)
+                              udhessfield_gordon(h,l,j,k) =
+     &                             udhessfield_gordon(h,l,j,k) +
+     &                             hessfieldkd(h,l,j)
+                              uphessfield_gordon(h,l,j,i) =
+     &                             uphessfield_gordon(h,l,j,i) +
+     &                             hessfieldip(h,l,j)
+                              uphessfield_gordon(h,l,j,k) =
+     &                             uphessfield_gordon(h,l,j,k) +
+     &                             hessfieldkp(h,l,j)
+                              udhessfieldd_gordon(h,l,j,i) =
+     &                             udhessfieldd_gordon(h,l,j,i) +
+     &                             hessfieldid(h,l,j)*dscale(kk)
+                              udhessfieldd_gordon(h,l,j,k) =
+     &                             udhessfieldd_gordon(h,l,j,k) +
+     &                             hessfieldkd(h,l,j)*dscale(kk)
+                              uphessfieldp_gordon(h,l,j,i) =
+     &                             uphessfieldp_gordon(h,l,j,i) +
+     &                             hessfieldip(h,l,j)*pscale(kk)
+                              uphessfieldp_gordon(h,l,j,k) =
+     &                             uphessfieldp_gordon(h,l,j,k) +
      &                             hessfieldkp(h,l,j)*pscale(kk)
                            end do
                         end do
