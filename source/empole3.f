@@ -195,6 +195,8 @@ c
 c     
 c     contract multipoles with permanent potential, field and field gradient
 c
+c     the field here is NOT 2x too big, I'm just double counting
+c
 c     charge
          eold = 0.5d0*ci*potm(ii)
 c     permanent dipole

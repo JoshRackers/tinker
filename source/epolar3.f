@@ -97,8 +97,13 @@ c      use shunt
       real*8 e,ei,fgrp
       real*8 f
       real*8 uix,uiy,uiz
+      real*8 work,ei2,ei3
       real*8, allocatable :: fieldd_damp(:,:)
       real*8, allocatable :: fieldp_damp(:,:)
+      real*8, allocatable :: udfield_damp(:,:)
+      real*8, allocatable :: upfield_damp(:,:)
+      real*8, allocatable :: udfieldp_damp(:,:)
+      real*8, allocatable :: upfieldd_damp(:,:)
       logical proceed
       logical header,huge
       logical usei,usek
@@ -120,6 +125,10 @@ c     perform dynamic allocation of some local arrays
 c
       allocate (fieldd_damp(3,npole))
       allocate (fieldp_damp(3,npole))
+      allocate (udfield_damp(3,npole))
+      allocate (upfield_damp(3,npole))
+      allocate (udfieldp_damp(3,npole))
+      allocate (upfieldd_damp(3,npole))
       do i = 1, npole
          do j = 1, 3
             fieldd_damp(j,i) = 0.0d0
@@ -130,6 +139,15 @@ c
 c     compute the induced dipoles at each polarizable atom
 c
       call induce
+cccccccccccccccccccccccccccccccccccc
+      damp_thole = .false.
+      damp_gordon = .false.
+      damp_piquemal = .false.
+      if (mutualdamp .eq. "GORDON") damp_gordon = .true.
+      if (mutualdamp .eq. "PIQUEMAL") damp_piquemal = .true.
+      if (mutualdamp .eq. "THOLE") damp_thole = .true.
+      call mutualfield3
+ccccccccccccccccccccccccccccccccccccccc
 c
 c     check what kind of damping was used
 c
@@ -139,6 +157,15 @@ c
          fieldp_damp = fieldp_piquemal
       else if (directdamp .eq. "THOLE") then 
          fieldp_damp = fieldp_thole
+      end if
+      if (mutualdamp .eq. "GORDON") then
+         upfield_damp = upfield_gordon
+         upfieldd_damp = upfieldd_gordon
+      else if (mutualdamp .eq. "PIQUEMAL") then
+         upfield_damp = upfield_piquemal
+      else if (mutualdamp .eq. "THOLE") then
+         upfield_damp = upfield_thole
+         upfieldd_damp = upfieldd_thole
       end if
 c
 c     set conversion factor
@@ -155,8 +182,21 @@ c
 c
 c     contract induced dipoles with gordon damped permanent field
 c
+c     my hunch is that ei is correct for gordonreg and ei2 is not...
          ei = 0.5*(uix*fieldp_damp(1,ii) + uiy*fieldp_damp(2,ii) +
      &        uiz*fieldp_damp(3,ii))
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c     my permanent field is backwards, the mutual field is good?
+         ei2 = 0.5*(uix*upfield_damp(1,ii) + 
+     &        uiy*upfield_damp(2,ii) +
+     &        uiz*upfield_damp(3,ii)) + 
+     &        (uix*fieldp_damp(1,ii) +
+     &        uiy*fieldp_damp(2,ii) + 
+     &        uiz*fieldp_damp(3,ii)) +
+     &        0.5d0*(uix*uix + uiy*uiy + uiz*uiz)/polarity(ii)
+         print *,"ei",ei
+         print *,"ei2",ei2
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 c     according to Misquitta, one should use the unregularized field here
 c

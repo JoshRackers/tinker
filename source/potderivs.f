@@ -57,8 +57,8 @@ c
       real*8, allocatable :: gradfieldd_gordon(:,:,:)
       real*8, allocatable :: gradfieldp_gordon(:,:,:)
 c
-      real*8, allocatable :: udnucfieldd_gordon(:,:)
-      real*8, allocatable :: upnucfieldp_gordon(:,:)
+      real*8, allocatable :: udnucfieldp_gordon(:,:)
+      real*8, allocatable :: upnucfieldd_gordon(:,:)
 c
       real*8, allocatable :: udfield_gordon(:,:)
       real*8, allocatable :: upfield_gordon(:,:)
@@ -67,13 +67,13 @@ c
       real*8, allocatable :: udhessfield_gordon(:,:,:,:)
       real*8, allocatable :: uphessfield_gordon(:,:,:,:)
 c
-      real*8, allocatable :: upfieldp_gordon(:,:)
-      real*8, allocatable :: upgradfieldp_gordon(:,:,:)
-      real*8, allocatable :: uphessfieldp_gordon(:,:,:,:)
+      real*8, allocatable :: udfieldp_gordon(:,:)
+      real*8, allocatable :: udgradfieldp_gordon(:,:,:)
+      real*8, allocatable :: udhessfieldp_gordon(:,:,:,:)
 c
-      real*8, allocatable :: udfieldd_gordon(:,:)
-      real*8, allocatable :: udgradfieldd_gordon(:,:,:)
-      real*8, allocatable :: udhessfieldd_gordon(:,:,:,:)
+      real*8, allocatable :: upfieldd_gordon(:,:)
+      real*8, allocatable :: upgradfieldd_gordon(:,:,:)
+      real*8, allocatable :: uphessfieldd_gordon(:,:,:,:)
 c
       real*8, allocatable :: fieldd_gordonreg(:,:)
       real*8, allocatable :: fieldp_gordonreg(:,:)
@@ -91,8 +91,8 @@ c
       real*8, allocatable :: gradfieldd_piquemal(:,:,:)
       real*8, allocatable :: gradfieldp_piquemal(:,:,:)
 c
-      real*8, allocatable :: udnucfieldd_piquemal(:,:)
-      real*8, allocatable :: upnucfieldp_piquemal(:,:)
+      real*8, allocatable :: udnucfieldp_piquemal(:,:)
+      real*8, allocatable :: upnucfieldd_piquemal(:,:)
 c
       real*8, allocatable :: udfield_piquemal(:,:)
       real*8, allocatable :: upfield_piquemal(:,:)
@@ -101,13 +101,13 @@ c
       real*8, allocatable :: udhessfield_piquemal(:,:,:,:)
       real*8, allocatable :: uphessfield_piquemal(:,:,:,:)
 c
-      real*8, allocatable :: upfieldp_piquemal(:,:)
-      real*8, allocatable :: upgradfieldp_piquemal(:,:,:)
-      real*8, allocatable :: uphessfieldp_piquemal(:,:,:,:)
+      real*8, allocatable :: udfieldp_piquemal(:,:)
+      real*8, allocatable :: udgradfieldp_piquemal(:,:,:)
+      real*8, allocatable :: udhessfieldp_piquemal(:,:,:,:)
 c
-      real*8, allocatable :: udfieldd_piquemal(:,:)
-      real*8, allocatable :: udgradfieldd_piquemal(:,:,:)
-      real*8, allocatable :: udhessfieldd_piquemal(:,:,:,:)
+      real*8, allocatable :: upfieldd_piquemal(:,:)
+      real*8, allocatable :: upgradfieldd_piquemal(:,:,:)
+      real*8, allocatable :: uphessfieldd_piquemal(:,:,:,:)
 c
       real*8, allocatable :: fieldd_piquemalreg(:,:)
       real*8, allocatable :: fieldp_piquemalreg(:,:)
@@ -150,13 +150,13 @@ c
       real*8, allocatable :: udhessfield_thole(:,:,:,:)
       real*8, allocatable :: uphessfield_thole(:,:,:,:)
 c
-      real*8, allocatable :: upfieldp_thole(:,:)
-      real*8, allocatable :: upgradfieldp_thole(:,:,:)
-      real*8, allocatable :: uphessfieldp_thole(:,:,:,:)
+      real*8, allocatable :: upfieldd_thole(:,:)
+      real*8, allocatable :: upgradfieldd_thole(:,:,:)
+      real*8, allocatable :: uphessfieldd_thole(:,:,:,:)
 c
-      real*8, allocatable :: udfieldd_thole(:,:)
-      real*8, allocatable :: udgradfieldd_thole(:,:,:)
-      real*8, allocatable :: udhessfieldd_thole(:,:,:,:)
+      real*8, allocatable :: udfieldp_thole(:,:)
+      real*8, allocatable :: udgradfieldp_thole(:,:,:)
+      real*8, allocatable :: udhessfieldp_thole(:,:,:,:)
 c
 c     reciprocal space field quantities
 c

@@ -453,6 +453,9 @@ c
 c
 c     get real space mutual field
 c
+            damp_gordon = .false.
+            damp_piquemal = .false.
+            damp_thole = .false.
             if (mutualdamp .eq. "GORDON") then
                damp_gordon = .true.
             else if (mutualdamp .eq. "PIQUEMAL") then
@@ -467,7 +470,7 @@ c
             else if (mutualdamp .eq. "PIQUEMAL") then
                udfield_damp = udfield_piquemal
                upfield_damp = upfield_piquemal
-            else if (mutualdamp.eq. "THOLE") then
+            else if (mutualdamp .eq. "THOLE") then
                udfield_damp = udfield_thole
                upfield_damp = upfield_thole
             end if
@@ -488,6 +491,9 @@ c     &           upfield + upfield_thole + upfield_self
             upfield_tot = upfield_recip + upfield_ewald -
      &           upfield + upfield_damp + upfield_self
          else
+            damp_gordon = .false.
+            damp_piquemal = .false.
+            damp_thole = .false.
             if (mutualdamp .eq. "GORDON") then
                damp_gordon = .true.
             else if (mutualdamp .eq. "PIQUEMAL") then
@@ -556,6 +562,9 @@ c
 c
 c     get real space mutual field
 c     
+               damp_gordon = .false.
+               damp_piquemal = .false.
+               damp_thole = .false.
                if (mutualdamp .eq. "GORDON") then
                   damp_gordon = .true.
                else if (mutualdamp .eq. "PIQUEMAL") then
@@ -591,6 +600,9 @@ c     &              upfield + upfield_thole + upfield_self
                upfield_tot = upfield_recip + upfield_ewald -
      &              upfield + upfield_damp + upfield_self
             else
+               damp_gordon = .false.
+               damp_piquemal = .false.
+               damp_thole = .false.
                if (mutualdamp .eq. "GORDON") then
                   damp_gordon = .true.
                else if (mutualdamp .eq. "PIQUEMAL") then

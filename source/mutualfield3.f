@@ -72,19 +72,19 @@ c
          if (.not.allocated(uphessfield_thole))
      &        allocate (uphessfield_thole(3,3,3,npole))
 c
-         if (.not.allocated(udfieldd_thole))
-     &        allocate (udfieldd_thole(3,npole))
-         if (.not.allocated(udgradfieldd_thole))
-     &        allocate (udgradfieldd_thole(3,3,npole))
-         if (.not.allocated(udhessfieldd_thole))
-     &        allocate (udhessfieldd_thole(3,3,3,npole))
+         if (.not.allocated(upfieldd_thole))
+     &        allocate (upfieldd_thole(3,npole))
+         if (.not.allocated(upgradfieldd_thole))
+     &        allocate (upgradfieldd_thole(3,3,npole))
+         if (.not.allocated(uphessfieldd_thole))
+     &        allocate (uphessfieldd_thole(3,3,3,npole))
 c
-         if (.not.allocated(upfieldp_thole))
-     &        allocate (upfieldp_thole(3,npole))
-         if (.not.allocated(upgradfieldp_thole))
-     &        allocate (upgradfieldp_thole(3,3,npole))
-         if (.not.allocated(uphessfieldp_thole))
-     &        allocate (uphessfieldp_thole(3,3,3,npole))
+         if (.not.allocated(udfieldp_thole))
+     &        allocate (udfieldp_thole(3,npole))
+         if (.not.allocated(udgradfieldp_thole))
+     &        allocate (udgradfieldp_thole(3,3,npole))
+         if (.not.allocated(udhessfieldp_thole))
+     &        allocate (udhessfieldp_thole(3,3,3,npole))
       else if (mutualdamp .eq. "GORDON") then
          if (.not.allocated(udfield_gordon))
      &        allocate (udfield_gordon(3,npole))
@@ -99,23 +99,23 @@ c
          if (.not.allocated(uphessfield_gordon))
      &        allocate (uphessfield_gordon(3,3,3,npole))
 c
-         if (.not.allocated(udnucfieldd_gordon))
-     &        allocate (udnucfieldd_gordon(3,npole))
-         if (.not.allocated(udfieldd_gordon))
-     &        allocate (udfieldd_gordon(3,npole))
-         if (.not.allocated(udgradfieldd_gordon))
-     &        allocate (udgradfieldd_gordon(3,3,npole))
-         if (.not.allocated(udhessfieldd_gordon))
-     &        allocate (udhessfieldd_gordon(3,3,3,npole))
+         if (.not.allocated(upnucfieldd_gordon))
+     &        allocate (upnucfieldd_gordon(3,npole))
+         if (.not.allocated(upfieldd_gordon))
+     &        allocate (upfieldd_gordon(3,npole))
+         if (.not.allocated(upgradfieldd_gordon))
+     &        allocate (upgradfieldd_gordon(3,3,npole))
+         if (.not.allocated(uphessfieldd_gordon))
+     &        allocate (uphessfieldd_gordon(3,3,3,npole))
 c
-         if (.not.allocated(upnucfieldp_gordon))
-     &        allocate (upnucfieldp_gordon(3,npole))
-         if (.not.allocated(upfieldp_gordon))
-     &        allocate (upfieldp_gordon(3,npole))
-         if (.not.allocated(upgradfieldp_gordon))
-     &        allocate (upgradfieldp_gordon(3,3,npole))
-         if (.not.allocated(uphessfieldp_gordon))
-     &        allocate (uphessfieldp_gordon(3,3,3,npole))
+         if (.not.allocated(udnucfieldp_gordon))
+     &        allocate (udnucfieldp_gordon(3,npole))
+         if (.not.allocated(udfieldp_gordon))
+     &        allocate (udfieldp_gordon(3,npole))
+         if (.not.allocated(udgradfieldp_gordon))
+     &        allocate (udgradfieldp_gordon(3,3,npole))
+         if (.not.allocated(udhessfieldp_gordon))
+     &        allocate (udhessfieldp_gordon(3,3,3,npole))
       end if
 c
 c     get the electrostatic potential, field and field gradient
@@ -205,15 +205,15 @@ c
             if (mutualdamp .eq. "THOLE") then
                udfield_thole(j,i) = 0.0d0
                upfield_thole(j,i) = 0.0d0
-               udfieldd_thole(j,i) = 0.0d0
-               upfieldp_thole(j,i) = 0.0d0
+               upfieldd_thole(j,i) = 0.0d0
+               udfieldp_thole(j,i) = 0.0d0
             else if (mutualdamp .eq. "GORDON") then
                udfield_gordon(j,i) = 0.0d0
                upfield_gordon(j,i) = 0.0d0
-               udnucfieldd_gordon(j,i) = 0.0d0
-               upnucfieldp_gordon(j,i) = 0.0d0
-               udfieldd_gordon(j,i) = 0.0d0
-               upfieldp_gordon(j,i) = 0.0d0
+               upnucfieldd_gordon(j,i) = 0.0d0
+               udnucfieldp_gordon(j,i) = 0.0d0
+               upfieldd_gordon(j,i) = 0.0d0
+               udfieldp_gordon(j,i) = 0.0d0
             end if
             do k = 1, 3
                udgradfield(k,j,i) = 0.0d0
@@ -223,13 +223,13 @@ c
                if (mutualdamp .eq. "THOLE") then
                   udgradfield_thole(k,j,i) = 0.0d0
                   upgradfield_thole(k,j,i) = 0.0d0
-                  udgradfieldd_thole(k,j,i) = 0.0d0
-                  upgradfieldp_thole(k,j,i) = 0.0d0
+                  upgradfieldd_thole(k,j,i) = 0.0d0
+                  udgradfieldp_thole(k,j,i) = 0.0d0
                else if (mutualdamp .eq. "GORDON") then
                   udgradfield_gordon(k,j,i) = 0.0d0
                   upgradfield_gordon(k,j,i) = 0.0d0
-                  udgradfieldd_gordon(k,j,i) = 0.0d0
-                  upgradfieldp_gordon(k,j,i) = 0.0d0
+                  upgradfieldd_gordon(k,j,i) = 0.0d0
+                  udgradfieldp_gordon(k,j,i) = 0.0d0
                end if
                do l = 1, 3
                   udhessfield(l,k,j,i) = 0.0d0
@@ -239,13 +239,13 @@ c
                   if (mutualdamp .eq. "THOLE") then
                      udhessfield_thole(l,k,j,i) = 0.0d0
                      uphessfield_thole(l,k,j,i) = 0.0d0
-                     udhessfieldd_thole(l,k,j,i) = 0.0d0
-                     uphessfieldp_thole(l,k,j,i) = 0.0d0
+                     uphessfieldd_thole(l,k,j,i) = 0.0d0
+                     udhessfieldp_thole(l,k,j,i) = 0.0d0
                   else if (mutualdamp .eq. "GORDON") then
                      udhessfield_gordon(l,k,j,i) = 0.0d0
                      uphessfield_gordon(l,k,j,i) = 0.0d0
-                     udhessfieldd_gordon(l,k,j,i) = 0.0d0
-                     uphessfieldp_gordon(l,k,j,i) = 0.0d0
+                     uphessfieldd_gordon(l,k,j,i) = 0.0d0
+                     udhessfieldp_gordon(l,k,j,i) = 0.0d0
                   end if
                end do
             end do
@@ -476,14 +476,14 @@ c
      &                       fieldip(j)
                         upfield_thole(j,k) = upfield_thole(j,k) +
      &                       fieldkp(j)
-                        udfieldd_thole(j,i) = udfieldd_thole(j,i) +
-     &                       fieldid(j)*dscale(kk)
-                        udfieldd_thole(j,k) = udfieldd_thole(j,k) +
-     &                       fieldkd(j)*dscale(kk)
-                        upfieldp_thole(j,i) = upfieldp_thole(j,i) +
-     &                       fieldip(j)*pscale(kk)
-                        upfieldp_thole(j,k) = upfieldp_thole(j,k) +
-     &                       fieldkp(j)*pscale(kk)
+                        udfieldp_thole(j,i) = udfieldp_thole(j,i) +
+     &                       fieldid(j)*pscale(kk)
+                        udfieldp_thole(j,k) = udfieldp_thole(j,k) +
+     &                       fieldkd(j)*pscale(kk)
+                        upfieldd_thole(j,i) = upfieldd_thole(j,i) +
+     &                       fieldip(j)*dscale(kk)
+                        upfieldd_thole(j,k) = upfieldd_thole(j,k) +
+     &                       fieldkp(j)*dscale(kk)
                         do l = 1, 3
                            udgradfield_thole(l,j,i) = 
      &                          udgradfield_thole(l,j,i) +
@@ -497,18 +497,18 @@ c
                            upgradfield_thole(l,j,k) = 
      &                          upgradfield_thole(l,j,k) +
      &                          gradfieldkp(l,j)
-                           udgradfieldd_thole(l,j,i) =
-     &                          udgradfieldd_thole(l,j,i) +
-     &                          gradfieldid(l,j)*dscale(kk)
-                           udgradfieldd_thole(l,j,k) =
-     &                          udgradfieldd_thole(l,j,k) +
-     &                          gradfieldkd(l,j)*dscale(kk)
-                           upgradfieldp_thole(l,j,i) =
-     &                          upgradfieldp_thole(l,j,i) +
-     &                          gradfieldip(l,j)*pscale(kk)
-                           upgradfieldp_thole(l,j,k) =
-     &                          upgradfieldp_thole(l,j,k) +
-     &                          gradfieldkp(l,j)*pscale(kk)
+                           udgradfieldp_thole(l,j,i) =
+     &                          udgradfieldp_thole(l,j,i) +
+     &                          gradfieldid(l,j)*pscale(kk)
+                           udgradfieldp_thole(l,j,k) =
+     &                          udgradfieldp_thole(l,j,k) +
+     &                          gradfieldkd(l,j)*pscale(kk)
+                           upgradfieldd_thole(l,j,i) =
+     &                          upgradfieldd_thole(l,j,i) +
+     &                          gradfieldip(l,j)*dscale(kk)
+                           upgradfieldd_thole(l,j,k) =
+     &                          upgradfieldd_thole(l,j,k) +
+     &                          gradfieldkp(l,j)*dscale(kk)
                            do h = 1, 3
                               udhessfield_thole(h,l,j,i) =
      &                             udhessfield_thole(h,l,j,i) +
@@ -522,18 +522,18 @@ c
                               uphessfield_thole(h,l,j,k) =
      &                             uphessfield_thole(h,l,j,k) +
      &                             hessfieldkp(h,l,j)
-                              udhessfieldd_thole(h,l,j,i) =
-     &                             udhessfieldd_thole(h,l,j,i) +
-     &                             hessfieldid(h,l,j)*dscale(kk)
-                              udhessfieldd_thole(h,l,j,k) =
-     &                             udhessfieldd_thole(h,l,j,k) +
-     &                             hessfieldkd(h,l,j)*dscale(kk)
-                              uphessfieldp_thole(h,l,j,i) =
-     &                             uphessfieldp_thole(h,l,j,i) +
-     &                             hessfieldip(h,l,j)*pscale(kk)
-                              uphessfieldp_thole(h,l,j,k) =
-     &                             uphessfieldp_thole(h,l,j,k) +
-     &                             hessfieldkp(h,l,j)*pscale(kk)
+                              udhessfieldp_thole(h,l,j,i) =
+     &                             udhessfieldp_thole(h,l,j,i) +
+     &                             hessfieldid(h,l,j)*pscale(kk)
+                              udhessfieldp_thole(h,l,j,k) =
+     &                             udhessfieldp_thole(h,l,j,k) +
+     &                             hessfieldkd(h,l,j)*pscale(kk)
+                              uphessfieldd_thole(h,l,j,i) =
+     &                             uphessfieldd_thole(h,l,j,i) +
+     &                             hessfieldip(h,l,j)*dscale(kk)
+                              uphessfieldd_thole(h,l,j,k) =
+     &                             uphessfieldd_thole(h,l,j,k) +
+     &                             hessfieldkp(h,l,j)*dscale(kk)
                            end do
                         end do
                      end do
@@ -568,23 +568,23 @@ c     &                    fieldkp)
      &                       elefieldip(j)
                         upfield_gordon(j,k) = upfield_gordon(j,k) +
      &                       elefieldkp(j)
-                        udfieldd_gordon(j,i) = udfieldd_gordon(j,i) +
-     &                       elefieldid(j)*dscale(kk)
-                        udfieldd_gordon(j,k) = udfieldd_gordon(j,k) +
-     &                       elefieldkd(j)*dscale(kk)
-                        upfieldp_gordon(j,i) = upfieldp_gordon(j,i) +
-     &                       elefieldip(j)*pscale(kk)
-                        upfieldp_gordon(j,k) = upfieldp_gordon(j,k) +
-     &                       elefieldkp(j)*pscale(kk)
+                        udfieldp_gordon(j,i) = udfieldp_gordon(j,i) +
+     &                       elefieldid(j)*pscale(kk)
+                        udfieldp_gordon(j,k) = udfieldp_gordon(j,k) +
+     &                       elefieldkd(j)*pscale(kk)
+                        upfieldd_gordon(j,i) = upfieldd_gordon(j,i) +
+     &                       elefieldip(j)*dscale(kk)
+                        upfieldd_gordon(j,k) = upfieldd_gordon(j,k) +
+     &                       elefieldkp(j)*dscale(kk)
 c
-                        udnucfieldd_gordon(j,i)=udnucfieldd_gordon(j,i)+
-     &                       nucfieldid(j)*dscale(kk)
-                        udnucfieldd_gordon(j,k)=udnucfieldd_gordon(j,k)+
-     &                       nucfieldkd(j)*dscale(kk)
-                        upnucfieldp_gordon(j,i)=upnucfieldp_gordon(j,i)+
-     &                       nucfieldip(j)*pscale(kk)
-                        upnucfieldp_gordon(j,k)=upnucfieldp_gordon(j,k)+
-     &                       nucfieldkp(j)*pscale(kk)
+                        udnucfieldp_gordon(j,i)=udnucfieldp_gordon(j,i)+
+     &                       nucfieldid(j)*pscale(kk)
+                        udnucfieldp_gordon(j,k)=udnucfieldp_gordon(j,k)+
+     &                       nucfieldkd(j)*pscale(kk)
+                        upnucfieldd_gordon(j,i)=upnucfieldd_gordon(j,i)+
+     &                       nucfieldip(j)*dscale(kk)
+                        upnucfieldd_gordon(j,k)=upnucfieldd_gordon(j,k)+
+     &                       nucfieldkp(j)*dscale(kk)
                         do l = 1, 3
                            udgradfield_gordon(l,j,i) = 
      &                          udgradfield_gordon(l,j,i) +
@@ -598,18 +598,18 @@ c
                            upgradfield_gordon(l,j,k) = 
      &                          upgradfield_gordon(l,j,k) +
      &                          gradfieldkp(l,j)
-                           udgradfieldd_gordon(l,j,i) =
-     &                          udgradfieldd_gordon(l,j,i) +
-     &                          gradfieldid(l,j)*dscale(kk)
-                           udgradfieldd_gordon(l,j,k) =
-     &                          udgradfieldd_gordon(l,j,k) +
-     &                          gradfieldkd(l,j)*dscale(kk)
-                           upgradfieldp_gordon(l,j,i) =
-     &                          upgradfieldp_gordon(l,j,i) +
-     &                          gradfieldip(l,j)*pscale(kk)
-                           upgradfieldp_gordon(l,j,k) =
-     &                          upgradfieldp_gordon(l,j,k) +
-     &                          gradfieldkp(l,j)*pscale(kk)
+                           udgradfieldp_gordon(l,j,i) =
+     &                          udgradfieldp_gordon(l,j,i) +
+     &                          gradfieldid(l,j)*pscale(kk)
+                           udgradfieldp_gordon(l,j,k) =
+     &                          udgradfieldp_gordon(l,j,k) +
+     &                          gradfieldkd(l,j)*pscale(kk)
+                           upgradfieldd_gordon(l,j,i) =
+     &                          upgradfieldd_gordon(l,j,i) +
+     &                          gradfieldip(l,j)*dscale(kk)
+                           upgradfieldd_gordon(l,j,k) =
+     &                          upgradfieldd_gordon(l,j,k) +
+     &                          gradfieldkp(l,j)*dscale(kk)
                            do h = 1, 3
                               udhessfield_gordon(h,l,j,i) =
      &                             udhessfield_gordon(h,l,j,i) +
@@ -623,18 +623,18 @@ c
                               uphessfield_gordon(h,l,j,k) =
      &                             uphessfield_gordon(h,l,j,k) +
      &                             hessfieldkp(h,l,j)
-                              udhessfieldd_gordon(h,l,j,i) =
-     &                             udhessfieldd_gordon(h,l,j,i) +
-     &                             hessfieldid(h,l,j)*dscale(kk)
-                              udhessfieldd_gordon(h,l,j,k) =
-     &                             udhessfieldd_gordon(h,l,j,k) +
-     &                             hessfieldkd(h,l,j)*dscale(kk)
-                              uphessfieldp_gordon(h,l,j,i) =
-     &                             uphessfieldp_gordon(h,l,j,i) +
-     &                             hessfieldip(h,l,j)*pscale(kk)
-                              uphessfieldp_gordon(h,l,j,k) =
-     &                             uphessfieldp_gordon(h,l,j,k) +
-     &                             hessfieldkp(h,l,j)*pscale(kk)
+                              udhessfieldp_gordon(h,l,j,i) =
+     &                             udhessfieldp_gordon(h,l,j,i) +
+     &                             hessfieldid(h,l,j)*pscale(kk)
+                              udhessfieldp_gordon(h,l,j,k) =
+     &                             udhessfieldp_gordon(h,l,j,k) +
+     &                             hessfieldkd(h,l,j)*pscale(kk)
+                              uphessfieldd_gordon(h,l,j,i) =
+     &                             uphessfieldd_gordon(h,l,j,i) +
+     &                             hessfieldip(h,l,j)*dscale(kk)
+                              uphessfieldd_gordon(h,l,j,k) =
+     &                             uphessfieldd_gordon(h,l,j,k) +
+     &                             hessfieldkp(h,l,j)*dscale(kk)
                            end do
                         end do
                      end do
@@ -835,6 +835,7 @@ c
 c     
 c     thole damping
 c     
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
                      if (damp_thole) then
                         call dampthole(i,k,rorder,r,scale)
                         t2 = t2rr3*scale(3) + t2rr5*scale(5)
@@ -856,14 +857,14 @@ c
      &                          fieldip(j)
                            upfield_thole(j,k) = upfield_thole(j,k) +
      &                          fieldkp(j)
-                           udfieldd_thole(j,i) = udfieldd_thole(j,i) +
-     &                          fieldid(j)*dscale(kk)
-                           udfieldd_thole(j,k) = udfieldd_thole(j,k) +
-     &                          fieldkd(j)*dscale(kk)
-                           upfieldp_thole(j,i) = upfieldp_thole(j,i) +
-     &                          fieldip(j)*pscale(kk)
-                           upfieldp_thole(j,k) = upfieldp_thole(j,k) +
-     &                          fieldkp(j)*pscale(kk)
+                           udfieldp_thole(j,i) = udfieldp_thole(j,i) +
+     &                          fieldid(j)*pscale(kk)
+                           udfieldp_thole(j,k) = udfieldp_thole(j,k) +
+     &                          fieldkd(j)*pscale(kk)
+                           upfieldd_thole(j,i) = upfieldd_thole(j,i) +
+     &                          fieldip(j)*dscale(kk)
+                           upfieldd_thole(j,k) = upfieldd_thole(j,k) +
+     &                          fieldkp(j)*dscale(kk)
                            do l = 1, 3
                               udgradfield_thole(l,j,i) = 
      &                             udgradfield_thole(l,j,i) +
@@ -877,18 +878,18 @@ c
                               upgradfield_thole(l,j,k) = 
      &                             upgradfield_thole(l,j,k) +
      &                             gradfieldkp(l,j)
-                              udgradfieldd_thole(l,j,i) =
-     &                             udgradfieldd_thole(l,j,i) +
-     &                             gradfieldid(l,j)*dscale(kk)
-                              udgradfieldd_thole(l,j,k) =
-     &                             udgradfieldd_thole(l,j,k) +
-     &                             gradfieldkd(l,j)*dscale(kk)
-                              upgradfieldp_thole(l,j,i) =
-     &                             upgradfieldp_thole(l,j,i) +
-     &                             gradfieldip(l,j)*pscale(kk)
-                              upgradfieldp_thole(l,j,k) =
-     &                             upgradfieldp_thole(l,j,k) +
-     &                             gradfieldkp(l,j)*pscale(kk)
+                              udgradfieldp_thole(l,j,i) =
+     &                             udgradfieldp_thole(l,j,i) +
+     &                             gradfieldid(l,j)*pscale(kk)
+                              udgradfieldp_thole(l,j,k) =
+     &                             udgradfieldp_thole(l,j,k) +
+     &                             gradfieldkd(l,j)*pscale(kk)
+                              upgradfieldd_thole(l,j,i) =
+     &                             upgradfieldd_thole(l,j,i) +
+     &                             gradfieldip(l,j)*dscale(kk)
+                              upgradfieldd_thole(l,j,k) =
+     &                             upgradfieldd_thole(l,j,k) +
+     &                             gradfieldkp(l,j)*dscale(kk)
                               do h = 1, 3
                                  udhessfield_thole(h,l,j,i) =
      &                                udhessfield_thole(h,l,j,i) +
@@ -902,18 +903,18 @@ c
                                  uphessfield_thole(h,l,j,k) =
      &                                uphessfield_thole(h,l,j,k) +
      &                                hessfieldkp(h,l,j)
-                                 udhessfieldd_thole(h,l,j,i) =
-     &                                udhessfieldd_thole(h,l,j,i) +
-     &                                hessfieldid(h,l,j)*dscale(kk)
-                                 udhessfieldd_thole(h,l,j,k) =
-     &                                udhessfieldd_thole(h,l,j,k) +
-     &                                hessfieldkd(h,l,j)*dscale(kk)
-                                 uphessfieldp_thole(h,l,j,i) =
-     &                                uphessfieldp_thole(h,l,j,i) +
-     &                                hessfieldip(h,l,j)*pscale(kk)
-                                 uphessfieldp_thole(h,l,j,k) =
-     &                                uphessfieldp_thole(h,l,j,k) +
-     &                                hessfieldkp(h,l,j)*pscale(kk)
+                                 udhessfieldp_thole(h,l,j,i) =
+     &                                udhessfieldp_thole(h,l,j,i) +
+     &                                hessfieldid(h,l,j)*pscale(kk)
+                                 udhessfieldp_thole(h,l,j,k) =
+     &                                udhessfieldp_thole(h,l,j,k) +
+     &                                hessfieldkd(h,l,j)*pscale(kk)
+                                 uphessfieldd_thole(h,l,j,i) =
+     &                                uphessfieldd_thole(h,l,j,i) +
+     &                                hessfieldip(h,l,j)*dscale(kk)
+                                 uphessfieldd_thole(h,l,j,k) =
+     &                                uphessfieldd_thole(h,l,j,k) +
+     &                                hessfieldkp(h,l,j)*dscale(kk)
                               end do
                            end do
                         end do
@@ -999,12 +1000,12 @@ c
       real*8, allocatable :: upgradfield_tholeo(:,:,:)
       real*8, allocatable :: udhessfield_tholeo(:,:,:,:)
       real*8, allocatable :: uphessfield_tholeo(:,:,:,:)
-      real*8, allocatable :: udfieldd_tholeo(:,:)
-      real*8, allocatable :: udgradfieldd_tholeo(:,:,:)
-      real*8, allocatable :: udhessfieldd_tholeo(:,:,:,:)
-      real*8, allocatable :: upfieldp_tholeo(:,:)
-      real*8, allocatable :: upgradfieldp_tholeo(:,:,:)
-      real*8, allocatable :: uphessfieldp_tholeo(:,:,:,:)
+      real*8, allocatable :: udfieldp_tholeo(:,:)
+      real*8, allocatable :: udgradfieldp_tholeo(:,:,:)
+      real*8, allocatable :: udhessfieldp_tholeo(:,:,:,:)
+      real*8, allocatable :: upfieldd_tholeo(:,:)
+      real*8, allocatable :: upgradfieldd_tholeo(:,:,:)
+      real*8, allocatable :: uphessfieldd_tholeo(:,:,:,:)
       logical proceed
       logical usei,usek
       character*6 mode
@@ -1032,13 +1033,13 @@ c
       allocate (udhessfield_tholeo(3,3,3,npole))
       allocate (uphessfield_tholeo(3,3,3,npole))
 c
-      allocate (udfieldd_tholeo(3,npole))
-      allocate (udgradfieldd_tholeo(3,3,npole))
-      allocate (udhessfieldd_tholeo(3,3,3,npole))
+      allocate (udfieldp_tholeo(3,npole))
+      allocate (udgradfieldp_tholeo(3,3,npole))
+      allocate (udhessfieldp_tholeo(3,3,3,npole))
 c
-      allocate (upfieldp_tholeo(3,npole))
-      allocate (upgradfieldp_tholeo(3,3,npole))
-      allocate (uphessfieldp_tholeo(3,3,3,npole))
+      allocate (upfieldd_tholeo(3,npole))
+      allocate (upgradfieldd_tholeo(3,3,npole))
+      allocate (uphessfieldd_tholeo(3,3,3,npole))
 c
 c     zero out the value of the gradfield at each site
 c
@@ -1050,8 +1051,8 @@ c
             upfield_ewald(j,i) = 0.0d0
             udfield_thole(j,i) = 0.0d0
             upfield_thole(j,i) = 0.0d0
-            udfieldd_thole(j,i) = 0.0d0
-            upfieldp_thole(j,i) = 0.0d0
+            udfieldp_thole(j,i) = 0.0d0
+            upfieldd_thole(j,i) = 0.0d0
 c
             udfieldo(j,i) = 0.0d0
             upfieldo(j,i) = 0.0d0
@@ -1059,8 +1060,8 @@ c
             upfield_ewaldo(j,i) = 0.0d0
             udfield_tholeo(j,i) = 0.0d0
             upfield_tholeo(j,i) = 0.0d0
-            udfieldd_tholeo(j,i) = 0.0d0
-            upfieldp_tholeo(j,i) = 0.0d0
+            udfieldp_tholeo(j,i) = 0.0d0
+            upfieldd_tholeo(j,i) = 0.0d0
             do k = 1, 3
                udgradfield(k,j,i) = 0.0d0
                upgradfield(k,j,i) = 0.0d0
@@ -1068,8 +1069,8 @@ c
                upgradfield_ewald(k,j,i) = 0.0d0
                udgradfield_thole(k,j,i) = 0.0d0
                upgradfield_thole(k,j,i) = 0.0d0
-               udgradfieldd_thole(k,j,i) = 0.0d0
-               upgradfieldp_thole(k,j,i) = 0.0d0
+               udgradfieldp_thole(k,j,i) = 0.0d0
+               upgradfieldd_thole(k,j,i) = 0.0d0
 c
                udgradfieldo(k,j,i) = 0.0d0
                upgradfieldo(k,j,i) = 0.0d0
@@ -1077,8 +1078,8 @@ c
                upgradfield_ewaldo(k,j,i) = 0.0d0
                udgradfield_tholeo(k,j,i) = 0.0d0
                upgradfield_tholeo(k,j,i) = 0.0d0
-               udgradfieldd_tholeo(k,j,i) = 0.0d0
-               upgradfieldp_tholeo(k,j,i) = 0.0d0
+               udgradfieldp_tholeo(k,j,i) = 0.0d0
+               upgradfieldd_tholeo(k,j,i) = 0.0d0
                do l = 1, 3
                   udhessfield(l,k,j,i) = 0.0d0
                   uphessfield(l,k,j,i) = 0.0d0
@@ -1086,8 +1087,8 @@ c
                   uphessfield_ewald(l,k,j,i) = 0.0d0
                   udhessfield_thole(l,k,j,i) = 0.0d0
                   uphessfield_thole(l,k,j,i) = 0.0d0
-                  udhessfieldd_thole(l,k,j,i) = 0.0d0
-                  uphessfieldp_thole(l,k,j,i) = 0.0d0
+                  udhessfieldp_thole(l,k,j,i) = 0.0d0
+                  uphessfieldd_thole(l,k,j,i) = 0.0d0
 c
                   udhessfieldo(l,k,j,i) = 0.0d0
                   uphessfieldo(l,k,j,i) = 0.0d0
@@ -1095,8 +1096,8 @@ c
                   uphessfield_ewaldo(l,k,j,i) = 0.0d0
                   udhessfield_tholeo(l,k,j,i) = 0.0d0
                   uphessfield_tholeo(l,k,j,i) = 0.0d0
-                  udhessfieldd_tholeo(l,k,j,i) = 0.0d0
-                  uphessfieldp_tholeo(l,k,j,i) = 0.0d0
+                  udhessfieldp_tholeo(l,k,j,i) = 0.0d0
+                  uphessfieldd_tholeo(l,k,j,i) = 0.0d0
                end do
             end do
          end do
@@ -1154,9 +1155,9 @@ c
 !$OMP& udfield_tholeo,upfield_tholeo,
 !$OMP& udgradfield_tholeo,upgradfield_tholeo,
 !$OMP& udhessfield_tholeo,uphessfield_tholeo,
-!$OMP& udfieldd_tholeo,upfieldp_tholeo,
-!$OMP& udgradfieldd_tholeo,upgradfieldp_tholeo,
-!$OMP& udhessfieldd_tholeo,uphessfieldp_tholeo)
+!$OMP& udfieldp_tholeo,upfieldd_tholeo,
+!$OMP& udgradfieldp_tholeo,upgradfieldd_tholeo,
+!$OMP& udhessfieldp_tholeo,uphessfieldd_tholeo)
 !$OMP& schedule(guided)
 c
 c     calculate the multipole interaction
@@ -1353,14 +1354,14 @@ c
      &                    fieldip(j)
                      upfield_tholeo(j,k) = upfield_tholeo(j,k) +
      &                    fieldkp(j)
-                     udfieldd_tholeo(j,i) = udfieldd_tholeo(j,i) +
-     &                    fieldid(j)*dscale(kk)
-                     udfieldd_tholeo(j,k) = udfieldd_tholeo(j,k) +
-     &                    fieldkd(j)*dscale(kk)
-                     upfieldp_tholeo(j,i) = upfieldp_tholeo(j,i) +
-     &                    fieldip(j)*pscale(kk)
-                     upfieldp_tholeo(j,k) = upfieldp_tholeo(j,k) +
-     &                    fieldkp(j)*pscale(kk)
+                     udfieldp_tholeo(j,i) = udfieldp_tholeo(j,i) +
+     &                    fieldid(j)*pscale(kk)
+                     udfieldp_tholeo(j,k) = udfieldp_tholeo(j,k) +
+     &                    fieldkd(j)*pscale(kk)
+                     upfieldd_tholeo(j,i) = upfieldd_tholeo(j,i) +
+     &                    fieldip(j)*dscale(kk)
+                     upfieldd_tholeo(j,k) = upfieldd_tholeo(j,k) +
+     &                    fieldkp(j)*dscale(kk)
                      do l = 1, 3
                         udgradfield_tholeo(l,j,i) = 
      &                       udgradfield_tholeo(l,j,i) +
@@ -1374,18 +1375,18 @@ c
                         upgradfield_tholeo(l,j,k) = 
      &                       upgradfield_tholeo(l,j,k) +
      &                       gradfieldkp(l,j)
-                        udgradfieldd_tholeo(l,j,i) =
-     &                       udgradfieldd_tholeo(l,j,i) +
-     &                       gradfieldid(l,j)*dscale(kk)
-                        udgradfieldd_tholeo(l,j,k) =
-     &                       udgradfieldd_tholeo(l,j,k) +
-     &                       gradfieldkd(l,j)*dscale(kk)
-                        upgradfieldp_tholeo(l,j,i) =
-     &                       upgradfieldp_tholeo(l,j,i) +
-     &                       gradfieldip(l,j)*pscale(kk)
-                        upgradfieldp_tholeo(l,j,k) =
-     &                       upgradfieldp_tholeo(l,j,k) +
-     &                       gradfieldkp(l,j)*pscale(kk)
+                        udgradfieldp_tholeo(l,j,i) =
+     &                       udgradfieldp_tholeo(l,j,i) +
+     &                       gradfieldid(l,j)*pscale(kk)
+                        udgradfieldp_tholeo(l,j,k) =
+     &                       udgradfieldp_tholeo(l,j,k) +
+     &                       gradfieldkd(l,j)*pscale(kk)
+                        upgradfieldd_tholeo(l,j,i) =
+     &                       upgradfieldd_tholeo(l,j,i) +
+     &                       gradfieldip(l,j)*dscale(kk)
+                        upgradfieldd_tholeo(l,j,k) =
+     &                       upgradfieldd_tholeo(l,j,k) +
+     &                       gradfieldkp(l,j)*dscale(kk)
                         do h = 1, 3
                            udhessfield_tholeo(h,l,j,i) =
      &                          udhessfield_tholeo(h,l,j,i) +
@@ -1399,18 +1400,18 @@ c
                            uphessfield_tholeo(h,l,j,k) =
      &                          uphessfield_tholeo(h,l,j,k) +
      &                          hessfieldkp(h,l,j)
-                           udhessfieldd_tholeo(h,l,j,i) =
-     &                          udhessfieldd_tholeo(h,l,j,i) +
-     &                          hessfieldid(h,l,j)*dscale(kk)
-                           udhessfieldd_tholeo(h,l,j,k) =
-     &                          udhessfieldd_tholeo(h,l,j,k) +
-     &                          hessfieldkd(h,l,j)*dscale(kk)
-                           uphessfieldp_tholeo(h,l,j,i) =
-     &                          uphessfieldp_tholeo(h,l,j,i) +
-     &                          hessfieldip(h,l,j)*pscale(kk)
-                           uphessfieldp_tholeo(h,l,j,k) =
-     &                          uphessfieldp_tholeo(h,l,j,k) +
-     &                          hessfieldkp(h,l,j)*pscale(kk)
+                           udhessfieldp_tholeo(h,l,j,i) =
+     &                          udhessfieldp_tholeo(h,l,j,i) +
+     &                          hessfieldid(h,l,j)*pscale(kk)
+                           udhessfieldp_tholeo(h,l,j,k) =
+     &                          udhessfieldp_tholeo(h,l,j,k) +
+     &                          hessfieldkd(h,l,j)*pscale(kk)
+                           uphessfieldd_tholeo(h,l,j,i) =
+     &                          uphessfieldd_tholeo(h,l,j,i) +
+     &                          hessfieldip(h,l,j)*dscale(kk)
+                           uphessfieldd_tholeo(h,l,j,k) =
+     &                          uphessfieldd_tholeo(h,l,j,k) +
+     &                          hessfieldkp(h,l,j)*dscale(kk)
                         end do
                      end do
                   end do
@@ -1447,12 +1448,12 @@ c
       udhessfield_thole = udhessfield_tholeo
       uphessfield_thole = uphessfield_tholeo
 c
-      udfieldd_thole = udfieldd_tholeo
-      upfieldp_thole = upfieldp_tholeo
-      udgradfieldd_thole = udgradfieldd_tholeo
-      upgradfieldp_thole = upgradfieldp_tholeo
-      udhessfieldd_thole = udhessfieldd_tholeo
-      uphessfieldp_thole = uphessfieldp_tholeo
+      udfieldp_thole = udfieldp_tholeo
+      upfieldd_thole = upfieldd_tholeo
+      udgradfieldp_thole = udgradfieldp_tholeo
+      upgradfieldd_thole = upgradfieldd_tholeo
+      udhessfieldp_thole = udhessfieldp_tholeo
+      uphessfieldd_thole = uphessfieldd_tholeo
 c
 c     perform deallocation of some local arrays
 c
@@ -1477,12 +1478,12 @@ c
       deallocate (udhessfield_tholeo)
       deallocate (uphessfield_tholeo)
 c
-      deallocate (udfieldd_tholeo)
-      deallocate (udgradfieldd_tholeo)
-      deallocate (udhessfieldd_tholeo)
+      deallocate (udfieldp_tholeo)
+      deallocate (udgradfieldp_tholeo)
+      deallocate (udhessfieldp_tholeo)
 c
-      deallocate (upfieldp_tholeo)
-      deallocate (upgradfieldp_tholeo)
-      deallocate (uphessfieldp_tholeo)
+      deallocate (upfieldd_tholeo)
+      deallocate (upgradfieldd_tholeo)
+      deallocate (uphessfieldd_tholeo)
       return
       end
