@@ -165,6 +165,10 @@ c
       if (mutualdamp .eq. "GORDON") damp_gordon = .true.
       if (mutualdamp .eq. "PIQUEMAL") damp_piquemal = .true.
       if (mutualdamp .eq. "THOLE") damp_thole = .true.
+      if (directdamp .eq. "GORDON") damp_gordon = .true.
+      if (directdamp .eq. "PIQUEMAL") damp_piquemal = .true.
+      if (directdamp .eq. "THOLE") damp_thole = .true.
+c
       call mutualfield3
 c
 c     perform dynamic allocation of some local arrays
@@ -197,16 +201,39 @@ c
          fieldp_damp = fieldp_gordon
          gradfieldd_damp = gradfieldd_gordon
          gradfieldp_damp = gradfieldp_gordon
+c
+         udnucfieldp_damp = udnucfieldp_gordon
+         upnucfieldd_damp = upnucfieldd_gordon
+         udfieldp_damp = udfieldp_gordon
+         upfieldd_damp = upfieldd_gordon
+         udgradfieldp_damp = udgradfieldp_gordon
+         upgradfieldd_damp = upgradfieldd_gordon
+         udhessfieldp_damp = udhessfieldp_gordon
+         uphessfieldd_damp = uphessfieldd_gordon
       else if (directdamp .eq. "PIQUEMAL") then
          fieldd_damp = fieldd_piquemal
          fieldp_damp = fieldp_piquemal
          gradfieldd_damp = gradfieldd_piquemal
          gradfieldp_damp = gradfieldp_piquemal
+c
+         udfieldp_damp = udfieldp_piquemal
+         upfieldd_damp = upfieldd_piquemal
+         udgradfieldp_damp = udgradfieldp_piquemal
+         upgradfieldd_damp = upgradfieldd_piquemal
+         udhessfieldp_damp = udhessfieldp_piquemal
+         uphessfieldd_damp = uphessfieldd_piquemal
       else if (directdamp .eq. "THOLE") then
          fieldd_damp = fieldd_thole
          fieldp_damp = fieldp_thole
          gradfieldd_damp = gradfieldd_thole
          gradfieldp_damp = gradfieldp_thole
+c
+         udfieldp_damp = udfieldp_thole
+         upfieldd_damp = upfieldd_thole
+         udgradfieldp_damp = udgradfieldp_thole
+         upgradfieldd_damp = upgradfieldd_thole
+         udhessfieldp_damp = udhessfieldp_thole
+         uphessfieldd_damp = uphessfieldd_thole
       end if
 c
 c     check what kind of mutual damping was used
@@ -219,14 +246,14 @@ c
          udhessfield_damp = udhessfield_gordon
          uphessfield_damp = uphessfield_gordon
 c
-         udnucfieldp_damp = udnucfieldp_gordon
-         upnucfieldd_damp = upnucfieldd_gordon
-         udfieldp_damp = udfieldp_gordon
-         upfieldd_damp = upfieldd_gordon
-         udgradfieldp_damp = udgradfieldp_gordon
-         upgradfieldd_damp = upgradfieldd_gordon
-         udhessfieldp_damp = udhessfieldp_gordon
-         uphessfieldd_damp = uphessfieldd_gordon
+c         udnucfieldp_damp = udnucfieldp_gordon
+c         upnucfieldd_damp = upnucfieldd_gordon
+c         udfieldp_damp = udfieldp_gordon
+c         upfieldd_damp = upfieldd_gordon
+c         udgradfieldp_damp = udgradfieldp_gordon
+c         upgradfieldd_damp = upgradfieldd_gordon
+c         udhessfieldp_damp = udhessfieldp_gordon
+c         uphessfieldd_damp = uphessfieldd_gordon
       else if (mutualdamp .eq. "PIQUEMAL") then
          udfield_damp = udfield_piquemal
          upfield_damp = upfield_piquemal
@@ -235,12 +262,12 @@ c
          udhessfield_damp = udhessfield_piquemal
          uphessfield_damp = uphessfield_piquemal
 c
-         udfieldp_damp = udfieldp_piquemal
-         upfieldd_damp = upfieldd_piquemal
-         udgradfieldp_damp = udgradfieldp_piquemal
-         upgradfieldd_damp = upgradfieldd_piquemal
-         udhessfieldp_damp = udhessfieldp_piquemal
-         uphessfieldd_damp = uphessfieldd_piquemal
+c         udfieldp_damp = udfieldp_piquemal
+c         upfieldd_damp = upfieldd_piquemal
+c         udgradfieldp_damp = udgradfieldp_piquemal
+c         upgradfieldd_damp = upgradfieldd_piquemal
+c         udhessfieldp_damp = udhessfieldp_piquemal
+c         uphessfieldd_damp = uphessfieldd_piquemal
       else if (mutualdamp .eq. "THOLE") then
          udfield_damp = udfield_thole
          upfield_damp = upfield_thole
@@ -249,12 +276,12 @@ c
          udhessfield_damp = udhessfield_thole
          uphessfield_damp = uphessfield_thole
 c
-         udfieldp_damp = udfieldp_thole
-         upfieldd_damp = upfieldd_thole
-         udgradfieldp_damp = udgradfieldp_thole
-         upgradfieldd_damp = upgradfieldd_thole
-         udhessfieldp_damp = udhessfieldp_thole
-         uphessfieldd_damp = uphessfieldd_thole
+c         udfieldp_damp = udfieldp_thole
+c         upfieldd_damp = upfieldd_thole
+c         udgradfieldp_damp = udgradfieldp_thole
+c         upgradfieldd_damp = upgradfieldd_thole
+c         udhessfieldp_damp = udhessfieldp_thole
+c         uphessfieldd_damp = uphessfieldd_thole
       end if
 c
 c     set conversion factor, cutoff and switching coefficients
@@ -291,7 +318,7 @@ c
 c
 c     split nuclear and electronic charge
 c     
-         if (mutualdamp .eq. "GORDON") then
+         if (directdamp .eq. "GORDON") then
             zi = atomic(i)
             if (num_ele .eq. "VALENCE") then
                if (atomic(i) .gt. 2)  zi = zi - 2.0d0
@@ -376,7 +403,7 @@ c
          dphessfield(:,:,:) = udhessfieldp_damp(:,:,:,ii) + 
      &        uphessfieldd_damp(:,:,:,ii)
 c
-         if (mutualdamp .eq. "GORDON") then
+         if (directdamp .eq. "GORDON") then
             dpnucfield(:) = udnucfieldp_damp(:,ii) + 
      &           upnucfieldd_damp(:,ii)
 c     charges - nuclear
@@ -387,7 +414,7 @@ c     charges - electrons
             fx = fx + qi*dpfield(1)
             fy = fy + qi*dpfield(2)
             fz = fz + qi*dpfield(3)
-         else if (mutualdamp .eq. "THOLE") then
+         else if (directdamp .eq. "THOLE") then
             fx = fx + ci*dpfield(1)
             fy = fy + ci*dpfield(2)
             fz = fz + ci*dpfield(3)

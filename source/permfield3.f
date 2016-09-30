@@ -558,6 +558,12 @@ c
                            gradfieldm_gordon(l,j,k) =
      &                          gradfieldm_gordon(l,j,k) +
      &                          elegradfieldk(l,j)*mscale(kk)
+                           gradfieldd_gordon(l,j,i) =
+     &                          gradfieldd_gordon(l,j,i) +
+     &                          elegradfieldi(l,j)*dscale(kk)
+                           gradfieldd_gordon(l,j,k) =
+     &                          gradfieldd_gordon(l,j,k) +
+     &                          elegradfieldk(l,j)*dscale(kk)
                            gradfieldp_gordon(l,j,i) =
      &                          gradfieldp_gordon(l,j,i) +
      &                          elegradfieldi(l,j)*pscale(kk)

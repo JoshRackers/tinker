@@ -58,7 +58,7 @@ c
       if (.not.allocated(uphessfield_ewald))
      &     allocate (uphessfield_ewald(3,3,3,npole))
 c
-      if (mutualdamp .eq. "THOLE") then
+      if ((directdamp.eq."THOLE").or.(mutualdamp.eq."THOLE")) then
          if (.not.allocated(udfield_thole))
      &        allocate (udfield_thole(3,npole))
          if (.not.allocated(upfield_thole))
@@ -85,7 +85,8 @@ c
      &        allocate (udgradfieldp_thole(3,3,npole))
          if (.not.allocated(udhessfieldp_thole))
      &        allocate (udhessfieldp_thole(3,3,3,npole))
-      else if (mutualdamp .eq. "GORDON") then
+      end if
+      if ((directdamp.eq."GORDON").or.(mutualdamp.eq."GORDON"))then
          if (.not.allocated(udfield_gordon))
      &        allocate (udfield_gordon(3,npole))
          if (.not.allocated(upfield_gordon))
@@ -202,12 +203,13 @@ c
             upfield(j,i) = 0.0d0
             udfield_ewald(j,i) = 0.0d0
             upfield_ewald(j,i) = 0.0d0
-            if (mutualdamp .eq. "THOLE") then
+            if ((directdamp.eq."THOLE").or.(mutualdamp.eq."THOLE")) then
                udfield_thole(j,i) = 0.0d0
                upfield_thole(j,i) = 0.0d0
                upfieldd_thole(j,i) = 0.0d0
                udfieldp_thole(j,i) = 0.0d0
-            else if (mutualdamp .eq. "GORDON") then
+            else if ((directdamp .eq. "GORDON").or.
+     &              (mutualdamp .eq. "GORDON")) then
                udfield_gordon(j,i) = 0.0d0
                upfield_gordon(j,i) = 0.0d0
                upnucfieldd_gordon(j,i) = 0.0d0
@@ -220,12 +222,14 @@ c
                upgradfield(k,j,i) = 0.0d0
                udgradfield_ewald(k,j,i) = 0.0d0
                upgradfield_ewald(k,j,i) = 0.0d0
-               if (mutualdamp .eq. "THOLE") then
+               if ((directdamp .eq. "THOLE").or.
+     &              (mutualdamp .eq. "THOLE")) then
                   udgradfield_thole(k,j,i) = 0.0d0
                   upgradfield_thole(k,j,i) = 0.0d0
                   upgradfieldd_thole(k,j,i) = 0.0d0
                   udgradfieldp_thole(k,j,i) = 0.0d0
-               else if (mutualdamp .eq. "GORDON") then
+               else if ((directdamp .eq. "GORDON").or.
+     &                 (mutualdamp .eq. "GORDON")) then
                   udgradfield_gordon(k,j,i) = 0.0d0
                   upgradfield_gordon(k,j,i) = 0.0d0
                   upgradfieldd_gordon(k,j,i) = 0.0d0
@@ -236,12 +240,14 @@ c
                   uphessfield(l,k,j,i) = 0.0d0
                   udhessfield_ewald(l,k,j,i) = 0.0d0
                   uphessfield_ewald(l,k,j,i) = 0.0d0
-                  if (mutualdamp .eq. "THOLE") then
+                  if ((directdamp .eq. "THOLE").or.
+     &                 (mutualdamp .eq. "THOLE")) then
                      udhessfield_thole(l,k,j,i) = 0.0d0
                      uphessfield_thole(l,k,j,i) = 0.0d0
                      uphessfieldd_thole(l,k,j,i) = 0.0d0
                      udhessfieldp_thole(l,k,j,i) = 0.0d0
-                  else if (mutualdamp .eq. "GORDON") then
+                  else if ((directdamp.eq."GORDON").or.
+     &                    (mutualdamp.eq."GORDON")) then
                      udhessfield_gordon(l,k,j,i) = 0.0d0
                      uphessfield_gordon(l,k,j,i) = 0.0d0
                      uphessfieldd_gordon(l,k,j,i) = 0.0d0
