@@ -77,6 +77,7 @@ c
 c
       real*8, allocatable :: fieldd_gordonreg(:,:)
       real*8, allocatable :: fieldp_gordonreg(:,:)
+      real*8, allocatable :: gradfieldd_gordonreg(:,:,:)
 c
       real*8, allocatable :: potm_piquemal(:)
       real*8, allocatable :: fieldm_piquemal(:,:)
@@ -174,6 +175,7 @@ c
       real*8, allocatable :: upgradfield_recip(:,:,:)
       real*8, allocatable :: udhessfield_recip(:,:,:,:)
       real*8, allocatable :: uphessfield_recip(:,:,:,:)
+      real*8, allocatable :: udphessfield_recip(:,:,:,:)
 c
 c     self fields
 c

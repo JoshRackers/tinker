@@ -116,15 +116,26 @@ c
       real*8 dix,diy,diz
       real*8 qixx,qixy,qixz
       real*8 qiyy,qiyz,qizz
+      real*8, allocatable :: potm_damp(:)
+      real*8, allocatable :: nucpotm_damp(:)
+      real*8, allocatable :: fieldm_damp(:,:)
+      real*8, allocatable :: nucfieldm_damp(:,:)
+      real*8, allocatable :: gradfieldm_damp(:,:,:)
+      real*8, allocatable :: hessfieldm_damp(:,:,:,:)
       real*8, allocatable :: frc(:,:)
       real*8, allocatable :: trq(:,:)
-      character*6 mode
 c
 c
 c     perform dynamic allocation of some local arrays
 c
       allocate (frc(3,n))
       allocate (trq(3,npole))
+      allocate (potm_damp(npole))
+      allocate (nucpotm_damp(npole))
+      allocate (fieldm_damp(3,npole))
+      allocate (nucfieldm_damp(3,npole))
+      allocate (gradfieldm_damp(3,3,npole))
+      allocate (hessfieldm_damp(3,3,3,npole))
 c
 c     zero out multipole energy and derivatives
 c
@@ -149,6 +160,27 @@ c     field, field gradient and field hessian
 c     at each multipole site
 c
       call permfield3
+c
+c     figure which type of charge penetration damping was used
+c
+      if (penetration .eq. "GORDON") then
+         potm_damp = potm_gordon
+         nucpotm_damp = nucpotm_gordon
+         fieldm_damp = fieldm_gordon
+         nucfieldm_damp = nucfieldm_gordon
+         gradfieldm_damp = gradfieldm_gordon
+         hessfieldm_damp = hessfieldm_gordon
+      else if (penetration .eq. "PIQUEMAL") then
+         potm_damp = potm_piquemal
+         fieldm_damp = fieldm_piquemal
+         gradfieldm_damp = gradfieldm_piquemal
+         hessfieldm_damp = hessfieldm_piquemal
+      else
+         potm_damp = potm
+         fieldm_damp = fieldm
+         gradfieldm_damp = gradfieldm
+         hessfieldm_damp = hessfieldm
+      end if
 c
 c     set conversion factor
 c
@@ -188,21 +220,21 @@ c
 c     compute charge penetration corrected permanent multipole energy
 c
 c     charge - nucleus
-         e = 0.5d0*zi*nucpotm_gordon(ii)
+         e = 0.5d0*zi*nucpotm_damp(ii)
 c     charge - electrons
-         e = e + 0.5d0*qi*potm_gordon(ii)
+         e = e + 0.5d0*qi*potm_damp(ii)
 c     permanent dipole
          e = e + 0.5d0*
-     &        (dix*fieldm_gordon(1,ii)+diy*fieldm_gordon(2,ii)+
-     &        diz*fieldm_gordon(3,ii))
+     &        (dix*fieldm_damp(1,ii)+diy*fieldm_damp(2,ii)+
+     &        diz*fieldm_damp(3,ii))
 c     quadrupole
          e = e + 0.5d0*
-     &        (qixx*gradfieldm_gordon(1,1,ii) + 
-     &        qixy*gradfieldm_gordon(2,1,ii) +
-     &        qixz*gradfieldm_gordon(3,1,ii) + 
-     &        qiyy*gradfieldm_gordon(2,2,ii) +
-     &        qiyz*gradfieldm_gordon(3,2,ii) + 
-     &        qizz*gradfieldm_gordon(3,3,ii))
+     &        (qixx*gradfieldm_damp(1,1,ii) + 
+     &        qixy*gradfieldm_damp(2,1,ii) +
+     &        qixz*gradfieldm_damp(3,1,ii) + 
+     &        qiyy*gradfieldm_damp(2,2,ii) +
+     &        qiyz*gradfieldm_damp(3,2,ii) + 
+     &        qizz*gradfieldm_damp(3,3,ii))
 c
 c     apply f constant
 c
@@ -215,42 +247,42 @@ c
 c     compute charge penetration corrected multipole gradient
 c
 c     charge - nucleus
-         fx = zi*nucfieldm_gordon(1,ii)
-         fy = zi*nucfieldm_gordon(2,ii)
-         fz = zi*nucfieldm_gordon(3,ii)
+         fx = zi*nucfieldm_damp(1,ii)
+         fy = zi*nucfieldm_damp(2,ii)
+         fz = zi*nucfieldm_damp(3,ii)
 c     charge - electrons
-         fx = fx + qi*fieldm_gordon(1,ii)
-         fy = fy + qi*fieldm_gordon(2,ii)
-         fz = fz + qi*fieldm_gordon(3,ii)
+         fx = fx + qi*fieldm_damp(1,ii)
+         fy = fy + qi*fieldm_damp(2,ii)
+         fz = fz + qi*fieldm_damp(3,ii)
 c     dipole
-         fx = fx + dix*gradfieldm_gordon(1,1,ii) + 
-     &        diy*gradfieldm_gordon(2,1,ii) +
-     &        diz*gradfieldm_gordon(3,1,ii)
-         fy = fy + dix*gradfieldm_gordon(2,1,ii) + 
-     &        diy*gradfieldm_gordon(2,2,ii) +
-     &        diz*gradfieldm_gordon(3,2,ii)
-         fz = fz + dix*gradfieldm_gordon(3,1,ii) + 
-     &        diy*gradfieldm_gordon(3,2,ii) +
-     &        diz*gradfieldm_gordon(3,3,ii)
+         fx = fx + dix*gradfieldm_damp(1,1,ii) + 
+     &        diy*gradfieldm_damp(2,1,ii) +
+     &        diz*gradfieldm_damp(3,1,ii)
+         fy = fy + dix*gradfieldm_damp(2,1,ii) + 
+     &        diy*gradfieldm_damp(2,2,ii) +
+     &        diz*gradfieldm_damp(3,2,ii)
+         fz = fz + dix*gradfieldm_damp(3,1,ii) + 
+     &        diy*gradfieldm_damp(3,2,ii) +
+     &        diz*gradfieldm_damp(3,3,ii)
 c     quadrupole
-         fx = fx + qixx*hessfieldm_gordon(1,1,1,ii) +
-     &        qixy*hessfieldm_gordon(2,1,1,ii) +
-     &        qixz*hessfieldm_gordon(3,1,1,ii) + 
-     &        qiyy*hessfieldm_gordon(2,2,1,ii) +
-     &        qiyz*hessfieldm_gordon(3,2,1,ii) + 
-     &        qizz*hessfieldm_gordon(3,3,1,ii)
-         fy = fy + qixx*hessfieldm_gordon(2,1,1,ii) + 
-     &        qixy*hessfieldm_gordon(2,2,1,ii) +
-     &        qixz*hessfieldm_gordon(3,2,1,ii) + 
-     &        qiyy*hessfieldm_gordon(2,2,2,ii) +
-     &        qiyz*hessfieldm_gordon(3,2,2,ii) + 
-     &        qizz*hessfieldm_gordon(3,3,2,ii)
-         fz = fz + qixx*hessfieldm_gordon(3,1,1,ii) +
-     &        qixy*hessfieldm_gordon(3,2,1,ii) +
-     &        qixz*hessfieldm_gordon(3,3,1,ii) + 
-     &        qiyy*hessfieldm_gordon(3,2,2,ii) +
-     &        qiyz*hessfieldm_gordon(3,3,2,ii) + 
-     &        qizz*hessfieldm_gordon(3,3,3,ii)
+         fx = fx + qixx*hessfieldm_damp(1,1,1,ii) +
+     &        qixy*hessfieldm_damp(2,1,1,ii) +
+     &        qixz*hessfieldm_damp(3,1,1,ii) + 
+     &        qiyy*hessfieldm_damp(2,2,1,ii) +
+     &        qiyz*hessfieldm_damp(3,2,1,ii) + 
+     &        qizz*hessfieldm_damp(3,3,1,ii)
+         fy = fy + qixx*hessfieldm_damp(2,1,1,ii) + 
+     &        qixy*hessfieldm_damp(2,2,1,ii) +
+     &        qixz*hessfieldm_damp(3,2,1,ii) + 
+     &        qiyy*hessfieldm_damp(2,2,2,ii) +
+     &        qiyz*hessfieldm_damp(3,2,2,ii) + 
+     &        qizz*hessfieldm_damp(3,3,2,ii)
+         fz = fz + qixx*hessfieldm_damp(3,1,1,ii) +
+     &        qixy*hessfieldm_damp(3,2,1,ii) +
+     &        qixz*hessfieldm_damp(3,3,1,ii) + 
+     &        qiyy*hessfieldm_damp(3,2,2,ii) +
+     &        qiyz*hessfieldm_damp(3,3,2,ii) + 
+     &        qizz*hessfieldm_damp(3,3,3,ii)
 c
 c     increment the permanent multipole gradient
 c
@@ -261,28 +293,28 @@ c
 c     calculate permanent multipole torques (no torques on charges)
 c
 c     dipole
-         trq(1,ii) = diz*fieldm_gordon(2,ii) - diy*fieldm_gordon(3,ii)
-         trq(2,ii) = dix*fieldm_gordon(3,ii) - diz*fieldm_gordon(1,ii)
-         trq(3,ii) = diy*fieldm_gordon(1,ii) - dix*fieldm_gordon(2,ii)
+         trq(1,ii) = diz*fieldm_damp(2,ii) - diy*fieldm_damp(3,ii)
+         trq(2,ii) = dix*fieldm_damp(3,ii) - diz*fieldm_damp(1,ii)
+         trq(3,ii) = diy*fieldm_damp(1,ii) - dix*fieldm_damp(2,ii)
 c     quadrupole
          trq(1,ii) = trq(1,ii) + 
-     &        2.0d0*(qizz - qiyy)*gradfieldm_gordon(3,2,ii)
-     &        + qixz*gradfieldm_gordon(2,1,ii) + 
-     &        qiyz*gradfieldm_gordon(2,2,ii)
-     &        - qixy*gradfieldm_gordon(3,1,ii) - 
-     &        qiyz*gradfieldm_gordon(3,3,ii)
+     &        2.0d0*(qizz - qiyy)*gradfieldm_damp(3,2,ii)
+     &        + qixz*gradfieldm_damp(2,1,ii) + 
+     &        qiyz*gradfieldm_damp(2,2,ii)
+     &        - qixy*gradfieldm_damp(3,1,ii) - 
+     &        qiyz*gradfieldm_damp(3,3,ii)
          trq(2,ii) = trq(2,ii) + 
-     &        2.0d0*(qixx - qizz)*gradfieldm_gordon(3,1,ii)
-     &        + qixy*gradfieldm_gordon(3,2,ii) + 
-     &        qixz*gradfieldm_gordon(3,3,ii)
-     &        - qixz*gradfieldm_gordon(1,1,ii) - 
-     &        qiyz*gradfieldm_gordon(2,1,ii)
+     &        2.0d0*(qixx - qizz)*gradfieldm_damp(3,1,ii)
+     &        + qixy*gradfieldm_damp(3,2,ii) + 
+     &        qixz*gradfieldm_damp(3,3,ii)
+     &        - qixz*gradfieldm_damp(1,1,ii) - 
+     &        qiyz*gradfieldm_damp(2,1,ii)
          trq(3,ii) = trq(3,ii) + 
-     &        2.0d0*(qiyy - qixx)*gradfieldm_gordon(2,1,ii)
-     &        + qixy*gradfieldm_gordon(1,1,ii) + 
-     &        qiyz*gradfieldm_gordon(3,1,ii)
-     &        - qixy*gradfieldm_gordon(2,2,ii) - 
-     &        qixz*gradfieldm_gordon(3,2,ii)
+     &        2.0d0*(qiyy - qixx)*gradfieldm_damp(2,1,ii)
+     &        + qixy*gradfieldm_damp(1,1,ii) + 
+     &        qiyz*gradfieldm_damp(3,1,ii)
+     &        - qixy*gradfieldm_damp(2,2,ii) - 
+     &        qixz*gradfieldm_damp(3,2,ii)
          trq(1,ii) = f * trq(1,ii)
          trq(2,ii) = f * trq(2,ii)
          trq(3,ii) = f * trq(3,ii)
@@ -318,10 +350,12 @@ c
 c
       subroutine empole1b
       use sizes
+      use atomid
       use action
       use analyz
       use atoms
       use boxes
+      use chgpen
       use chgpot
       use deriv
       use energi
@@ -341,13 +375,20 @@ c
       real*8 f,term,fterm
       real*8 cii,dii,qii,uii
       real*8 xd,yd,zd
-      real*8 ci,dix,diy,diz
+      real*8 ci,qi,zi
+      real*8 dix,diy,diz
       real*8 uix,uiy,uiz
       real*8 qixx,qixy,qixz
       real*8 qiyy,qiyz,qizz
       real*8 xdfield
       real*8 ydfield
       real*8 zdfield
+      real*8, allocatable :: potm_damp(:)
+      real*8, allocatable :: nucpotm_damp(:)
+      real*8, allocatable :: fieldm_damp(:,:)
+      real*8, allocatable :: nucfieldm_damp(:,:)
+      real*8, allocatable :: gradfieldm_damp(:,:,:)
+      real*8, allocatable :: hessfieldm_damp(:,:,:,:)
       real*8, allocatable :: frc(:,:)
       real*8, allocatable :: trq(:,:)
 c
@@ -356,6 +397,12 @@ c     perform dynamic allocation of some local arrays
 c
       allocate (frc(3,n))
       allocate (trq(3,npole))
+      allocate (potm_damp(npole))
+      allocate (nucpotm_damp(npole))
+      allocate (fieldm_damp(3,npole))
+      allocate (nucfieldm_damp(3,npole))
+      allocate (gradfieldm_damp(3,3,npole))
+      allocate (hessfieldm_damp(3,3,3,npole))
 c
 c     zero out multipole and polarization energy and derivatives
 c
@@ -384,10 +431,52 @@ c     field, field gradient and field hessian at each multipole site
 c
       call permfield3
 c
+c     figure which type of charge penetration damping was used
+c
+      if (penetration .eq. "GORDON") then
+         potm_damp = potm_gordon
+         nucpotm_damp = nucpotm_gordon
+         fieldm_damp = fieldm_gordon
+         nucfieldm_damp = nucfieldm_gordon
+         gradfieldm_damp = gradfieldm_gordon
+         hessfieldm_damp = hessfieldm_gordon
+      else if (penetration .eq. "PIQUEMAL") then
+         potm_damp = potm_piquemal
+         fieldm_damp = fieldm_piquemal
+         gradfieldm_damp = gradfieldm_piquemal
+         hessfieldm_damp = hessfieldm_piquemal
+      else
+         potm_damp = potm
+         fieldm_damp = fieldm
+         gradfieldm_damp = gradfieldm
+         hessfieldm_damp = hessfieldm
+      end if
+c
 c     get reciprocal space potential, field and field gradient
 c     and field hessian
 c
       call permrecip1
+c
+c     determin what type of charge penetration damping was used
+c
+      if (penetration .eq. "GORDON") then
+         potm_damp = potm_gordon
+         nucpotm_damp = nucpotm_gordon
+         fieldm_damp = fieldm_gordon
+         nucfieldm_damp = nucfieldm_gordon
+         gradfieldm_damp = gradfieldm_gordon
+         hessfieldm_damp = hessfieldm_gordon
+      else if (penetration .eq. "PIQUEMAL") then
+         potm_damp = potm_piquemal
+         fieldm_damp = fieldm_piquemal
+         gradfieldm_damp = gradfieldm_piquemal
+         hessfieldm_damp = hessfieldm_piquemal
+      else
+         potm_damp = potm
+         fieldm_damp = fieldm
+         gradfieldm_damp = gradfieldm
+         hessfieldm_damp = hessfieldm
+      end if
 c
 c     terms for self energy
 c
@@ -423,6 +512,19 @@ c
          qixz = 2.0d0*qixz
          qiyz = 2.0d0*qiyz
 c
+c     split nuclear and electronic charge if applying charge penetration
+c
+         if (penetration .eq. "GORDON") then
+            zi = atomic(i)
+            if (num_ele .eq. "VALENCE") then
+               if (atomic(i) .gt. 2)  zi = zi - 2.0d0
+               if (atomic(i) .gt. 10)  zi = zi - 8.0d0
+               if (atomic(i) .gt. 18)  zi = zi - 8.0d0
+               if (atomic(i) .gt. 20)  zi = zi - 10.0d0
+            end if
+            qi = ci - zi
+         end if
+c
 c     real space energy
 c
 c     charge
@@ -452,13 +554,14 @@ c
 c
 c     scaled interactions
 c
-         efix = efix - 0.5d0*ci*potm(ii)
-         efix = efix - 0.5d0*(dix*fieldm(1,ii) +
-     &        diy*fieldm(2,ii) + diz*fieldm(3,ii))
+         efix = efix - 0.5d0*zi*nucpotm_damp(ii)
+         efix = efix - 0.5d0*qi*potm_damp(ii)
+         efix = efix - 0.5d0*(dix*fieldm_damp(1,ii) +
+     &        diy*fieldm_damp(2,ii) + diz*fieldm_damp(3,ii))
          efix = efix - 0.5d0*(
-     &    qixx*gradfieldm(1,1,ii)+ qixy*gradfieldm(2,1,ii) +
-     &    qixz*gradfieldm(3,1,ii)+ qiyy*gradfieldm(2,2,ii) +
-     &    qiyz*gradfieldm(3,2,ii)+ qizz*gradfieldm(3,3,ii))
+     &    qixx*gradfieldm_damp(1,1,ii)+ qixy*gradfieldm_damp(2,1,ii) +
+     &    qixz*gradfieldm_damp(3,1,ii)+ qiyy*gradfieldm_damp(2,2,ii) +
+     &    qiyz*gradfieldm_damp(3,2,ii)+ qizz*gradfieldm_damp(3,3,ii))
 c
 c     reciprocal space
 c
@@ -548,30 +651,40 @@ c     quadrupole
 c
 c     scaled interactions
 c
-c     charge
-         fxfix = fxfix - ci*fieldm(1,ii)
-         fyfix = fyfix - ci*fieldm(2,ii)
-         fzfix = fzfix - ci*fieldm(3,ii)
+c     charge - nucleus
+         fxfix = fxfix - zi*nucfieldm_damp(1,ii)
+         fyfix = fyfix - zi*nucfieldm_damp(2,ii)
+         fzfix = fzfix - zi*nucfieldm_damp(3,ii)
+c     charge - electrons
+         fxfix = fxfix - qi*fieldm_damp(1,ii)
+         fyfix = fyfix - qi*fieldm_damp(2,ii)
+         fzfix = fzfix - qi*fieldm_damp(3,ii)
 c     dipole
-         fxfix = fxfix - dix*gradfieldm(1,1,ii) -
-     &        diy*gradfieldm(2,1,ii) - diz*gradfieldm(3,1,ii)
-         fyfix = fyfix - dix*gradfieldm(2,1,ii) -
-     &        diy*gradfieldm(2,2,ii) - diz*gradfieldm(3,2,ii)
-         fzfix = fzfix - dix*gradfieldm(3,1,ii) -
-     &        diy*gradfieldm(3,2,ii) - diz*gradfieldm(3,3,ii)
+         fxfix = fxfix - dix*gradfieldm_damp(1,1,ii) -
+     &        diy*gradfieldm_damp(2,1,ii) - diz*gradfieldm_damp(3,1,ii)
+         fyfix = fyfix - dix*gradfieldm_damp(2,1,ii) -
+     &        diy*gradfieldm_damp(2,2,ii) - diz*gradfieldm_damp(3,2,ii)
+         fzfix = fzfix - dix*gradfieldm_damp(3,1,ii) -
+     &        diy*gradfieldm_damp(3,2,ii) - diz*gradfieldm_damp(3,3,ii)
 c     quadrupole
-         fxfix = fxfix - qixx*hessfieldm(1,1,1,ii) -
-     &        qixy*hessfieldm(2,1,1,ii) -
-     &        qixz*hessfieldm(3,1,1,ii) - qiyy*hessfieldm(2,2,1,ii) -
-     &        qiyz*hessfieldm(3,2,1,ii) - qizz*hessfieldm(3,3,1,ii)
-         fyfix = fyfix - qixx*hessfieldm(2,1,1,ii) -
-     &        qixy*hessfieldm(2,2,1,ii) -
-     &        qixz*hessfieldm(3,2,1,ii) - qiyy*hessfieldm(2,2,2,ii) -
-     &        qiyz*hessfieldm(3,2,2,ii) - qizz*hessfieldm(3,3,2,ii)
-         fzfix = fzfix - qixx*hessfieldm(3,1,1,ii) -
-     &        qixy*hessfieldm(3,2,1,ii) -
-     &        qixz*hessfieldm(3,3,1,ii) - qiyy*hessfieldm(3,2,2,ii) -
-     &        qiyz*hessfieldm(3,3,2,ii) - qizz*hessfieldm(3,3,3,ii)
+         fxfix = fxfix - qixx*hessfieldm_damp(1,1,1,ii) -
+     &        qixy*hessfieldm_damp(2,1,1,ii) -
+     &        qixz*hessfieldm_damp(3,1,1,ii) - 
+     &        qiyy*hessfieldm_damp(2,2,1,ii) -
+     &        qiyz*hessfieldm_damp(3,2,1,ii) - 
+     &        qizz*hessfieldm_damp(3,3,1,ii)
+         fyfix = fyfix - qixx*hessfieldm_damp(2,1,1,ii) -
+     &        qixy*hessfieldm_damp(2,2,1,ii) -
+     &        qixz*hessfieldm_damp(3,2,1,ii) - 
+     &        qiyy*hessfieldm_damp(2,2,2,ii) -
+     &        qiyz*hessfieldm_damp(3,2,2,ii) - 
+     &        qizz*hessfieldm_damp(3,3,2,ii)
+         fzfix = fzfix - qixx*hessfieldm_damp(3,1,1,ii) -
+     &        qixy*hessfieldm_damp(3,2,1,ii) -
+     &        qixz*hessfieldm_damp(3,3,1,ii) - 
+     &        qiyy*hessfieldm_damp(3,2,2,ii) -
+     &        qiyz*hessfieldm_damp(3,3,2,ii) - 
+     &        qizz*hessfieldm_damp(3,3,3,ii)
 c
 c     reciprocal space forces
 c
@@ -664,19 +777,31 @@ c     quadrupole
      &        + qixy*gradfield(1,1,ii) + qiyz*gradfield(3,1,ii)
      &        - qixy*gradfield(2,2,ii) - qixz*gradfield(3,2,ii))
 c     dipole
-         trq(1,ii) = trq(1,ii) + diz*fieldm(2,ii) - diy*fieldm(3,ii)
-         trq(2,ii) = trq(2,ii) + dix*fieldm(3,ii) - diz*fieldm(1,ii)
-         trq(3,ii) = trq(3,ii) + diy*fieldm(1,ii) - dix*fieldm(2,ii)
+         trq(1,ii) = trq(1,ii) + diz*fieldm_damp(2,ii) - 
+     &        diy*fieldm_damp(3,ii)
+         trq(2,ii) = trq(2,ii) + dix*fieldm_damp(3,ii) - 
+     &        diz*fieldm_damp(1,ii)
+         trq(3,ii) = trq(3,ii) + diy*fieldm_damp(1,ii) - 
+     &        dix*fieldm_damp(2,ii)
 c     quadrupole
-         trq(1,ii) = trq(1,ii) + 2.0d0*(qizz - qiyy)*gradfieldm(3,2,ii)
-     &        + qixz*gradfieldm(2,1,ii) + qiyz*gradfieldm(2,2,ii)
-     &        - qixy*gradfieldm(3,1,ii) - qiyz*gradfieldm(3,3,ii)
-         trq(2,ii) = trq(2,ii) + 2.0d0*(qixx - qizz)*gradfieldm(3,1,ii)
-     &        + qixy*gradfieldm(3,2,ii) + qixz*gradfieldm(3,3,ii)
-     &        - qixz*gradfieldm(1,1,ii) - qiyz*gradfieldm(2,1,ii)
-         trq(3,ii) = trq(3,ii) + 2.0d0*(qiyy - qixx)*gradfieldm(2,1,ii)
-     &        + qixy*gradfieldm(1,1,ii) + qiyz*gradfieldm(3,1,ii)
-     &        - qixy*gradfieldm(2,2,ii) - qixz*gradfieldm(3,2,ii)
+         trq(1,ii) = trq(1,ii) + 
+     &        2.0d0*(qizz - qiyy)*gradfieldm_damp(3,2,ii)
+     &        + qixz*gradfieldm_damp(2,1,ii) + 
+     &        qiyz*gradfieldm_damp(2,2,ii)
+     &        - qixy*gradfieldm_damp(3,1,ii) - 
+     &        qiyz*gradfieldm_damp(3,3,ii)
+         trq(2,ii) = trq(2,ii) + 
+     &        2.0d0*(qixx - qizz)*gradfieldm_damp(3,1,ii)
+     &        + qixy*gradfieldm_damp(3,2,ii) + 
+     &        qixz*gradfieldm_damp(3,3,ii)
+     &        - qixz*gradfieldm_damp(1,1,ii) - 
+     &        qiyz*gradfieldm_damp(2,1,ii)
+         trq(3,ii) = trq(3,ii) + 
+     &        2.0d0*(qiyy - qixx)*gradfieldm_damp(2,1,ii)
+     &        + qixy*gradfieldm_damp(1,1,ii) + 
+     &        qiyz*gradfieldm_damp(3,1,ii)
+     &        - qixy*gradfieldm_damp(2,2,ii) - 
+     &        qixz*gradfieldm_damp(3,2,ii)
 c     dipole
          trq(1,ii) = trq(1,ii) + diz*field_recip(2,ii) - 
      &        diy*field_recip(3,ii)

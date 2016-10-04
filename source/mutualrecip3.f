@@ -51,6 +51,8 @@ c
      &     allocate (udhessfield_recip(3,3,3,npole))
       if (.not.allocated(uphessfield_recip))
      &     allocate (uphessfield_recip(3,3,3,npole))
+      if (.not.allocated(udphessfield_recip))
+     &     allocate (udphessfield_recip(3,3,3,npole))
 c
 c     zero out the value of the field at each site
 c
@@ -64,6 +66,7 @@ c
                do l = 1, 3
                   udhessfield_recip(l,k,j,i) = 0.0d0
                   uphessfield_recip(l,k,j,i) = 0.0d0
+                  udphessfield_recip(l,k,j,i) = 0.0d0
                end do
             end do
          end do
@@ -221,26 +224,26 @@ c     &        cphip(20,i)
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c     this is a hack. must fix fphi_und to give up to 20 for d & p
-         uphessfield_recip(1,1,1,i) = uphessfield_recip(1,1,1,i) +
-     &        0.5d0*cphidp(11,i)
-         uphessfield_recip(2,2,2,i) = uphessfield_recip(2,2,2,i) +
-     &        0.5d0*cphidp(12,i)
-         uphessfield_recip(3,3,3,i) = uphessfield_recip(3,3,3,i) +
-     &        0.5d0*cphidp(13,i)
-         uphessfield_recip(2,1,1,i) = uphessfield_recip(2,1,1,i) +
-     &        0.5d0*cphidp(14,i)
-         uphessfield_recip(3,1,1,i) = uphessfield_recip(3,1,1,i) +
-     &        0.5d0*cphidp(15,i)
-         uphessfield_recip(2,2,1,i) = uphessfield_recip(2,2,1,i) +
-     &        0.5d0*cphidp(16,i)
-         uphessfield_recip(3,2,2,i) = uphessfield_recip(3,2,2,i) +
-     &        0.5d0*cphidp(17,i)
-         uphessfield_recip(3,3,1,i) = uphessfield_recip(3,3,1,i) +
-     &        0.5d0*cphidp(18,i)
-         uphessfield_recip(3,3,2,i) = uphessfield_recip(3,3,2,i) +
-     &        0.5d0*cphidp(19,i)
-         uphessfield_recip(3,2,1,i) = uphessfield_recip(3,2,1,i) +
-     &        0.5d0*cphidp(20,i)
+         udphessfield_recip(1,1,1,i) = udphessfield_recip(1,1,1,i) +
+     &        cphidp(11,i)
+         udphessfield_recip(2,2,2,i) = udphessfield_recip(2,2,2,i) +
+     &        cphidp(12,i)
+         udphessfield_recip(3,3,3,i) = udphessfield_recip(3,3,3,i) +
+     &        cphidp(13,i)
+         udphessfield_recip(2,1,1,i) = udphessfield_recip(2,1,1,i) +
+     &        cphidp(14,i)
+         udphessfield_recip(3,1,1,i) = udphessfield_recip(3,1,1,i) +
+     &        cphidp(15,i)
+         udphessfield_recip(2,2,1,i) = udphessfield_recip(2,2,1,i) +
+     &        cphidp(16,i)
+         udphessfield_recip(3,2,2,i) = udphessfield_recip(3,2,2,i) +
+     &        cphidp(17,i)
+         udphessfield_recip(3,3,1,i) = udphessfield_recip(3,3,1,i) +
+     &        cphidp(18,i)
+         udphessfield_recip(3,3,2,i) = udphessfield_recip(3,3,2,i) +
+     &        cphidp(19,i)
+         udphessfield_recip(3,2,1,i) = udphessfield_recip(3,2,1,i) +
+     &        cphidp(20,i)
       end do
 c
 c     perform deallocation of some local arrays

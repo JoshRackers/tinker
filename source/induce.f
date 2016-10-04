@@ -291,7 +291,6 @@ c
                fieldp_damp = fieldp_gordon
                if (regularize .eq. "YES") then
                   fieldd_damp = fieldd_gordonreg
-                  fieldp_damp = fieldp_gordonreg
                end if
             else if (directdamp .eq. "PIQUEMAL") then
                fieldd_damp = fieldd_piquemal
@@ -336,7 +335,6 @@ c     &           fieldp_thole + field_self
                fieldp_damp = fieldp_gordon
                if (regularize .eq. "YES") then
                   fieldd_damp = fieldd_gordonreg
-                  fieldp_damp = fieldp_gordonreg
                end if
             else if (directdamp .eq. "PIQUEMAL") then
                fieldd_damp = fieldd_piquemal
@@ -362,7 +360,6 @@ c     &           fieldp_thole + field_self
                fieldp_damp = fieldp_gordon
                if (regularize .eq. "YES") then
                   fieldd_damp = fieldd_gordonreg
-                  fieldp_damp = fieldp_gordonreg
                end if
             else if (directdamp .eq. "PIQUEMAL") then
                fieldd_damp = fieldd_piquemal
@@ -381,7 +378,6 @@ c     &           fieldp_thole + field_self
                fieldp_damp = fieldp_gordon
                if (regularize .eq. "YES") then
                   fieldd_damp = fieldd_gordonreg
-                  fieldp_damp = fieldp_gordonreg
                end if
             else if (directdamp .eq. "PIQUEMAL") then
                fieldd_damp = fieldd_piquemal

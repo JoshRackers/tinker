@@ -208,7 +208,8 @@ c
                upfield_thole(j,i) = 0.0d0
                upfieldd_thole(j,i) = 0.0d0
                udfieldp_thole(j,i) = 0.0d0
-            else if ((directdamp .eq. "GORDON").or.
+            end if
+            if ((directdamp .eq. "GORDON").or.
      &              (mutualdamp .eq. "GORDON")) then
                udfield_gordon(j,i) = 0.0d0
                upfield_gordon(j,i) = 0.0d0
@@ -228,7 +229,8 @@ c
                   upgradfield_thole(k,j,i) = 0.0d0
                   upgradfieldd_thole(k,j,i) = 0.0d0
                   udgradfieldp_thole(k,j,i) = 0.0d0
-               else if ((directdamp .eq. "GORDON").or.
+               end if
+               if ((directdamp .eq. "GORDON").or.
      &                 (mutualdamp .eq. "GORDON")) then
                   udgradfield_gordon(k,j,i) = 0.0d0
                   upgradfield_gordon(k,j,i) = 0.0d0
@@ -246,7 +248,8 @@ c
                      uphessfield_thole(l,k,j,i) = 0.0d0
                      uphessfieldd_thole(l,k,j,i) = 0.0d0
                      udhessfieldp_thole(l,k,j,i) = 0.0d0
-                  else if ((directdamp.eq."GORDON").or.
+                  end if
+                  if ((directdamp.eq."GORDON").or.
      &                    (mutualdamp.eq."GORDON")) then
                      udhessfield_gordon(l,k,j,i) = 0.0d0
                      uphessfield_gordon(l,k,j,i) = 0.0d0
@@ -587,10 +590,14 @@ c
      &                       nucfieldid(j)*pscale(kk)
                         udnucfieldp_gordon(j,k)=udnucfieldp_gordon(j,k)+
      &                       nucfieldkd(j)*pscale(kk)
-                        upnucfieldd_gordon(j,i)=upnucfieldd_gordon(j,i)+
-     &                       nucfieldip(j)*dscale(kk)
-                        upnucfieldd_gordon(j,k)=upnucfieldd_gordon(j,k)+
-     &                       nucfieldkp(j)*dscale(kk)
+                        if (.not.damp_gordonreg) then
+                           upnucfieldd_gordon(j,i) = 
+     &                          upnucfieldd_gordon(j,i)+
+     &                          nucfieldip(j)*dscale(kk)
+                           upnucfieldd_gordon(j,k) = 
+     &                          upnucfieldd_gordon(j,k)+
+     &                          nucfieldkp(j)*dscale(kk)
+                        end if
                         do l = 1, 3
                            udgradfield_gordon(l,j,i) = 
      &                          udgradfield_gordon(l,j,i) +
@@ -644,6 +651,23 @@ c
                            end do
                         end do
                      end do
+                     if (damp_gordonreg) then
+                        call dampgordonreg(i,k,rorder,r,scalei,scalek)
+                        t2i = t2rr3*scalei(3) + t2rr5*scalei(5)
+                        t2k = t2rr3*scalek(3) + t2rr5*scalek(5)
+                        t2ik = t2rr3*scaleik(3) + t2rr5*scaleik(5)
+                        call cp_ufieldik(i,k,t2i,t2k,t2ik,
+     &                      nucfieldid,nucfieldkd,elefieldid,elefieldkd,
+     &                      nucfieldip,nucfieldkp,elefieldip,elefieldkp)
+                        do j = 1, 3
+                           upnucfieldd_gordon(j,i) =
+     &                          upnucfieldd_gordon(j,i)+
+     &                          nucfieldip(j)*dscale(kk)
+                           upnucfieldd_gordon(j,k) =
+     &                          upnucfieldd_gordon(j,k)+
+     &                          nucfieldkp(j)*dscale(kk)
+                        end do
+                     end if
                   end if
                end if
             end if

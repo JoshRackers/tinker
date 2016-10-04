@@ -111,6 +111,7 @@ c     compute the induced dipoles at each polarizable atom
 c
       damp_thole = .false.
       damp_gordon = .false.
+      damp_gordonreg = .false.
       damp_piquemal = .false.
       call induce
 c

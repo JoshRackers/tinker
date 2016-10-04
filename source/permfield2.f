@@ -739,6 +739,8 @@ c
 c     call routines that produce potential, field, field gradient
 c     for types of damping
 c
+
+
                      if (damp_none) then
                         t0 = t0rr1
                         t1 = t1rr3

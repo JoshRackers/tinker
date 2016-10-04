@@ -150,26 +150,28 @@ c
       damp_thole = .false.
       damp_gordon = .false.
       damp_piquemal = .false.
+      damp_gordonreg = .false.
       call induce
-      do i = 1, n
-         do k = 1, 3
-            print *,"d,p",uind(k,i),uinp(k,i)
-         end do
-      end do
 c
 c     get induced field gradient hessian for forces
 c
       damp_thole = .false.
       damp_gordon = .false.
       damp_piquemal = .false.
+      damp_gordonreg = .false.
       if (mutualdamp .eq. "GORDON") damp_gordon = .true.
       if (mutualdamp .eq. "PIQUEMAL") damp_piquemal = .true.
       if (mutualdamp .eq. "THOLE") damp_thole = .true.
-      if (directdamp .eq. "GORDON") damp_gordon = .true.
+      if (directdamp .eq. "GORDON") then
+         damp_gordon = .true.
+         if (regularize .eq. "YES") damp_gordonreg = .true.
+      end if
       if (directdamp .eq. "PIQUEMAL") damp_piquemal = .true.
       if (directdamp .eq. "THOLE") damp_thole = .true.
 c
       call mutualfield3
+      print *,"uind",uind
+      print *,"uinp",uinp
 c
 c     perform dynamic allocation of some local arrays
 c
@@ -210,6 +212,10 @@ c
          upgradfieldd_damp = upgradfieldd_gordon
          udhessfieldp_damp = udhessfieldp_gordon
          uphessfieldd_damp = uphessfieldd_gordon
+         if (regularize .eq. "YES") then
+            fieldd_damp = fieldd_gordonreg
+            gradfieldd_damp = gradfieldd_gordonreg
+         end if
       else if (directdamp .eq. "PIQUEMAL") then
          fieldd_damp = fieldd_piquemal
          fieldp_damp = fieldp_piquemal
@@ -313,8 +319,6 @@ c
          upix = uinp(1,i)
          upiy = uinp(2,i)
          upiz = uinp(3,i)
-         print *,"uind",uix,uiy,uiz
-         print *,"uinp",upix,upiy,upiz
 c
 c     split nuclear and electronic charge
 c     
@@ -555,6 +559,7 @@ c
 c
       subroutine epolar1b
       use sizes
+      use atomid
       use action
       use analyz
       use atoms
@@ -584,11 +589,15 @@ c
       real*8 ci,qi,zi
       real*8 dix,diy,diz
       real*8 uix,uiy,uiz
+      real*8 upix,upiy,upiz
       real*8 qixx,qixy,qixz
       real*8 qiyy,qiyz,qizz
-      real*8 field_tot(3),upfield_tot(3),upnucfield_tot(3)
-      real*8 gradfield_tot(3,3),upgradfield_tot(3,3)
-      real*8 uphessfield_tot(3,3,3)
+      real*8 field_tot(3),gradfield_tot(3,3)
+      real*8 upfield_tot(3),upgradfield_tot(3,3)
+      real*8 udfield_tot(3),udgradfield_tot(3,3)
+      real*8 updfield_tot(3),updnucfield_tot(3)
+      real*8 updgradfield_tot(3,3)
+      real*8 updhessfield_tot(3,3,3)
       real*8, allocatable :: frc(:,:)
       real*8, allocatable :: trq(:,:)
       real*8, allocatable :: fieldd_damp(:,:)
@@ -637,10 +646,24 @@ c
       damp_thole = .false.
       damp_gordon = .false.
       damp_piquemal = .false.
+      damp_gordonreg = .false.
       call induce
 c
 c     get mutual field, field gradient and field hessian
 c
+      damp_thole = .false.
+      damp_gordon = .false.
+      damp_piquemal = .false.
+      damp_gordonreg = .false.
+      if (mutualdamp .eq. "GORDON") damp_gordon = .true.
+      if (mutualdamp .eq. "PIQUEMAL") damp_piquemal = .true.
+      if (mutualdamp .eq. "THOLE") damp_thole = .true.
+      if (directdamp .eq. "GORDON") then
+         damp_gordon = .true.
+         if (regularize .eq. "YES") damp_gordonreg = .true.
+      end if
+      if (directdamp .eq. "PIQUEMAL") damp_piquemal = .true.
+      if (directdamp .eq. "THOLE") damp_thole = .true.
       call mutualfield3
 c
 c     perform dynamic allocation of some local arrays
@@ -673,16 +696,43 @@ c
          fieldp_damp = fieldp_gordon
          gradfieldd_damp = gradfieldd_gordon
          gradfieldp_damp = gradfieldp_gordon
+c
+         udnucfieldp_damp = udnucfieldp_gordon
+         upnucfieldd_damp = upnucfieldd_gordon
+         udfieldp_damp = udfieldp_gordon
+         upfieldd_damp = upfieldd_gordon
+         udgradfieldp_damp = udgradfieldp_gordon
+         upgradfieldd_damp = upgradfieldd_gordon
+         udhessfieldp_damp = udhessfieldp_gordon
+         uphessfieldd_damp = uphessfieldd_gordon
+         if (regularize .eq. "YES") then
+            fieldd_damp = fieldd_gordonreg
+            gradfieldd_damp = gradfieldd_gordonreg
+         end if
       else if (directdamp .eq. "PIQUEMAL") then
          fieldd_damp = fieldd_piquemal
          fieldp_damp = fieldp_piquemal
          gradfieldd_damp = gradfieldd_piquemal
          gradfieldp_damp = gradfieldp_piquemal
+c
+         udfieldp_damp = udfieldp_piquemal
+         upfieldd_damp = upfieldd_piquemal
+         udgradfieldp_damp = udgradfieldp_piquemal
+         upgradfieldd_damp = upgradfieldd_piquemal
+         udhessfieldp_damp = udhessfieldp_piquemal
+         uphessfieldd_damp = uphessfieldd_piquemal
       else if (directdamp .eq. "THOLE") then
          fieldd_damp = fieldd_thole
          fieldp_damp = fieldp_thole
          gradfieldd_damp = gradfieldd_thole
          gradfieldp_damp = gradfieldp_thole
+c
+         udfieldp_damp = udfieldp_thole
+         upfieldd_damp = upfieldd_thole
+         udgradfieldp_damp = udgradfieldp_thole
+         upgradfieldd_damp = upgradfieldd_thole
+         udhessfieldp_damp = udhessfieldp_thole
+         uphessfieldd_damp = uphessfieldd_thole
       end if
 c
 c     check what kind of mutual damping was used
@@ -695,14 +745,14 @@ c
          udhessfield_damp = udhessfield_gordon
          uphessfield_damp = uphessfield_gordon
 c
-         udnucfieldp_damp = udnucfieldp_gordon
-         upnucfieldd_damp = upnucfieldd_gordon
-         udfieldp_damp = udfieldp_gordon
-         upfieldd_damp = upfieldd_gordon
-         udgradfieldp_damp = udgradfieldp_gordon
-         upgradfieldd_damp = upgradfieldd_gordon
-         udhessfieldp_damp = udhessfieldp_gordon
-         uphessfieldd_damp = uphessfieldd_gordon
+c         udnucfieldp_damp = udnucfieldp_gordon
+c         upnucfieldd_damp = upnucfieldd_gordon
+c         udfieldp_damp = udfieldp_gordon
+c         upfieldd_damp = upfieldd_gordon
+c         udgradfieldp_damp = udgradfieldp_gordon
+c         upgradfieldd_damp = upgradfieldd_gordon
+c         udhessfieldp_damp = udhessfieldp_gordon
+c         uphessfieldd_damp = uphessfieldd_gordon
       else if (mutualdamp .eq. "PIQUEMAL") then
          udfield_damp = udfield_piquemal
          upfield_damp = upfield_piquemal
@@ -711,12 +761,12 @@ c
          udhessfield_damp = udhessfield_piquemal
          uphessfield_damp = uphessfield_piquemal
 c
-         udfieldp_damp = udfieldp_piquemal
-         upfieldd_damp = upfieldd_piquemal
-         udgradfieldp_damp = udgradfieldp_piquemal
-         upgradfieldd_damp = upgradfieldd_piquemal
-         udhessfieldp_damp = udhessfieldp_piquemal
-         uphessfieldd_damp = uphessfieldd_piquemal
+c         udfieldp_damp = udfieldp_piquemal
+c         upfieldd_damp = upfieldd_piquemal
+c         udgradfieldp_damp = udgradfieldp_piquemal
+c         upgradfieldd_damp = upgradfieldd_piquemal
+c         udhessfieldp_damp = udhessfieldp_piquemal
+c         uphessfieldd_damp = uphessfieldd_piquemal
       else if (mutualdamp .eq. "THOLE") then
          udfield_damp = udfield_thole
          upfield_damp = upfield_thole
@@ -725,12 +775,12 @@ c
          udhessfield_damp = udhessfield_thole
          uphessfield_damp = uphessfield_thole
 c
-         udfieldp_damp = udfieldp_thole
-         upfieldd_damp = upfieldd_thole
-         udgradfieldp_damp = udgradfieldp_thole
-         upgradfieldd_damp = upgradfieldd_thole
-         udhessfieldp_damp = udhessfieldp_thole
-         uphessfieldd_damp = uphessfieldd_thole
+c         udfieldp_damp = udfieldp_thole
+c         upfieldd_damp = upfieldd_thole
+c         udgradfieldp_damp = udgradfieldp_thole
+c         upgradfieldd_damp = upgradfieldd_thole
+c         udhessfieldp_damp = udhessfieldp_thole
+c         uphessfieldd_damp = uphessfieldd_thole
       end if
 c
 c     get reciprocal space field, field gradient and field hessian
@@ -755,6 +805,9 @@ c
          uix = uind(1,i)
          uiy = uind(2,i)
          uiz = uind(3,i)
+         upix = uinp(1,i)
+         upiy = uinp(2,i)
+         upiz = uinp(3,i)
          qixy = 2.0d0*qixy
          qixz = 2.0d0*qixz
          qiyz = 2.0d0*qiyz
@@ -762,6 +815,19 @@ c
 c     terms needed for self energy
 c
          uii = dix*uix + diy*uiy + diz*uiz
+c
+c     split nuclear and electronic charge
+c     
+         if (directdamp .eq. "GORDON") then
+            zi = atomic(i)
+            if (num_ele .eq. "VALENCE") then
+               if (atomic(i) .gt. 2)  zi = zi - 2.0d0
+               if (atomic(i) .gt. 10)  zi = zi - 8.0d0
+               if (atomic(i) .gt. 18)  zi = zi - 8.0d0
+               if (atomic(i) .gt. 20)  zi = zi - 10.0d0
+            end if
+            qi = ci - zi
+         end if
 c
 c     real space
 c
@@ -803,6 +869,7 @@ c
 c
 c     induced dipole with permanent field gradient
 c
+c     d dipoles with p field
          field_tot(:) = field_ewald(:,ii) - field(:,ii) +
      &        fieldp_damp(:,ii) + field_recip(:,ii)
          gradfield_tot(:,:) = gradfield_ewald(:,:,ii) - 
@@ -821,10 +888,30 @@ c     torques
          trq(1,ii) = uiz*field_tot(2) - uiy*field_tot(3)
          trq(2,ii) = uix*field_tot(3) - uiz*field_tot(1)
          trq(3,ii) = uiy*field_tot(1) - uix*field_tot(2)
+c     p dipoles with d field
+         field_tot(:) = field_ewald(:,ii) - field(:,ii) +
+     &        fieldd_damp(:,ii) + field_recip(:,ii)
+         gradfield_tot(:,:) = gradfield_ewald(:,:,ii) -
+     &        gradfield(:,:,ii) + gradfieldd_damp(:,:,ii) +
+     &        gradfield_recip(:,:,ii)
+         fx = fx + upix*gradfield_tot(1,1) +
+     &        upiy*gradfield_tot(2,1) +
+     &        upiz*gradfield_tot(3,1)
+         fy = fy + upix*gradfield_tot(2,1) +
+     &        upiy*gradfield_tot(2,2) +
+     &        upiz*gradfield_tot(3,2)
+         fz = fz + upix*gradfield_tot(3,1) +
+     &        upiy*gradfield_tot(3,2) +
+     &        upiz*gradfield_tot(3,3)
+c     torques
+         trq(1,ii) = trq(1,ii) + upiz*field_tot(2) - upiy*field_tot(3)
+         trq(2,ii) = trq(2,ii) + upix*field_tot(3) - upiz*field_tot(1)
+         trq(3,ii) = trq(3,ii) + upiy*field_tot(1) - upix*field_tot(2)
 c
 c     induced dipole with induced dipole field gradient
 c
          if (poltyp .eq. 'MUTUAL') then
+c     d dipoles with field from p dipoles
             upfield_tot(:) = upfield_ewald(:,ii) - upfield(:,ii) +
      &           upfield_damp(:,ii) + upfield_recip(:,ii)
             upgradfield_tot(:,:) = upgradfield_ewald(:,:,ii) - 
@@ -846,91 +933,124 @@ c     torques
      &           uiz*upfield_tot(1)
             trq(3,ii) = trq(3,ii) + uiy*upfield_tot(1) - 
      &           uix*upfield_tot(2)
+c     p dipoles with field from d dipoles
+            udfield_tot(:) = udfield_ewald(:,ii) - udfield(:,ii) +
+     &           udfield_damp(:,ii) + udfield_recip(:,ii)
+            udgradfield_tot(:,:) = udgradfield_ewald(:,:,ii) -
+     &           udgradfield(:,:,ii) + udgradfield_damp(:,:,ii) +
+     &           udgradfield_recip(:,:,ii)
+            fx = fx + upix*udgradfield_tot(1,1) +
+     &           upiy*udgradfield_tot(2,1) +
+     &           upiz*udgradfield_tot(3,1)
+            fy = fy + upix*udgradfield_tot(2,1) +
+     &           upiy*udgradfield_tot(2,2) +
+     &           upiz*udgradfield_tot(3,2)
+            fz = fz + upix*udgradfield_tot(3,1) +
+     &           upiy*udgradfield_tot(3,2) +
+     &           upiz*udgradfield_tot(3,3)
+c     torques
+            trq(1,ii) = trq(1,ii) + upiz*udfield_tot(2) -
+     &           upiy*udfield_tot(3)
+            trq(2,ii) = trq(2,ii) + upix*udfield_tot(3) -
+     &           upiz*udfield_tot(1)
+            trq(3,ii) = trq(3,ii) + upiy*udfield_tot(1) -
+     &           upix*udfield_tot(2)
          end if
 c
 c     permanent moments with induced dipole field, 
 c     field gradient, field hessian
-c
-c         upnucfield_tot(:) = upfield_ewald(:,ii) - upfield(:,ii) +
-c     &        upnucfieldp_damp(:,ii) + upfield_recip(:,ii)
-c         upfield_tot(:) = upfield_ewald(:,ii) - upfield(:,ii) + 
-c     &        upfieldp_damp(:,ii) + upfield_recip(:,ii)
-c         upgradfield_tot(:,:) = upgradfield_ewald(:,:,ii) - 
-c     &        upgradfield(:,:,ii) + upgradfieldd_damp(:,:,ii) + 
-c     &        upgradfield_recip(:,:,ii)
-c         uphessfield_tot(:,:,:) = uphessfield_ewald(:,:,:,ii) - 
-c     &        uphessfield(:,:,:,ii) + uphessfieldp_damp(:,:,:,ii) + 
-c     &        uphessfield_recip(:,:,:,ii)
-         if (mutualdamp .eq. "GORDON") then
+c 
+c     checking to see if sum of d and p works in recip
+         updfield_tot(:) = upfield_ewald(:,ii) - upfield(:,ii) + 
+     &        upfieldd_damp(:,ii) + upfield_recip(:,ii) +
+     &        udfield_ewald(:,ii) - udfield(:,ii) +
+     &        udfieldp_damp(:,ii) + udfield_recip(:,ii)
+         updgradfield_tot(:,:) = upgradfield_ewald(:,:,ii) - 
+     &        upgradfield(:,:,ii) + upgradfieldd_damp(:,:,ii) + 
+     &        upgradfield_recip(:,:,ii) +
+     &        udgradfield_ewald(:,:,ii) -
+     &        udgradfield(:,:,ii) + udgradfieldp_damp(:,:,ii) +
+     &        udgradfield_recip(:,:,ii)
+         updhessfield_tot(:,:,:) = uphessfield_ewald(:,:,:,ii) - 
+     &        uphessfield(:,:,:,ii) + uphessfieldd_damp(:,:,:,ii) +
+     &        udhessfield_ewald(:,:,:,ii) -
+     &        udhessfield(:,:,:,ii) + udhessfieldp_damp(:,:,:,ii) +
+     &        udphessfield_recip(:,:,:,ii)
+
+         if (directdamp .eq. "GORDON") then
+            updnucfield_tot(:) = upfield_ewald(:,ii) - upfield(:,ii) +
+     &           upnucfieldd_damp(:,ii) + upfield_recip(:,ii) +
+     &           udfield_ewald(:,ii) - udfield(:,ii) +
+     &           udnucfieldp_damp(:,ii) + udfield_recip(:,ii)
 c     charges - nuclear
-            fx = fx + zi*upnucfield_tot(1)
-            fy = fy + zi*upnucfield_tot(2)
-            fz = fz + zi*upnucfield_tot(3)
+            fx = fx + zi*updnucfield_tot(1)
+            fy = fy + zi*updnucfield_tot(2)
+            fz = fz + zi*updnucfield_tot(3)
 c     charges - electrons
-            fx = fx + qi*upfield_tot(1)
-            fy = fy + qi*upfield_tot(2)
-            fz = fz + qi*upfield_tot(3)
-         else if (mutualdamp .eq. "THOLE") then
-            fx = fx + ci*upfield_tot(1)
-            fy = fy + ci*upfield_tot(2)
-            fz = fz + ci*upfield_tot(3)
+            fx = fx + qi*updfield_tot(1)
+            fy = fy + qi*updfield_tot(2)
+            fz = fz + qi*updfield_tot(3)
+         else if (directdamp .eq. "THOLE") then
+            fx = fx + ci*updfield_tot(1)
+            fy = fy + ci*updfield_tot(2)
+            fz = fz + ci*updfield_tot(3)
          end if
 c     dipoles
-         fx = fx + dix*upgradfield_tot(1,1) +
-     &        diy*upgradfield_tot(2,1) +
-     &        diz*upgradfield_tot(3,1)
-         fy = fy + dix*upgradfield_tot(2,1) +
-     &        diy*upgradfield_tot(2,2) +
-     &        diz*upgradfield_tot(3,2)
-         fz = fz + dix*upgradfield_tot(3,1) +
-     &        diy*upgradfield_tot(3,2) +
-     &        diz*upgradfield_tot(3,3)
-c     quadrupoles
-         fx = fx + qixx*uphessfield_tot(1,1,1) +
-     &        qixy*uphessfield_tot(2,1,1) +
-     &        qixz*uphessfield_tot(3,1,1) + 
-     &        qiyy*uphessfield_tot(2,2,1) + 
-     &        qiyz*uphessfield_tot(3,2,1) + 
-     &        qizz*uphessfield_tot(3,3,1)
-         fy = fy + qixx*uphessfield_tot(2,1,1) + 
-     &        qixy*uphessfield_tot(2,2,1) +
-     &        qixz*uphessfield_tot(3,2,1) + 
-     &        qiyy*uphessfield_tot(2,2,2) +
-     &        qiyz*uphessfield_tot(3,2,2) + 
-     &        qizz*uphessfield_tot(3,3,2)
-         fz = fz + qixx*uphessfield_tot(3,1,1) + 
-     &        qixy*uphessfield_tot(3,2,1) +
-     &        qixz*uphessfield_tot(3,3,1) + 
-     &        qiyy*uphessfield_tot(3,2,2) +
-     &        qiyz*uphessfield_tot(3,3,2) + 
-     &        qizz*uphessfield_tot(3,3,3)
+         fx = fx + dix*updgradfield_tot(1,1) +
+     &        diy*updgradfield_tot(2,1) +
+     &        diz*updgradfield_tot(3,1)
+         fy = fy + dix*updgradfield_tot(2,1) +
+     &        diy*updgradfield_tot(2,2) +
+     &        diz*updgradfield_tot(3,2)
+         fz = fz + dix*updgradfield_tot(3,1) +
+     &        diy*updgradfield_tot(3,2) +
+     &        diz*updgradfield_tot(3,3)
+c     quadrupdoles
+         fx = fx + qixx*updhessfield_tot(1,1,1) +
+     &        qixy*updhessfield_tot(2,1,1) +
+     &        qixz*updhessfield_tot(3,1,1) + 
+     &        qiyy*updhessfield_tot(2,2,1) + 
+     &        qiyz*updhessfield_tot(3,2,1) + 
+     &        qizz*updhessfield_tot(3,3,1)
+         fy = fy + qixx*updhessfield_tot(2,1,1) + 
+     &        qixy*updhessfield_tot(2,2,1) +
+     &        qixz*updhessfield_tot(3,2,1) + 
+     &        qiyy*updhessfield_tot(2,2,2) +
+     &        qiyz*updhessfield_tot(3,2,2) + 
+     &        qizz*updhessfield_tot(3,3,2)
+         fz = fz + qixx*updhessfield_tot(3,1,1) + 
+     &        qixy*updhessfield_tot(3,2,1) +
+     &        qixz*updhessfield_tot(3,3,1) + 
+     &        qiyy*updhessfield_tot(3,2,2) +
+     &        qiyz*updhessfield_tot(3,3,2) + 
+     &        qizz*updhessfield_tot(3,3,3)
 c     torques
 c     dipole
-         trq(1,ii) = trq(1,ii) + diz*upfield_tot(2) -
-     &        diy*upfield_tot(3)
-         trq(2,ii) = trq(2,ii) + dix*upfield_tot(3) -
-     &        diz*upfield_tot(1)
-         trq(3,ii) = trq(3,ii) + diy*upfield_tot(1) -
-     &        dix*upfield_tot(2)
-c     quadrupole
+         trq(1,ii) = trq(1,ii) + diz*updfield_tot(2) -
+     &        diy*updfield_tot(3)
+         trq(2,ii) = trq(2,ii) + dix*updfield_tot(3) -
+     &        diz*updfield_tot(1)
+         trq(3,ii) = trq(3,ii) + diy*updfield_tot(1) -
+     &        dix*updfield_tot(2)
+c     quadrupdole
          trq(1,ii) = trq(1,ii) + 2.0d0*(qizz - qiyy)*
-     &        upgradfield_tot(3,2)
-     &        + qixz*upgradfield_tot(2,1) + 
-     &        qiyz*upgradfield_tot(2,2)
-     &        - qixy*upgradfield_tot(3,1) - 
-     &        qiyz*upgradfield_tot(3,3)
+     &        updgradfield_tot(3,2)
+     &        + qixz*updgradfield_tot(2,1) + 
+     &        qiyz*updgradfield_tot(2,2)
+     &        - qixy*updgradfield_tot(3,1) - 
+     &        qiyz*updgradfield_tot(3,3)
          trq(2,ii) = trq(2,ii) + 2.0d0*(qixx - qizz)*
-     &        upgradfield_tot(3,1)
-     &        + qixy*upgradfield_tot(3,2) + 
-     &        qixz*upgradfield_tot(3,3)
-     &        - qixz*upgradfield_tot(1,1) - 
-     &        qiyz*upgradfield_tot(2,1)
+     &        updgradfield_tot(3,1)
+     &        + qixy*updgradfield_tot(3,2) + 
+     &        qixz*updgradfield_tot(3,3)
+     &        - qixz*updgradfield_tot(1,1) - 
+     &        qiyz*updgradfield_tot(2,1)
          trq(3,ii) = trq(3,ii) + 2.0d0*(qiyy - qixx)*
-     &        upgradfield_tot(2,1)
-     &        + qixy*upgradfield_tot(1,1) + 
-     &        qiyz*upgradfield_tot(3,1)
-     &        - qixy*upgradfield_tot(2,2) - 
-     &        qixz*upgradfield_tot(3,2)
+     &        updgradfield_tot(2,1)
+     &        + qixy*updgradfield_tot(1,1) + 
+     &        qiyz*updgradfield_tot(3,1)
+     &        - qixy*updgradfield_tot(2,2) - 
+     &        qixz*updgradfield_tot(3,2)
 c
 c     self torque due to induced dipole
 c
@@ -941,12 +1061,12 @@ c         trq(3,ii) = trq(3,ii) + term2 * (dix*uiy-diy*uix)
 c
 c     apply f constant to forces and torques
 c
-         dep(1,ii) = f * fx
-         dep(2,ii) = f * fy
-         dep(3,ii) = f * fz
-         trq(1,ii) = f * trq(1,ii)
-         trq(2,ii) = f * trq(2,ii)
-         trq(3,ii) = f * trq(3,ii)
+         dep(1,ii) = 0.5d0 * f * fx
+         dep(2,ii) = 0.5d0 * f * fy
+         dep(3,ii) = 0.5d0 * f * fz
+         trq(1,ii) = 0.5d0 * f * trq(1,ii)
+         trq(2,ii) = 0.5d0 * f * trq(2,ii)
+         trq(3,ii) = 0.5d0 * f * trq(3,ii)
       end do
 c
 c     distribute torques into polarization gradient

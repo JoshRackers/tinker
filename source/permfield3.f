@@ -102,6 +102,8 @@ c
      &     allocate (fieldd_gordonreg(3,npole))
       if (.not.allocated(fieldp_gordonreg))
      &     allocate (fieldp_gordonreg(3,npole))
+      if (.not.allocated(gradfieldd_gordonreg))
+     &     allocate (gradfieldd_gordonreg(3,3,npole))
 c
 c     get the electrostatic potential, field and field gradient
 c     due to permanent multipoles
@@ -213,6 +215,7 @@ c
                gradfieldm_gordon(k,j,i) = 0.0d0
                gradfieldd_gordon(k,j,i) = 0.0d0
                gradfieldp_gordon(k,j,i) = 0.0d0
+               gradfieldd_gordonreg(k,j,i) = 0.0d0
                do l = 1, 3
                   hessfield(l,k,j,i) = 0.0d0
                   hessfieldm(l,k,j,i) = 0.0d0
@@ -612,6 +615,9 @@ c
                      call cp_fieldik(i,k,
      &                  t1,t2,t3,t1i,t2i,t3i,t1k,t2k,t3k,t1ik,t2ik,t3ik,
      &                    nucfieldi,nucfieldk,elefieldi,elefieldk)
+                     call cp_gradfieldik(i,k,
+     &                  t2,t3,t4,t2i,t3i,t4i,t2k,t3k,t4k,t2ik,t3ik,t4ik,
+     &                    elegradfieldi,elegradfieldk)
                      do j = 1, 3
                         fieldd_gordonreg(j,i) = fieldd_gordonreg(j,i) +
      &                       elefieldi(j)*dscale(kk)
@@ -621,6 +627,14 @@ c
      &                       elefieldi(j)*pscale(kk)
                         fieldp_gordonreg(j,k) = fieldp_gordonreg(j,k) +
      &                       elefieldk(j)*pscale(kk)
+                        do l = 1, 3
+                           gradfieldd_gordonreg(l,j,i) =
+     &                          gradfieldd_gordonreg(l,j,i) +
+     &                          elegradfieldi(l,j)*dscale(kk)
+                           gradfieldd_gordonreg(l,j,k) =
+     &                          gradfieldd_gordonreg(l,j,k) +
+     &                          elegradfieldk(l,j)*dscale(kk)
+                        end do
                      end do
                   end if
 c

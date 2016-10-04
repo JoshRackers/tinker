@@ -125,6 +125,11 @@ c
       real*8 uix,uiy,uiz
       real*8 qixx,qixy,qixz
       real*8 qiyy,qiyz,qizz
+      real*8, allocatable :: potm_damp(:)
+      real*8, allocatable :: nucpotm_damp(:)
+      real*8, allocatable :: fieldm_damp(:,:)
+      real*8, allocatable :: nucfieldm_damp(:,:)
+      real*8, allocatable :: gradfieldm_damp(:,:,:)
       logical proceed
       logical header,huge
       logical usei,usek
@@ -142,6 +147,14 @@ c
       header = .true.
       if (npole .eq. 0)  return
 c
+c     perform dynamic allocation of some local arrays
+c
+      allocate (potm_damp(npole))
+      allocate (nucpotm_damp(npole))
+      allocate (fieldm_damp(3,npole))
+      allocate (nucfieldm_damp(3,npole))
+      allocate (gradfieldm_damp(3,3,npole))
+c
 c     check the sign of multipole components at chiral sites
 c
       call chkpole
@@ -154,6 +167,24 @@ c     compute the permanent electric potential,
 c     field and field gradient at each multipole site
 c
       call permfield2
+c
+c     figure which type of charge penetration damping was used
+c
+      if (penetration .eq. "GORDON") then
+         potm_damp = potm_gordon
+         nucpotm_damp = nucpotm_gordon
+         fieldm_damp = fieldm_gordon
+         nucfieldm_damp = nucfieldm_gordon
+         gradfieldm_damp = gradfieldm_gordon
+      else if (penetration .eq. "PIQUEMAL") then
+         potm_damp = potm_piquemal
+         fieldm_damp = fieldm_piquemal
+         gradfieldm_damp = gradfieldm_piquemal
+      else
+         potm_damp = potm
+         fieldm_damp = fieldm
+         gradfieldm_damp = gradfieldm
+      end if
 c
 c     set conversion factor
 c
@@ -215,21 +246,21 @@ c
 c     compute charge penetration corrected permanent multipole energy
 c
 c     charge - nucleus
-         e = 0.5d0*zi*nucpotm_gordon(ii)
+         e = 0.5d0*zi*nucpotm_damp(ii)
 c     charge - electrons
-         e = e + 0.5d0*qi*potm_gordon(ii)
+         e = e + 0.5d0*qi*potm_damp(ii)
 c     permanent dipole
          e = e + 0.5d0*
-     &        (dix*fieldm_gordon(1,ii)+diy*fieldm_gordon(2,ii)+
-     &        diz*fieldm_gordon(3,ii))
+     &        (dix*fieldm_damp(1,ii)+diy*fieldm_damp(2,ii)+
+     &        diz*fieldm_damp(3,ii))
 c     quadrupole
          e = e + 0.5d0*
-     &        (qixx*gradfieldm_gordon(1,1,ii) + 
-     &        qixy*gradfieldm_gordon(2,1,ii) +
-     &        qixz*gradfieldm_gordon(3,1,ii) + 
-     &        qiyy*gradfieldm_gordon(2,2,ii) +
-     &        qiyz*gradfieldm_gordon(3,2,ii) + 
-     &        qizz*gradfieldm_gordon(3,3,ii))
+     &        (qixx*gradfieldm_damp(1,1,ii) + 
+     &        qixy*gradfieldm_damp(2,1,ii) +
+     &        qixz*gradfieldm_damp(3,1,ii) + 
+     &        qiyy*gradfieldm_damp(2,2,ii) +
+     &        qiyz*gradfieldm_damp(3,2,ii) + 
+     &        qizz*gradfieldm_damp(3,3,ii))
 c
 c     apply f constant
 c
@@ -259,10 +290,12 @@ c
 c
       subroutine empole3b
       use sizes
+      use atomid
       use action
       use analyz
       use atoms
       use boxes
+      use chgpen
       use chgpot
       use energi
       use ewald
@@ -280,10 +313,16 @@ c
       real*8 cii,dii,qii,uii
       real*8 xd,yd,zd
       real*8 xu,yu,zu
-      real*8 ci,dix,diy,diz
+      real*8 ci,qi,zi
+      real*8 dix,diy,diz
       real*8 uix,uiy,uiz
       real*8 qixx,qixy,qixz
       real*8 qiyy,qiyz,qizz
+      real*8, allocatable :: potm_damp(:)
+      real*8, allocatable :: nucpotm_damp(:)
+      real*8, allocatable :: fieldm_damp(:,:)
+      real*8, allocatable :: nucfieldm_damp(:,:)
+      real*8, allocatable :: gradfieldm_damp(:,:,:)
 c
 c
 c     zero out the multipole and polarization energies
@@ -296,6 +335,14 @@ c
          aem(i) = 0.0d0
       end do
       if (npole .eq. 0)  return
+c
+c     perform dynamic allocation of some local arrays
+c
+      allocate (potm_damp(npole))
+      allocate (nucpotm_damp(npole))
+      allocate (fieldm_damp(3,npole))
+      allocate (nucfieldm_damp(3,npole))
+      allocate (gradfieldm_damp(3,3,npole))
 c
 c     set the energy unit conversion factor
 c
@@ -313,6 +360,24 @@ c     compute the permanent electric potential,
 c     field and field gradient at each multipole site
 c
       call permfield2
+c
+c     figure which type of charge penetration damping was used
+c
+      if (penetration .eq. "GORDON") then
+         potm_damp = potm_gordon
+         nucpotm_damp = nucpotm_gordon
+         fieldm_damp = fieldm_gordon
+         nucfieldm_damp = nucfieldm_gordon
+         gradfieldm_damp = gradfieldm_gordon
+      else if (penetration .eq. "PIQUEMAL") then
+         potm_damp = potm_piquemal
+         fieldm_damp = fieldm_piquemal
+         gradfieldm_damp = gradfieldm_piquemal
+      else
+         potm_damp = potm
+         fieldm_damp = fieldm
+         gradfieldm_damp = gradfieldm
+      end if
 c
 c     get reciprocal space potential, field and field gradient
 c
@@ -350,6 +415,19 @@ c
          qixz = 2.0d0*qixz
          qiyz = 2.0d0*qiyz
 c
+c     split nuclear and electronic charge if applying charge penetration
+c
+         if (penetration .eq. "GORDON") then
+            zi = atomic(i)
+            if (num_ele .eq. "VALENCE") then
+               if (atomic(i) .gt. 2)  zi = zi - 2.0d0
+               if (atomic(i) .gt. 10)  zi = zi - 8.0d0
+               if (atomic(i) .gt. 18)  zi = zi - 8.0d0
+               if (atomic(i) .gt. 20)  zi = zi - 10.0d0
+            end if
+            qi = ci - zi
+         end if
+c
 c     real space
 c
 c     charge
@@ -379,13 +457,14 @@ c
 c
 c     scaled interactions
 c
-         efix = efix - 0.5d0*ci*potm(ii)
-         efix = efix - 0.5d0*(dix*fieldm(1,ii) +
-     &        diy*fieldm(2,ii) + diz*fieldm(3,ii))
+         efix = efix - 0.5d0*zi*nucpotm_damp(ii)
+         efix = efix - 0.5d0*qi*potm_damp(ii)
+         efix = efix - 0.5d0*(dix*fieldm_damp(1,ii) +
+     &        diy*fieldm_damp(2,ii) + diz*fieldm_damp(3,ii))
          efix = efix - 0.5d0*(
-     &    qixx*gradfieldm(1,1,ii)+ qixy*gradfieldm(2,1,ii) +
-     &    qixz*gradfieldm(3,1,ii)+ qiyy*gradfieldm(2,2,ii) +
-     &    qiyz*gradfieldm(3,2,ii)+ qizz*gradfieldm(3,3,ii))
+     &    qixx*gradfieldm_damp(1,1,ii)+ qixy*gradfieldm_damp(2,1,ii) +
+     &    qixz*gradfieldm_damp(3,1,ii)+ qiyy*gradfieldm_damp(2,2,ii) +
+     &    qiyz*gradfieldm_damp(3,2,ii)+ qizz*gradfieldm_damp(3,3,ii))
 c
 c     reciprocal space
 c

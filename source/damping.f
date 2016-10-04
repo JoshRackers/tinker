@@ -119,7 +119,7 @@ c
             scale(3) = 1.0d0 - expdamp
             scale(5) = 1.0d0 - (1.0d0 + damp)*expdamp
             if (rorder.ge.7) then
-            scale(7) = 1.0d0 - (1.0d0 + damp + 0.6d0*damp**2)*expdamp
+               scale(7) = 1.0d0 - (1.0d0 + damp + 0.6d0*damp**2)*expdamp
             end if
             if (rorder.ge.9) then
                scale(9) = 1.0d0 - (1.0d0 + damp + 
@@ -319,5 +319,19 @@ c
       scalek(3) = 1.0d0 - (1.0d0 + dampk)*expdampk -
      &     (1.0d0 + rdampi)*rexpdampi + (1.0d0 + dampk +
      &     rdampi)*expdampk*rexpdampi
+      scalei(5) = 1.0d0 - (1.0d0 + dampi +
+     &     (1.0d0/3.0d0)*dampi**2)*expdampi - (1.0d0 +
+     &     rdampk + (1.0d0/3.0d0)*rdampk**2)*rexpdampk +
+     &     (1.0d0 + dampi + rdampk +
+     &     (1.0d0/3.0d0)*dampi**2 +
+     &     (1.0d0/3.0d0)*rdampk**2 +
+     &     (2.0d0/3.0d0)*dampi*rdampk)*expdampi*rexpdampk
+      scalek(5) = 1.0d0 - (1.0d0 + dampk +
+     &     (1.0d0/3.0d0)*dampk**2)*expdampk - (1.0d0 +
+     &     rdampi + (1.0d0/3.0d0)*rdampi**2)*rexpdampi +
+     &     (1.0d0 + dampk + rdampi +
+     &     (1.0d0/3.0d0)*dampk**2 +
+     &     (1.0d0/3.0d0)*rdampi**2 +
+     &     (2.0d0/3.0d0)*dampk*rdampi)*expdampk*rexpdampi
       return
       end
