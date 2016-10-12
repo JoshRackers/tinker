@@ -276,8 +276,8 @@ c
             xlo(i) = xx(i) - 0.5d0
             xhi(i) = xx(i) + 0.5d0
          else
-            xlo(i) = 0.5d0 * xx(i)
-            xhi(i) = 1.5d0 * xx(i)
+            xlo(i) = 0.25d0 * xx(i)
+            xhi(i) = 2.0d0 * xx(i)
          end if
       end do
 c

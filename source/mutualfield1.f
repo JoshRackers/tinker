@@ -468,6 +468,7 @@ c     for periodic boundary conditions with large cutoffs
 c     neighbors must be found by the replicates method
 c
       if (.not. use_replica)  return
+      print *,"USING REPLICA"
 c     
 c     calculate interaction with other unit cells
 c
@@ -499,13 +500,13 @@ c
                   call imager (xr,yr,zr,m)
                   r2 = xr*xr + yr* yr + zr*zr
                   if (r2 .le. off2) then
-                     r = sqrt(r2)
-                     rr1 = 1.0d0 / r
-                     rr3 = rr1 / r2
-                     rr5 = 3.0d0 * rr3 / r2
-                     rr7 = 5.0d0 * rr5 / r2
-                     call t2matrixrr3(xr,yr,zr,rr3,t2rr3)
-                     call t2matrixrr5(xr,yr,zr,rr5,t2rr5)
+                  r = sqrt(r2)
+                  rr1 = 1.0d0 / r
+                  rr3 = rr1 / r2
+                  rr5 = 3.0d0 * rr3 / r2
+                  rr7 = 5.0d0 * rr5 / r2
+                  call t2matrixrr3(xr,yr,zr,rr3,t2rr3)
+                  call t2matrixrr5(xr,yr,zr,rr5,t2rr5)
 c
 c     call routines that produce potential, field, field gradient
 c     for types of damping
@@ -513,58 +514,77 @@ c
 c
 c     no damping
 c
-                     if (damp_none) then
-                        t2 = t2rr3 + t2rr5
-                        call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
-     &                       fieldkp)
-                        do j = 1, 3
-                           udfield(j,i) = udfield(j,i) + fieldid(j)
-                           udfield(j,k) = udfield(j,k) + fieldkd(j)
-                           upfield(j,i) = upfield(j,i) + fieldip(j)
-                           upfield(j,k) = upfield(j,k) + fieldkp(j)
-                        end do
-                     end if
-c     
+                  if (damp_none) then
+                     t2 = t2rr3 + t2rr5
+                     call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
+     &                    fieldkp)
+                     do j = 1, 3
+                        udfield(j,i) = udfield(j,i) + fieldid(j)
+                        udfield(j,k) = udfield(j,k) + fieldkd(j)
+                        upfield(j,i) = upfield(j,i) + fieldip(j)
+                        upfield(j,k) = upfield(j,k) + fieldkp(j)
+                     end do
+                  end if
+c
 c     error function damping for ewald
-c     
-                     if (damp_ewald) then
-                        call dampewald(i,k,rorder,r,r2,scale)
-c     
+c
+                  if (damp_ewald) then
+                     call dampewald(i,k,rorder,r,r2,scale)
+c
 c     the ewald damping factors already contain their powers of r (rrx)
-c     
-                        t2 = t2rr3*scale(3)/rr3 + t2rr5*scale(5)/rr5
-                        call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
-     &                       fieldkp)
-                        do j = 1, 3
-                           udfield_ewald(j,i) = udfield_ewald(j,i) + 
-     &                          fieldid(j)
-                           udfield_ewald(j,k) = udfield_ewald(j,k) + 
-     &                          fieldkd(j)
-                           upfield_ewald(j,i) = upfield_ewald(j,i) +
-     &                          fieldip(j)
-                           upfield_ewald(j,k) = upfield_ewald(j,k) +
-     &                          fieldkp(j)
-                        end do
-                     end if
-c     
+c
+                     t2 = t2rr3*scale(3)/rr3 + t2rr5*scale(5)/rr5
+                     call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
+     &                    fieldkp)
+                     do j = 1, 3
+                        udfield_ewald(j,i) = udfield_ewald(j,i) + 
+     &                       fieldid(j)
+                        udfield_ewald(j,k) = udfield_ewald(j,k) + 
+     &                       fieldkd(j)
+                        upfield_ewald(j,i) = upfield_ewald(j,i) +
+     &                       fieldip(j)
+                        upfield_ewald(j,k) = upfield_ewald(j,k) +
+     &                       fieldkp(j)
+                     end do
+                  end if
+c
 c     thole damping
-c     
-                     if (damp_thole) then
-                        call dampthole(i,k,rorder,r,scale)
-                        t2 = t2rr3*scale(3) + t2rr5*scale(5)
-                        call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
-     &                       fieldkp)
-                        do j = 1, 3
-                           udfield_thole(j,i) = udfield_thole(j,i) +
-     &                          fieldid(j)
-                           udfield_thole(j,k) = udfield_thole(j,k) +
-     &                          fieldkd(j)
-                           upfield_thole(j,i) = upfield_thole(j,i) +
-     &                          fieldip(j)
-                           upfield_thole(j,k) = upfield_thole(j,k) +
-     &                          fieldkp(j)
-                        end do
-                     end if
+c
+                  if (damp_thole) then
+                     call dampthole(i,k,rorder,r,scale)
+                     t2 = t2rr3*scale(3) + t2rr5*scale(5)
+                     call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
+     &                    fieldkp)
+                     do j = 1, 3
+                        udfield_thole(j,i) = udfield_thole(j,i) +
+     &                       fieldid(j)
+                        udfield_thole(j,k) = udfield_thole(j,k) +
+     &                       fieldkd(j)
+                        upfield_thole(j,i) = upfield_thole(j,i) +
+     &                       fieldip(j)
+                        upfield_thole(j,k) = upfield_thole(j,k) +
+     &                       fieldkp(j)
+                     end do
+                  end if
+c
+c     gordon damping
+c
+                  if (damp_gordon) then
+                     call dampgordon(i,k,rorder,r,scalei,scalek,scaleik)
+                     t2 = t2rr3*scaleik(3) + t2rr5*scaleik(5)
+                     call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
+     &                    fieldkp)
+                     do j = 1, 3
+                        udfield_gordon(j,i) = udfield_gordon(j,i) +
+     &                       fieldid(j)
+                        udfield_gordon(j,k) = udfield_gordon(j,k) +
+     &                       fieldkd(j)
+                        upfield_gordon(j,i) = upfield_gordon(j,i) +
+     &                       fieldip(j)
+                        upfield_gordon(j,k) = upfield_gordon(j,k) +
+     &                       fieldkp(j)
+                     end do
+                  end if
                   end if
                end do
             end if
@@ -619,16 +639,18 @@ c
       real*8 potid,potkd,potip,potkp
       real*8 fieldid(3),fieldkd(3)
       real*8 fieldip(3),fieldkp(3)
-      real*8 gradfieldid(3,3),gradfieldkd(3,3)
-      real*8 gradfieldip(3,3),gradfieldkp(3,3)
-      real*8 test
       real*8, allocatable :: scale(:)
+      real*8, allocatable :: scalei(:)
+      real*8, allocatable :: scalek(:)
+      real*8, allocatable :: scaleik(:)
       real*8, allocatable :: udfieldo(:,:)
       real*8, allocatable :: upfieldo(:,:)
       real*8, allocatable :: udfield_ewaldo(:,:)
       real*8, allocatable :: upfield_ewaldo(:,:)
       real*8, allocatable :: udfield_tholeo(:,:)
       real*8, allocatable :: upfield_tholeo(:,:)
+      real*8, allocatable :: udfield_gordono(:,:)
+      real*8, allocatable :: upfield_gordono(:,:)
       logical proceed
       logical usei,usek
       character*6 mode
@@ -641,6 +663,8 @@ c
       allocate (upfield_ewaldo(3,npole))
       allocate (udfield_tholeo(3,npole))
       allocate (upfield_tholeo(3,npole))
+      allocate (udfield_gordono(3,npole))
+      allocate (upfield_gordono(3,npole))
 c
 c     zero out the value of the field at each site
 c
@@ -652,6 +676,8 @@ c
             upfield_ewald(j,i) = 0.0d0
             udfield_thole(j,i) = 0.0d0
             upfield_thole(j,i) = 0.0d0
+            udfield_gordon(j,i) = 0.0d0
+            upfield_gordon(j,i) = 0.0d0
 c
             udfieldo(j,i) = 0.0d0
             upfieldo(j,i) = 0.0d0
@@ -659,6 +685,8 @@ c
             upfield_ewaldo(j,i) = 0.0d0
             udfield_tholeo(j,i) = 0.0d0
             upfield_tholeo(j,i) = 0.0d0
+            udfield_gordono(j,i) = 0.0d0
+            upfield_gordono(j,i) = 0.0d0
          end do
       end do
 c
@@ -676,11 +704,16 @@ c     set highest order rr and damping terms needed
 c     2 = up to field gradient (rr9)
 c
       order = 1
-c      order = 2
       rorder = order*2 + 3
       allocate (scale(rorder))
+      allocate (scalei(rorder))
+      allocate (scalek(rorder))
+      allocate (scaleik(rorder))
       do i = 1,rorder
           scale(i) = 0.0d0
+          scalei(i) = 0.0d0
+          scalek(i) = 0.0d0
+          scaleik(i) = 0.0d0
       end do
 c
 c     set OpenMP directives for the major loop structure
@@ -690,10 +723,11 @@ c
 !$OMP& xr,yr,zr,r,r2,rr1,rr3,rr5,rr7,fgrp,
 !$OMP& fieldid,fieldkd,fieldip,fieldkp,
 !$OMP& t0rr1,t1rr3,t2rr3,t2rr5,t3rr5,t3rr7,
-!$OMP& t0,t1,t2,t3,scale)
+!$OMP& t0,t1,t2,t3,scale,scalei,scalek,scaleik)
 !$OMP DO reduction(+:udfieldo,upfieldo,
 !$OMP& udfield_ewaldo,upfield_ewaldo,
-!$OMP& udfield_tholeo,upfield_tholeo)
+!$OMP& udfield_tholeo,upfield_tholeo,
+!$OMP& udfield_gordono,upfield_gordono)  
 !$OMP& schedule(guided)
 c
 c     calculate the multipole interaction
@@ -779,6 +813,25 @@ c
      &                    fieldkp(j)
                   end do
                end if
+c     
+c     gordon damping
+c     
+               if (damp_gordon) then
+                  call dampgordon(i,k,rorder,r,scalei,scalek,scaleik)
+                  t2 = t2rr3*scaleik(3) + t2rr5*scaleik(5)
+                  call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
+     &                 fieldkp)
+                  do j = 1, 3
+                     udfield_gordono(j,i) = udfield_gordono(j,i) +
+     &                    fieldid(j)
+                     udfield_gordono(j,k) = udfield_gordono(j,k) +
+     &                    fieldkd(j)
+                     upfield_gordono(j,i) = upfield_gordono(j,i) +
+     &                    fieldip(j)
+                     upfield_gordono(j,k) = upfield_gordono(j,k) +
+     &                    fieldkp(j)
+                  end do
+               end if
             end if
          end do
       end do
@@ -796,6 +849,8 @@ c
       upfield_ewald = upfield_ewaldo
       udfield_thole = udfield_tholeo
       upfield_thole = upfield_tholeo
+      udfield_gordon = udfield_gordono
+      upfield_gordon = upfield_gordono
 c
 c     perform deallocation of some local arrays
 c

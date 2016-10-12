@@ -170,8 +170,6 @@ c
       if (directdamp .eq. "THOLE") damp_thole = .true.
 c
       call mutualfield3
-      print *,"uind",uind
-      print *,"uinp",uinp
 c
 c     perform dynamic allocation of some local arrays
 c
@@ -345,6 +343,9 @@ c
 c     increment the overall polarization energy
 c
          ep = ep + ei
+c     ONLY TRUE FOR WATER!!!!!!!!!!!!!
+         einter = einter + ei
+cccccccccccccccccccccccccccccccccccccccc
 c
 c     calculate forces involving induced dipoles
 c

@@ -218,9 +218,13 @@ c
 c     compute charge penetration corrected permanent multipole energy
 c
 c     charge - nucleus
-         e = 0.5d0*zi*nucpotm_damp(ii)
+         if (penetration .eq. "GORDON") then
+            e = 0.5d0*zi*nucpotm_damp(ii)
 c     charge - electrons
-         e = e + 0.5d0*qi*potm_damp(ii)
+            e = e + 0.5d0*qi*potm_damp(ii)
+         else
+            e = 0.5d0*ci*potm_damp(ii)
+         end if
 c     permanent dipole
          e = e + 0.5d0*
      &        (dix*fieldm_damp(1,ii)+diy*fieldm_damp(2,ii)+
@@ -421,8 +425,12 @@ c
 c
 c     scaled interactions
 c
-         efix = efix - 0.5d0*zi*nucpotm_damp(ii)
-         efix = efix - 0.5d0*qi*potm_damp(ii)
+         if (penetration .eq. "GORDON") then
+            efix = efix - 0.5d0*zi*nucpotm_damp(ii)
+            efix = efix - 0.5d0*qi*potm_damp(ii)
+         else
+            efix = efix - 0.5d0*ci*potm_damp(ii)
+         end if
          efix = efix - 0.5d0*(dix*fieldm_damp(1,ii) +
      &        diy*fieldm_damp(2,ii) + diz*fieldm_damp(3,ii))
          efix = efix - 0.5d0*(

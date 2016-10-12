@@ -144,13 +144,13 @@ c
       damp_piquemal = .false.
       call induce
 cccccccccccccccccccccccccccccccccccc
-      damp_thole = .false.
-      damp_gordon = .false.
-      damp_piquemal = .false.
-      if (mutualdamp .eq. "GORDON") damp_gordon = .true.
-      if (mutualdamp .eq. "PIQUEMAL") damp_piquemal = .true.
-      if (mutualdamp .eq. "THOLE") damp_thole = .true.
-      call mutualfield3
+c      damp_thole = .false.
+c      damp_gordon = .false.
+c      damp_piquemal = .false.
+c      if (mutualdamp .eq. "GORDON") damp_gordon = .true.
+c      if (mutualdamp .eq. "PIQUEMAL") damp_piquemal = .true.
+c      if (mutualdamp .eq. "THOLE") damp_thole = .true.
+c      call mutualfield3
 ccccccccccccccccccccccccccccccccccccccc
 c
 c     check what kind of damping was used
@@ -162,15 +162,15 @@ c
       else if (directdamp .eq. "THOLE") then 
          fieldp_damp = fieldp_thole
       end if
-      if (mutualdamp .eq. "GORDON") then
-         upfield_damp = upfield_gordon
-         upfieldd_damp = upfieldd_gordon
-      else if (mutualdamp .eq. "PIQUEMAL") then
-         upfield_damp = upfield_piquemal
-      else if (mutualdamp .eq. "THOLE") then
-         upfield_damp = upfield_thole
-         upfieldd_damp = upfieldd_thole
-      end if
+c      if (mutualdamp .eq. "GORDON") then
+c         upfield_damp = upfield_gordon
+c         upfieldd_damp = upfieldd_gordon
+c      else if (mutualdamp .eq. "PIQUEMAL") then
+c         upfield_damp = upfield_piquemal
+c      else if (mutualdamp .eq. "THOLE") then
+c         upfield_damp = upfield_thole
+c         upfieldd_damp = upfieldd_thole
+c      end if
 c
 c     set conversion factor
 c
@@ -198,8 +198,6 @@ c     my permanent field is backwards, the mutual field is good?
      &        uiy*fieldp_damp(2,ii) + 
      &        uiz*fieldp_damp(3,ii)) +
      &        0.5d0*(uix*uix + uiy*uiy + uiz*uiz)/polarity(ii)
-         print *,"ei",ei
-         print *,"ei2",ei2
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 c     according to Misquitta, one should use the unregularized field here
@@ -219,6 +217,10 @@ c
          ep = ep + ei
          nep = nep + 1
          aep(ii) = aep(ii) + ei
+c
+c     polarization intermolecular energy: WATER ONLY!!!
+c
+         einter = einter + ei
       end do
       return
       end

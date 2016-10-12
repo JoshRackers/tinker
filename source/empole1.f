@@ -219,10 +219,14 @@ c
 c
 c     compute charge penetration corrected permanent multipole energy
 c
+         if (penetration .eq. "GORDON") then
 c     charge - nucleus
-         e = 0.5d0*zi*nucpotm_damp(ii)
+            e = 0.5d0*zi*nucpotm_damp(ii)
 c     charge - electrons
-         e = e + 0.5d0*qi*potm_damp(ii)
+            e = e + 0.5d0*qi*potm_damp(ii)
+         else
+            e = 0.5d0*ci*potm_damp(ii)
+         end if
 c     permanent dipole
          e = e + 0.5d0*
      &        (dix*fieldm_damp(1,ii)+diy*fieldm_damp(2,ii)+
@@ -243,17 +247,24 @@ c
 c     increment the overall multipole energy
 c
          em = em + e
+         einter = einter + e
 c
 c     compute charge penetration corrected multipole gradient
 c
+         if (penetration .eq. "GORDON") then
 c     charge - nucleus
-         fx = zi*nucfieldm_damp(1,ii)
-         fy = zi*nucfieldm_damp(2,ii)
-         fz = zi*nucfieldm_damp(3,ii)
+            fx = zi*nucfieldm_damp(1,ii)
+            fy = zi*nucfieldm_damp(2,ii)
+            fz = zi*nucfieldm_damp(3,ii)
 c     charge - electrons
-         fx = fx + qi*fieldm_damp(1,ii)
-         fy = fy + qi*fieldm_damp(2,ii)
-         fz = fz + qi*fieldm_damp(3,ii)
+            fx = fx + qi*fieldm_damp(1,ii)
+            fy = fy + qi*fieldm_damp(2,ii)
+            fz = fz + qi*fieldm_damp(3,ii)
+         else
+            fx = ci*fieldm_damp(1,ii)
+            fy = ci*fieldm_damp(2,ii)
+            fz = ci*fieldm_damp(3,ii)
+         end if
 c     dipole
          fx = fx + dix*gradfieldm_damp(1,1,ii) + 
      &        diy*gradfieldm_damp(2,1,ii) +
@@ -554,8 +565,12 @@ c
 c
 c     scaled interactions
 c
-         efix = efix - 0.5d0*zi*nucpotm_damp(ii)
-         efix = efix - 0.5d0*qi*potm_damp(ii)
+         if (penetration .eq. "GORDON") then
+            efix = efix - 0.5d0*zi*nucpotm_damp(ii)
+            efix = efix - 0.5d0*qi*potm_damp(ii)
+         else
+            efix = efix - 0.5d0*ci*potm_damp(ii)
+         end if
          efix = efix - 0.5d0*(dix*fieldm_damp(1,ii) +
      &        diy*fieldm_damp(2,ii) + diz*fieldm_damp(3,ii))
          efix = efix - 0.5d0*(
@@ -651,14 +666,20 @@ c     quadrupole
 c
 c     scaled interactions
 c
+         if (penetration .eq. "GORDON") then
 c     charge - nucleus
-         fxfix = fxfix - zi*nucfieldm_damp(1,ii)
-         fyfix = fyfix - zi*nucfieldm_damp(2,ii)
-         fzfix = fzfix - zi*nucfieldm_damp(3,ii)
+            fxfix = fxfix - zi*nucfieldm_damp(1,ii)
+            fyfix = fyfix - zi*nucfieldm_damp(2,ii)
+            fzfix = fzfix - zi*nucfieldm_damp(3,ii)
 c     charge - electrons
-         fxfix = fxfix - qi*fieldm_damp(1,ii)
-         fyfix = fyfix - qi*fieldm_damp(2,ii)
-         fzfix = fzfix - qi*fieldm_damp(3,ii)
+            fxfix = fxfix - qi*fieldm_damp(1,ii)
+            fyfix = fyfix - qi*fieldm_damp(2,ii)
+            fzfix = fzfix - qi*fieldm_damp(3,ii)
+         else
+            fxfix = fxfix - ci*fieldm_damp(1,ii)
+            fyfix = fyfix - ci*fieldm_damp(2,ii)
+            fzfix = fzfix - ci*fieldm_damp(3,ii)
+         end if
 c     dipole
          fxfix = fxfix - dix*gradfieldm_damp(1,1,ii) -
      &        diy*gradfieldm_damp(2,1,ii) - diz*gradfieldm_damp(3,1,ii)

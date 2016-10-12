@@ -720,119 +720,234 @@ c
                   call imager (xr,yr,zr,m)
                   r2 = xr*xr + yr* yr + zr*zr
                   if (r2 .le. off2) then
-                     r = sqrt(r2)
-                     rr1 = 1.0d0 / r
-                     rr3 = rr1 / r2
-                     rr5 = 3.0d0 * rr3 / r2
-                     rr7 = 5.0d0 * rr5 / r2
-                     rr9 = 7.0d0 * rr7 / r2
-                     call t0matrixrr1(rr1,t0rr1)
-                     call t1matrixrr3(xr,yr,zr,rr3,t1rr3)
-                     call t2matrixrr3(xr,yr,zr,rr3,t2rr3)
-                     call t2matrixrr5(xr,yr,zr,rr5,t2rr5)
-                     call t3matrixrr5(xr,yr,zr,rr5,t3rr5)
-                     call t3matrixrr7(xr,yr,zr,rr7,t3rr7)
-                     call t4matrixrr5(xr,yr,zr,rr5,t4rr5)
-                     call t4matrixrr7(xr,yr,zr,rr7,t4rr7)
-                     call t4matrixrr9(xr,yr,zr,rr9,t4rr9)
+                  r = sqrt(r2)
+                  rr1 = 1.0d0 / r
+                  rr3 = rr1 / r2
+                  rr5 = 3.0d0 * rr3 / r2
+                  rr7 = 5.0d0 * rr5 / r2
+                  rr9 = 7.0d0 * rr7 / r2
+                  call t0matrixrr1(rr1,t0rr1)
+                  call t1matrixrr3(xr,yr,zr,rr3,t1rr3)
+                  call t2matrixrr3(xr,yr,zr,rr3,t2rr3)
+                  call t2matrixrr5(xr,yr,zr,rr5,t2rr5)
+                  call t3matrixrr5(xr,yr,zr,rr5,t3rr5)
+                  call t3matrixrr7(xr,yr,zr,rr7,t3rr7)
+                  call t4matrixrr5(xr,yr,zr,rr5,t4rr5)
+                  call t4matrixrr7(xr,yr,zr,rr7,t4rr7)
+                  call t4matrixrr9(xr,yr,zr,rr9,t4rr9)
 c
 c     call routines that produce potential, field, field gradient
 c     for types of damping
 c
-
-
-                     if (damp_none) then
-                        t0 = t0rr1
-                        t1 = t1rr3
-                        t2 = t2rr3 + t2rr5
-                        t3 = t3rr5 + t3rr7
-                        t4 = t4rr5 + t4rr7 + t4rr9
-                        call potik(i,k,t0,t1,t2,poti,potk)
-                        call fieldik(i,k,t1,t2,t3,fieldi,fieldk)
-                        call gradfieldik(i,k,t2,t3,t4,
-     &                       gradfieldi,gradfieldk)
-                        pot(i) = pot(i) + poti
-                        pot(k) = pot(k) + potk
-                        potm(i) = potm(i) + poti*mscale(kk)
-                        potm(k) = potm(k) + potk*mscale(kk)
-                        do j = 1, 3
-                           field(j,i) = field(j,i) + fieldi(j)
-                           field(j,k) = field(j,k) + fieldk(j)
-                           fieldm(j,i) = fieldm(j,i) + 
-     &                          fieldi(j)*mscale(kk)
-                           fieldm(j,k) = fieldm(j,k) + 
-     &                          fieldk(j)*mscale(kk)
-                           do l = 1, 3
-                              gradfield(l,j,i) = gradfield(l,j,i) +
-     &                             gradfieldi(l,j)
-                              gradfield(l,j,k) = gradfield(l,j,k) +
-     &                             gradfieldk(l,j)
-                              gradfieldm(l,j,i) = gradfieldm(l,j,i) +
-     &                             gradfieldi(l,j)*mscale(kk)
-                              gradfieldm(l,j,k) = gradfieldm(l,j,k) +
-     &                             gradfieldk(l,j)*mscale(kk)
-                           end do
+                  if (damp_none) then
+                     t0 = t0rr1
+                     t1 = t1rr3
+                     t2 = t2rr3 + t2rr5
+                     t3 = t3rr5 + t3rr7
+                     t4 = t4rr5 + t4rr7 + t4rr9
+                     call potik(i,k,t0,t1,t2,poti,potk)
+                     call fieldik(i,k,t1,t2,t3,fieldi,fieldk)
+                     call gradfieldik(i,k,t2,t3,t4,
+     &                    gradfieldi,gradfieldk)
+                     pot(i) = pot(i) + poti
+                     pot(k) = pot(k) + potk
+                     potm(i) = potm(i) + poti*mscale(kk)
+                     potm(k) = potm(k) + potk*mscale(kk)
+                     do j = 1, 3
+                        field(j,i) = field(j,i) + fieldi(j)
+                        field(j,k) = field(j,k) + fieldk(j)
+                        fieldm(j,i) = fieldm(j,i) + fieldi(j)*mscale(kk)
+                        fieldm(j,k) = fieldm(j,k) + fieldk(j)*mscale(kk)
+                        do l = 1, 3
+                           gradfield(l,j,i) = gradfield(l,j,i) +
+     &                          gradfieldi(l,j)
+                           gradfield(l,j,k) = gradfield(l,j,k) +
+     &                          gradfieldk(l,j)
+                           gradfieldm(l,j,i) = gradfieldm(l,j,i) +
+     &                          gradfieldi(l,j)*mscale(kk)
+                           gradfieldm(l,j,k) = gradfieldm(l,j,k) +
+     &                          gradfieldk(l,j)*mscale(kk)
                         end do
-                     end if
-c     
+                     end do
+                  end if
+c
 c     error function damping for ewald
-c     
-                     if (damp_ewald) then
-                        call dampewald(i,k,rorder,r,r2,scale)
-c     
+c
+                  if (damp_ewald) then
+                     call dampewald(i,k,rorder,r,r2,scale)
+c
 c     the ewald damping factors already contain their powers of rr
-c     
-                        t0 = t0rr1*scale(1)/rr1
-                        t1 = t1rr3*scale(3)/rr3
-                        t2 = t2rr3*scale(3)/rr3 + t2rr5*scale(5)/rr5
-                        t3 = t3rr5*scale(5)/rr5 + t3rr7*scale(7)/rr7
-                        t4 = t4rr5*scale(5)/rr5 + t4rr7*scale(7)/rr7 +
-     &                       t4rr9*scale(9)/rr9
-                        call potik(i,k,t0,t1,t2,poti,potk)
-                        call fieldik(i,k,t1,t2,t3,fieldi,fieldk)
-                        call gradfieldik(i,k,t2,t3,t4,
-     &                       gradfieldi,gradfieldk)
-                        pot_ewald(i) = pot_ewald(i) + poti
-                        pot_ewald(k) = pot_ewald(k) + potk
-                        do j = 1, 3
-                           field_ewald(j,i) = field_ewald(j,i) + 
-     &                          fieldi(j)
-                           field_ewald(j,k) = field_ewald(j,k) + 
-     &                          fieldk(j)
-                           do l = 1, 3
-                              gradfield_ewald(l,j,i) = 
-     &                             gradfield_ewald(l,j,i) + 
-     &                             gradfieldi(l,j)
-                              gradfield_ewald(l,j,k) = 
-     &                             gradfield_ewald(l,j,k) +
-     &                             gradfieldk(l,j)
-                           end do
+c
+                     t0 = t0rr1*scale(1)/rr1
+                     t1 = t1rr3*scale(3)/rr3
+                     t2 = t2rr3*scale(3)/rr3 + t2rr5*scale(5)/rr5
+                     t3 = t3rr5*scale(5)/rr5 + t3rr7*scale(7)/rr7
+                     t4 = t4rr5*scale(5)/rr5 + t4rr7*scale(7)/rr7 +
+     &                    t4rr9*scale(9)/rr9
+                     call potik(i,k,t0,t1,t2,poti,potk)
+                     call fieldik(i,k,t1,t2,t3,fieldi,fieldk)
+                     call gradfieldik(i,k,t2,t3,t4,
+     &                    gradfieldi,gradfieldk)
+                     pot_ewald(i) = pot_ewald(i) + poti
+                     pot_ewald(k) = pot_ewald(k) + potk
+                     do j = 1, 3
+                        field_ewald(j,i) = field_ewald(j,i) + 
+     &                       fieldi(j)
+                        field_ewald(j,k) = field_ewald(j,k) + 
+     &                       fieldk(j)
+                        do l = 1, 3
+                           gradfield_ewald(l,j,i) = 
+     &                          gradfield_ewald(l,j,i) + 
+     &                          gradfieldi(l,j)
+                           gradfield_ewald(l,j,k) = 
+     &                          gradfield_ewald(l,j,k) +
+     &                          gradfieldk(l,j)
                         end do
-                     end if
+                     end do
+                  end if
 c
 c     thole damping
 c
-                     if (damp_thole) then
-                        call dampthole(i,k,rorder,r,scale)
-                        t0 = t0rr1*scale(1)
-                        t1 = t1rr3*scale(3)
-                        t2 = t2rr3*scale(3) + t2rr5*scale(5)
-                        t2 = t2rr3*scale(3) + t2rr5*scale(5)
-                        t3 = t3rr5*scale(5) + t3rr7*scale(7)
-                        t4 = t4rr5*scale(5) + t4rr7*scale(7) +
-     &                       t4rr9*scale(9)
-                        call fieldik(i,k,t1,t2,t3,fieldi,fieldk)
-                        do j = 1, 3
-                           fieldd_thole(j,i) = fieldd_thole(j,i) +
-     &                          fieldi(j)*dscale(kk)
-                           fieldd_thole(j,k) = fieldd_thole(j,k) +
-     &                          fieldk(j)*dscale(kk)
-                           fieldp_thole(j,i) = fieldp_thole(j,i) +
-     &                          fieldi(j)*pscale(kk)
-                           fieldp_thole(j,k) = fieldp_thole(j,k) +
-     &                          fieldk(j)*pscale(kk)
+                  if (damp_thole) then
+                     call dampthole(i,k,rorder,r,scale)
+                     t0 = t0rr1*scale(1)
+                     t1 = t1rr3*scale(3)
+                     t2 = t2rr3*scale(3) + t2rr5*scale(5)
+                     t2 = t2rr3*scale(3) + t2rr5*scale(5)
+                     t3 = t3rr5*scale(5) + t3rr7*scale(7)
+                     t4 = t4rr5*scale(5) + t4rr7*scale(7) +
+     &                    t4rr9*scale(9)
+                     call fieldik(i,k,t1,t2,t3,fieldi,fieldk)
+                     do j = 1, 3
+                        fieldd_thole(j,i) = fieldd_thole(j,i) +
+     &                       fieldi(j)*dscale(kk)
+                        fieldd_thole(j,k) = fieldd_thole(j,k) +
+     &                       fieldk(j)*dscale(kk)
+                        fieldp_thole(j,i) = fieldp_thole(j,i) +
+     &                       fieldi(j)*pscale(kk)
+                        fieldp_thole(j,k) = fieldp_thole(j,k) +
+     &                       fieldk(j)*pscale(kk)
+                     end do
+                  end if
+c
+c     gordon damping
+c
+                  if (damp_gordon) then
+                     call dampgordon(i,k,rorder,r,scalei,scalek,scaleik)
+                     t0 = t0rr1
+                     t1 = t1rr3
+                     t2 = t2rr3 + t2rr5
+                     t3 = t3rr5 + t3rr7
+                     t4 = t4rr5 + t4rr7 + t4rr9
+                     t0i = t0rr1*scalei(1)
+                     t1i = t1rr3*scalei(3)
+                     t2i = t2rr3*scalei(3) + t2rr5*scalei(5)
+                     t3i = t3rr5*scalei(5) + t3rr7*scalei(7)
+                     t4i = t4rr5*scalei(5) + t4rr7*scalei(7) +
+     &                     t4rr9*scalei(9)
+                     t0k = t0rr1*scalek(1)
+                     t1k = t1rr3*scalek(3)
+                     t2k = t2rr3*scalek(3) + t2rr5*scalek(5)
+                     t3k = t3rr5*scalek(5) + t3rr7*scalek(7)
+                     t4k = t4rr5*scalek(5) + t4rr7*scalek(7) +
+     &                     t4rr9*scalek(9)
+                     t0ik = t0rr1*scaleik(1)
+                     t1ik = t1rr3*scaleik(3)
+                     t2ik = t2rr3*scaleik(3) + t2rr5*scaleik(5)
+                     t3ik = t3rr5*scaleik(5) + t3rr7*scaleik(7)
+                     t4ik = t4rr5*scaleik(5) + t4rr7*scaleik(7) +
+     &                      t4rr9*scaleik(9)
+                     call cp_potik(i,k,
+     &                  t0,t1,t2,t0i,t1i,t2i,t0k,t1k,t2k,t0ik,t1ik,t2ik,
+     &                  nucpoti,nucpotk,elepoti,elepotk)
+                     call cp_fieldik(i,k,
+     &                  t1,t2,t3,t1i,t2i,t3i,t1k,t2k,t3k,t1ik,t2ik,t3ik,
+     &                    nucfieldi,nucfieldk,elefieldi,elefieldk)
+                     call cp_gradfieldik(i,k,
+     &                  t2,t3,t4,t2i,t3i,t4i,t2k,t3k,t4k,t2ik,t3ik,t4ik,
+     &                    elegradfieldi,elegradfieldk)
+c
+c     accumulate fields in global variables
+c
+                     nucpotm_gordon(i) = nucpotm_gordon(i) + 
+     &                    nucpoti*mscale(kk)
+                     nucpotm_gordon(k) = nucpotm_gordon(k) + 
+     &                    nucpotk*mscale(kk)
+                     potm_gordon(i) = potm_gordon(i) +elepoti*mscale(kk)
+                     potm_gordon(k) = potm_gordon(k) +elepotk*mscale(kk)
+                     do j = 1, 3
+                        nucfieldm_gordon(j,i) = nucfieldm_gordon(j,i) + 
+     &                       nucfieldi(j)*mscale(kk)
+                        nucfieldm_gordon(j,k) = nucfieldm_gordon(j,k) +
+     &                       nucfieldk(j)*mscale(kk)
+                        fieldm_gordon(j,i) = fieldm_gordon(j,i) +
+     &                       elefieldi(j)*mscale(kk)
+                        fieldm_gordon(j,k) = fieldm_gordon(j,k) +
+     &                       elefieldk(j)*mscale(kk)
+                        fieldd_gordon(j,i) = fieldd_gordon(j,i) +
+     &                       elefieldi(j)*dscale(kk)
+                        fieldd_gordon(j,k) = fieldd_gordon(j,k) +
+     &                       elefieldk(j)*dscale(kk)
+                        fieldp_gordon(j,i) = fieldp_gordon(j,i) +
+     &                       elefieldi(j)*pscale(kk)
+                        fieldp_gordon(j,k) = fieldp_gordon(j,k) +
+     &                       elefieldk(j)*pscale(kk)
+                        do l = 1, 3
+                           gradfieldm_gordon(l,j,i) =
+     &                          gradfieldm_gordon(l,j,i) +
+     &                          elegradfieldi(l,j)*mscale(kk)
+                           gradfieldm_gordon(l,j,k) =
+     &                          gradfieldm_gordon(l,j,k) +
+     &                          elegradfieldk(l,j)*mscale(kk)
                         end do
+                     end do
+                  end if
+c
+c     gordon damping + nuclear regularization
+c
+                  if (damp_gordonreg) then
+                     if (.not. damp_gordon) then
+                        call dampgordon(i,k,rorder,r,scalei,scalek,
+     &                       scaleik)
                      end if
+                     call dampgordonreg(i,k,rorder,r,scalei,scalek)
+                     t0 = t0rr1
+                     t1 = t1rr3
+                     t2 = t2rr3 + t2rr5
+                     t3 = t3rr5 + t3rr7
+                     t4 = t4rr5 + t4rr7 + t4rr9
+                     t0i = t0rr1*scalei(1)
+                     t1i = t1rr3*scalei(3)
+                     t2i = t2rr3*scalei(3) + t2rr5*scalei(5)
+                     t3i = t3rr5*scalei(5) + t3rr7*scalei(7)
+                     t4i = t4rr5*scalei(5) + t4rr7*scalei(7) +
+     &                     t4rr9*scalei(9)
+                     t0k = t0rr1*scalek(1)
+                     t1k = t1rr3*scalek(3)
+                     t2k = t2rr3*scalek(3) + t2rr5*scalek(5)
+                     t3k = t3rr5*scalek(5) + t3rr7*scalek(7)
+                     t4k = t4rr5*scalek(5) + t4rr7*scalek(7) +
+     &                     t4rr9*scalek(9)
+                     t0ik = t0rr1*scaleik(1)
+                     t1ik = t1rr3*scaleik(3)
+                     t2ik = t2rr3*scaleik(3) + t2rr5*scaleik(5)
+                     t3ik = t3rr5*scaleik(5) + t3rr7*scaleik(7)
+                     t4ik = t4rr5*scaleik(5) + t4rr7*scaleik(7) +
+     &                      t4rr9*scaleik(9)
+                     call cp_fieldik(i,k,
+     &                  t1,t2,t3,t1i,t2i,t3i,t1k,t2k,t3k,t1ik,t2ik,t3ik,
+     &                    nucfieldi,nucfieldk,elefieldi,elefieldk)
+                     do j = 1, 3
+                        fieldd_gordonreg(j,i) = fieldd_gordonreg(j,i) +
+     &                       elefieldi(j)*dscale(kk)
+                        fieldd_gordonreg(j,k) = fieldd_gordonreg(j,k) +
+     &                       elefieldk(j)*dscale(kk)
+                        fieldp_gordonreg(j,i) = fieldp_gordonreg(j,i) +
+     &                       elefieldi(j)*pscale(kk)
+                        fieldp_gordonreg(j,k) = fieldp_gordonreg(j,k) +
+     &                       elefieldk(j)*pscale(kk)
+                     end do
+                  end if
                   end if
                end do
             end if
@@ -910,14 +1025,25 @@ c
       real*8 fgrp,r,r2
       real*8 rr1,rr3,rr5,rr7,rr9,rr11
       real*8 t0,t1(3),t2(3,3),t3(3,3,3),t4(3,3,3,3)
+      real*8 t0i,t1i(3),t2i(3,3),t3i(3,3,3),t4i(3,3,3,3)
+      real*8 t0k,t1k(3),t2k(3,3),t3k(3,3,3),t4k(3,3,3,3)
+      real*8 t0ik,t1ik(3),t2ik(3,3),t3ik(3,3,3),t4ik(3,3,3,3)
       real*8 t0rr1,t1rr3(3)
       real*8 t2rr3(3,3),t2rr5(3,3)
       real*8 t3rr5(3,3,3),t3rr7(3,3,3)
       real*8 t4rr5(3,3,3,3),t4rr7(3,3,3,3),t4rr9(3,3,3,3)
       real*8 poti,potk
+      real*8 elepoti,elepotk
+      real*8 nucpoti,nucpotk
       real*8 fieldi(3),fieldk(3)
+      real*8 elefieldi(3),elefieldk(3)
+      real*8 nucfieldi(3),nucfieldk(3)
       real*8 gradfieldi(3,3),gradfieldk(3,3)
+      real*8 elegradfieldi(3,3),elegradfieldk(3,3)
       real*8, allocatable :: scale(:)
+      real*8, allocatable :: scalei(:)
+      real*8, allocatable :: scalek(:)
+      real*8, allocatable :: scaleik(:)
       real*8, allocatable :: mscale(:)
       real*8, allocatable :: dscale(:)
       real*8, allocatable :: pscale(:)
@@ -932,6 +1058,15 @@ c
       real*8, allocatable :: gradfield_ewaldo(:,:,:)
       real*8, allocatable :: fieldp_tholeo(:,:)
       real*8, allocatable :: fieldd_tholeo(:,:)
+      real*8, allocatable :: potm_gordono(:)
+      real*8, allocatable :: nucpotm_gordono(:)
+      real*8, allocatable :: fieldm_gordono(:,:)
+      real*8, allocatable :: nucfieldm_gordono(:,:)
+      real*8, allocatable :: gradfieldm_gordono(:,:,:)
+      real*8, allocatable :: fieldd_gordono(:,:)
+      real*8, allocatable :: fieldp_gordono(:,:)
+      real*8, allocatable :: fieldd_gordonrego(:,:)
+      real*8, allocatable :: fieldp_gordonrego(:,:)
       logical proceed
       logical usei,usek
       character*6 mode
@@ -953,36 +1088,67 @@ c
       allocate (fieldd_tholeo(3,npole))
       allocate (fieldp_tholeo(3,npole))
 c
+      allocate (potm_gordono(npole))
+      allocate (fieldm_gordono(3,npole))
+      allocate (gradfieldm_gordono(3,3,npole))
+c
+      allocate (nucpotm_gordono(npole))
+      allocate (nucfieldm_gordono(3,npole))
+c
+      allocate (fieldd_gordono(3,npole))
+      allocate (fieldp_gordono(3,npole))
+c
+      allocate (fieldd_gordonrego(3,npole))
+      allocate (fieldp_gordonrego(3,npole))
+c
 c     zero out the value of the field at each site
 c
       do i = 1, npole
          pot(i) = 0.0d0
          potm(i) = 0.0d0
          pot_ewald(i) = 0.0d0
+         potm_gordon(i) = 0.0d0
+         nucpotm_gordon(i) = 0.0d0
 c
          poto(i) = 0.0d0
          potmo(i) = 0.0d0
          pot_ewaldo(i) = 0.0d0
+         potm_gordono(i) = 0.0d0
+         nucpotm_gordono(i) = 0.0d0
          do j = 1, 3
             field(j,i) = 0.0d0
             fieldm(j,i) = 0.0d0
             field_ewald(j,i) = 0.0d0
             fieldd_thole(j,i) = 0.0d0
             fieldp_thole(j,i) = 0.0d0
+            fieldm_gordon(j,i) = 0.0d0
+            fieldd_gordon(j,i) = 0.0d0
+            fieldp_gordon(j,i) = 0.0d0
+            fieldd_gordonreg(j,i) = 0.0d0
+            fieldp_gordonreg(j,i) = 0.0d0
+            nucfieldm_gordon(j,i) = 0.0d0
 c
             fieldo(j,i) = 0.0d0
             fieldmo(j,i) = 0.0d0
             field_ewaldo(j,i) = 0.0d0
             fieldd_tholeo(j,i) = 0.0d0
             fieldp_tholeo(j,i) = 0.0d0
+            fieldm_gordono(j,i) = 0.0d0
+            fieldd_gordono(j,i) = 0.0d0
+            fieldp_gordono(j,i) = 0.0d0
+            fieldd_gordonrego(j,i) = 0.0d0
+            fieldp_gordonrego(j,i) = 0.0d0
+            nucfieldm_gordono(j,i) = 0.0d0
             do k = 1, 3
                gradfield(k,j,i) = 0.0d0
                gradfieldm(k,j,i) = 0.0d0
                gradfield_ewald(k,j,i) = 0.0d0
+               gradfieldm_gordon(k,j,i) = 0.0d0
 c
                gradfieldo(k,j,i) = 0.0d0
                gradfieldmo(k,j,i) = 0.0d0
                gradfield_ewaldo(k,j,i) = 0.0d0
+               gradfieldm_gordono(k,j,i) = 0.0d0
             end do
          end do
       end do
@@ -1003,6 +1169,9 @@ c
       order = 2
       rorder = order*2 + 5
       allocate (scale(rorder))
+      allocate (scalei(rorder))
+      allocate (scalek(rorder))
+      allocate (scaleik(rorder))
       do i = 1,rorder
           scale(i) = 0.0d0
       end do
@@ -1027,12 +1196,20 @@ c
 !$OMP& private(i,j,k,ii,ix,iy,iz,usei,kk,kx,ky,kz,usek,kkk,proceed,
 !$OMP& xr,yr,zr,r,r2,rr1,rr3,rr5,rr7,rr9,fgrp,
 !$OMP& poti,potk,fieldi,fieldk,gradfieldi,gradfieldk,
+!$OMP& nucpoti,nucpotk,nucfieldi,nucfieldk,
+!$OMP& elepoti,elepotk,elefieldi,elefieldk,elegradfieldi,elegradfieldk, 
 !$OMP& t0rr1,t1rr3,t2rr3,t2rr5,t3rr5,t3rr7,t4rr5,t4rr7,t4rr9,
-!$OMP& t0,t1,t2,t3,t4,scale)
+!$OMP& t0,t1,t2,t3,t4,t0i,t1i,t2i,t3i,t4i,
+!$OMP& t0k,t1k,t2k,t3k,t4k,t0ik,t1ik,t2ik,t3ik,t4ik,
+!$OMP& scale,scalei,scalek,scaleik)
 !$OMP& firstprivate(mscale,dscale,pscale)
 !$OMP DO reduction(+:poto,fieldo,gradfieldo,
 !$OMP& potmo,fieldmo,gradfieldmo,
 !$OMP& pot_ewaldo,field_ewaldo,gradfield_ewaldo,
+!$OMP& potm_gordono,fieldm_gordono,gradfieldm_gordono,
+!$OMP& nucpotm_gordono,nucfieldm_gordono, 
+!$OMP& fieldd_gordonrego,fieldp_gordonrego,
+!$OMP& fieldd_gordono,fieldp_gordono, 
 !$OMP& fieldd_tholeo,fieldp_tholeo)
 !$OMP& schedule(guided)
 c
@@ -1127,10 +1304,8 @@ c
                   do j = 1, 3
                      fieldo(j,i) = fieldo(j,i) + fieldi(j)
                      fieldo(j,k) = fieldo(j,k) + fieldk(j)
-                     fieldmo(j,i) = fieldmo(j,i) + 
-     &                    fieldi(j)*mscale(kk)
-                     fieldmo(j,k) = fieldmo(j,k) + 
-     &                    fieldk(j)*mscale(kk)
+                     fieldmo(j,i) = fieldmo(j,i)+fieldi(j)*mscale(kk)
+                     fieldmo(j,k) = fieldmo(j,k)+fieldk(j)*mscale(kk)
                      do l = 1, 3
                         gradfieldo(l,j,i) = gradfieldo(l,j,i) +
      &                       gradfieldi(l,j)
@@ -1143,9 +1318,9 @@ c
                      end do
                   end do
                end if
-c
+c     
 c     error function damping for ewald
-c
+c     
                if (damp_ewald) then
                   call dampewald(i,k,rorder,r,r2,scale)
 c     
@@ -1202,6 +1377,125 @@ c
      &                    fieldk(j)*pscale(kk)
                   end do
                end if
+c     
+c     gordon damping
+c     
+               if (damp_gordon) then
+                  call dampgordon(i,k,rorder,r,scalei,scalek,scaleik)
+                  t0 = t0rr1
+                  t1 = t1rr3
+                  t2 = t2rr3 + t2rr5
+                  t3 = t3rr5 + t3rr7
+                  t4 = t4rr5 + t4rr7 + t4rr9
+                  t0i = t0rr1*scalei(1)
+                  t1i = t1rr3*scalei(3)
+                  t2i = t2rr3*scalei(3) + t2rr5*scalei(5)
+                  t3i = t3rr5*scalei(5) + t3rr7*scalei(7)
+                  t4i = t4rr5*scalei(5) + t4rr7*scalei(7) +
+     &                 t4rr9*scalei(9)
+                  t0k = t0rr1*scalek(1)
+                  t1k = t1rr3*scalek(3)
+                  t2k = t2rr3*scalek(3) + t2rr5*scalek(5)
+                  t3k = t3rr5*scalek(5) + t3rr7*scalek(7)
+                  t4k = t4rr5*scalek(5) + t4rr7*scalek(7) +
+     &                 t4rr9*scalek(9)
+                  t0ik = t0rr1*scaleik(1)
+                  t1ik = t1rr3*scaleik(3)
+                  t2ik = t2rr3*scaleik(3) + t2rr5*scaleik(5)
+                  t3ik = t3rr5*scaleik(5) + t3rr7*scaleik(7)
+                  t4ik = t4rr5*scaleik(5) + t4rr7*scaleik(7) +
+     &                 t4rr9*scaleik(9)
+                  call cp_potik(i,k,
+     &                 t0,t1,t2,t0i,t1i,t2i,t0k,t1k,t2k,t0ik,t1ik,t2ik,
+     &                 nucpoti,nucpotk,elepoti,elepotk)
+                  call cp_fieldik(i,k,
+     &                 t1,t2,t3,t1i,t2i,t3i,t1k,t2k,t3k,t1ik,t2ik,t3ik,
+     &                 nucfieldi,nucfieldk,elefieldi,elefieldk)
+                  call cp_gradfieldik(i,k,
+     &                 t2,t3,t4,t2i,t3i,t4i,t2k,t3k,t4k,t2ik,t3ik,t4ik,
+     &                 elegradfieldi,elegradfieldk)
+c     
+c     accumulate fields in global variables
+c     
+                  nucpotm_gordono(i) = nucpotm_gordono(i) + 
+     &                 nucpoti*mscale(kk)
+                  nucpotm_gordono(k) = nucpotm_gordono(k) + 
+     &                 nucpotk*mscale(kk)
+                  potm_gordono(i) =potm_gordono(i)+elepoti*mscale(kk)
+                  potm_gordono(k) =potm_gordono(k)+elepotk*mscale(kk)
+                  do j = 1, 3
+                     nucfieldm_gordono(j,i) = nucfieldm_gordono(j,i)+ 
+     &                    nucfieldi(j)*mscale(kk)
+                     nucfieldm_gordono(j,k) = nucfieldm_gordono(j,k)+
+     &                    nucfieldk(j)*mscale(kk)
+                     fieldm_gordono(j,i) = fieldm_gordono(j,i) +
+     &                    elefieldi(j)*mscale(kk)
+                     fieldm_gordono(j,k) = fieldm_gordono(j,k) +
+     &                    elefieldk(j)*mscale(kk)
+                     fieldd_gordono(j,i) = fieldd_gordono(j,i) +
+     &                    elefieldi(j)*dscale(kk)
+                     fieldd_gordono(j,k) = fieldd_gordono(j,k) +
+     &                    elefieldk(j)*dscale(kk)
+                     fieldp_gordono(j,i) = fieldp_gordono(j,i) +
+     &                    elefieldi(j)*pscale(kk)
+                     fieldp_gordono(j,k) = fieldp_gordono(j,k) +
+     &                    elefieldk(j)*pscale(kk)
+                     do l = 1, 3
+                        gradfieldm_gordono(l,j,i) =
+     &                       gradfieldm_gordono(l,j,i) +
+     &                       elegradfieldi(l,j)*mscale(kk)
+                        gradfieldm_gordono(l,j,k) =
+     &                       gradfieldm_gordono(l,j,k) +
+     &                       elegradfieldk(l,j)*mscale(kk)
+                     end do
+                  end do
+               end if
+c
+c     gordon damping + nuclear regularization
+c
+               if (damp_gordonreg) then
+                  if (.not. damp_gordon) then
+                     call dampgordon(i,k,rorder,r,scalei,scalek,
+     &                    scaleik)
+                  end if
+                  call dampgordonreg(i,k,rorder,r,scalei,scalek)
+                  t0 = t0rr1
+                  t1 = t1rr3
+                  t2 = t2rr3 + t2rr5
+                  t3 = t3rr5 + t3rr7
+                  t4 = t4rr5 + t4rr7 + t4rr9
+                  t0i = t0rr1*scalei(1)
+                  t1i = t1rr3*scalei(3)
+                  t2i = t2rr3*scalei(3) + t2rr5*scalei(5)
+                  t3i = t3rr5*scalei(5) + t3rr7*scalei(7)
+                  t4i = t4rr5*scalei(5) + t4rr7*scalei(7) +
+     &                 t4rr9*scalei(9)
+                  t0k = t0rr1*scalek(1)
+                  t1k = t1rr3*scalek(3)
+                  t2k = t2rr3*scalek(3) + t2rr5*scalek(5)
+                  t3k = t3rr5*scalek(5) + t3rr7*scalek(7)
+                  t4k = t4rr5*scalek(5) + t4rr7*scalek(7) +
+     &                 t4rr9*scalek(9)
+                  t0ik = t0rr1*scaleik(1)
+                  t1ik = t1rr3*scaleik(3)
+                  t2ik = t2rr3*scaleik(3) + t2rr5*scaleik(5)
+                  t3ik = t3rr5*scaleik(5) + t3rr7*scaleik(7)
+                  t4ik = t4rr5*scaleik(5) + t4rr7*scaleik(7) +
+     &                 t4rr9*scaleik(9)
+                  call cp_fieldik(i,k,
+     &                 t1,t2,t3,t1i,t2i,t3i,t1k,t2k,t3k,t1ik,t2ik,t3ik,
+     &                 nucfieldi,nucfieldk,elefieldi,elefieldk)
+                  do j = 1, 3
+                     fieldd_gordonrego(j,i) = fieldd_gordonrego(j,i)+
+     &                    elefieldi(j)*dscale(kk)
+                     fieldd_gordonrego(j,k) = fieldd_gordonrego(j,k)+
+     &                    elefieldk(j)*dscale(kk)
+                     fieldp_gordonrego(j,i) = fieldp_gordonrego(j,i)+
+     &                    elefieldi(j)*pscale(kk)
+                     fieldp_gordonrego(j,k) = fieldp_gordonrego(j,k)+
+     &                    elefieldk(j)*pscale(kk)
+                  end do
+               end if
             end if
          end do
 c     
@@ -1250,6 +1544,20 @@ c
 c
       fieldd_thole = fieldd_tholeo
       fieldp_thole = fieldp_tholeo
+c
+      potm_gordon = potm_gordono
+      fieldm_gordon = fieldm_gordono
+      gradfieldm_gordon = gradfieldm_gordono
+c
+      nucpotm_gordon = nucpotm_gordono
+      nucfieldm_gordon = nucfieldm_gordono
+c
+      fieldd_gordon = fieldd_gordono
+      fieldp_gordon = fieldp_gordono
+c
+      fieldd_gordonreg = fieldd_gordonrego
+      fieldp_gordonreg = fieldp_gordonrego
+
 c
 c     perform deallocation of some local arrays
 c
