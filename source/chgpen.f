@@ -27,6 +27,7 @@ c
       implicit none
       real*8 zeta(maxtyp)
       real*8 alpha(maxtyp)
+      real*8 func10(maxtyp)
       real*8 alphap(maxtyp)
       real*8 bfactor(maxtyp)
       real*8 regular(maxtyp)
@@ -34,6 +35,7 @@ c
       real*8 xpolr(maxtyp)
       real*8 xathl(maxtyp)
       real*8 polfactor(maxtyp)
+      real*8 overlap(maxtyp)
       real*8 alphaf
 ccccccccc
 c     ignore these
@@ -48,5 +50,6 @@ ccccccccc
       character*20 chgpen_mode
       character*20 num_ele
       character*20 regularize
+      logical use_muscale
       save
       end

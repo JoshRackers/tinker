@@ -142,6 +142,7 @@ c
       damp_gordon = .false.
       damp_gordonreg = .false.
       damp_piquemal = .false.
+      damp_func = .false.
       call induce
 cccccccccccccccccccccccccccccccccccc
 c      damp_thole = .false.
@@ -161,6 +162,8 @@ c
          fieldp_damp = fieldp_piquemal
       else if (directdamp .eq. "THOLE") then 
          fieldp_damp = fieldp_thole
+      else if (directdamp .eq. "FUNC10") then
+         fieldp_damp = fieldp_func
       end if
 c      if (mutualdamp .eq. "GORDON") then
 c         upfield_damp = upfield_gordon
@@ -309,6 +312,8 @@ c
          fieldp_damp = fieldp_piquemal
       else if (directdamp .eq. "THOLE") then 
          fieldp_damp = fieldp_thole
+      else if (directdamp .eq. "FUNC10") then
+         fieldp_damp = fieldp_func
       end if
 c
 c     compute the real space, reciprocal space and self-energy 

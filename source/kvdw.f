@@ -386,6 +386,11 @@ c
                ep = 2.0d0 * (eps(i)*eps(k)) / (eps(i)+eps(k))
             else if (epsrule(1:3) .eq. 'HHG') then
                ep = 4.0d0 * (eps(i)*eps(k)) / (seps(i)+seps(k))**2
+c     waldman-hagler rule for epsilon
+            else if (epsrule(1:3) .eq. 'W-H') then
+               ep = 2.0d0 * seps(i) * seps(k) * (rad(i)*rad(k))**3 /
+     &              (rad(i)**6 + rad(k)**6)
+ccccccccccccccccccccccccccccccccccccc
             else
                ep = seps(i) * seps(k)
             end if
@@ -446,6 +451,9 @@ c
                ep = 2.0d0 * (eps4(i)*eps4(k)) / (eps4(i)+eps4(k))
             else if (epsrule(1:3) .eq. 'HHG') then
                ep = 4.0d0 * (eps4(i)*eps4(k)) / (seps4(i)+seps4(k))**2
+            else if (epsrule(1:3) .eq. 'W-H') then
+               ep = 2.0d0 * seps(i) * seps(k) * (rad(i)*rad(k))**3 /
+     &              (rad(i)**6 + rad(k)**6)
             else
                ep = seps4(i) * seps4(k)
             end if

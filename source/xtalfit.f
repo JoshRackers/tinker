@@ -40,7 +40,7 @@ c
       real*8, allocatable :: fjac(:,:)
       logical exist,query
       character*5 vindex
-      character*16 label(9)
+      character*16 label(11)
       character*120 record
       character*120 string
       external xtalerr,xtalwrt
@@ -65,7 +65,13 @@ c
      &        /,4x,'(6) Bond Dipole Moment Position',
      &        /,4x,'(7) Atomic Polarizability',
      &        /,4x,'(8) Penetration Alpha Value',
-     &        /,4x,'(9) Penetration Beta Value')
+     &        /,4x,'(9) Penetration Beta Value',
+     &        /,4x,'(10) Halgren Delta',
+     &        /,4x,'(11) Halgren Gamma',
+     &        /,4x,'(12) Buckingham A',
+     &        /,4x,'(13) Buckingham B',
+     &        /,4x,'(14) Buckingham C')
+
 c
 c     get types of potential parameters to be optimized
 c
@@ -238,6 +244,11 @@ c
       label(7) = 'Polarizability'
       label(8) = 'Penetr Alpha'
       label(9) = 'Penetr Beta'
+      label(10) = 'Hal Delta  '
+      label(11) = 'Hal Gamma  '
+      label(12) = 'A Buck     '
+      label(13) = 'B Buck     '
+      label(14) = 'C Buck     '
       do i = 1, nvary
          vartyp(i) = label(ivary(i))
       end do
@@ -484,6 +495,10 @@ c
                   else if (epsrule(1:3) .eq. 'HHG') then
                      ep = 4.0d0 * (eps(i)*eps(atom1))
      &                      / (sqrt(eps(i))+sqrt(eps(atom1)))**2
+                  else if (epsrule(1:3) .eq. 'W-H') then
+                     ep = 2.0d0 * sqrt(eps(i)) * sqrt(eps(atom1)) * 
+     &                    (rad(i)*rad(atom1))**3 /
+     &                    (rad(i)**6 + rad(atom1)**6)
                   else
                      ep = sqrt(eps(i) * eps(atom1))
                   end if
@@ -566,6 +581,38 @@ c
                   end if
                end do
             end if
+ccccccccccccccccccccccccccccccccc
+         else if (prmtyp .eq. 10) then
+            if (mode .eq. 'STORE') then
+               xx(j) = dhal
+            else if (mode .eq. 'RESET') then
+               dhal = xx(j)
+            end if
+         else if (prmtyp .eq. 11) then
+            if (mode .eq. 'STORE') then
+               xx(j) = ghal
+            else if (mode .eq. 'RESET') then
+               ghal = xx(j)
+            end if
+         else if (prmtyp .eq. 12) then
+            if (mode .eq. 'STORE') then
+               xx(j) = abuck
+            else if (mode .eq. 'RESET') then
+               abuck = xx(j)
+            end if
+         else if (prmtyp .eq. 13) then
+            if (mode .eq. 'STORE') then
+               xx(j) = bbuck
+            else if (mode .eq. 'RESET') then
+               bbuck = xx(j)
+            end if
+         else if (prmtyp .eq. 14) then
+            if (mode .eq. 'STORE') then
+               xx(j) = cbuck
+            else if (mode .eq. 'RESET') then
+               cbuck = xx(j)
+            end if
+cccccccccccccccccccccccccccccccccc
          end if
    10    continue
       end do
@@ -795,7 +842,8 @@ c
             nresid = nresid + 1
             resid(nresid) = e_lattice - e0_lattice
             if (ixtal .le. 11) then
-               resid(nresid) = 3.0d0 * resid(nresid)
+c               resid(nresid) = 3.0d0 * resid(nresid)
+               resid(nresid) = 100.0d0 * resid(nresid)
             else
                resid(nresid) = 10.0d0 * resid(nresid)
             end if

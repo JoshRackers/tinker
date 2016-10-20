@@ -68,3 +68,4 @@ mv xyzedit.x   ../bin/xyzedit-git
 mv xyzint.x    ../bin/xyzint-git
 mv xyzpdb.x    ../bin/xyzpdb-git
 mv xyzsybyl.x  ../bin/xyzsybyl-git
+mv fitpolsq.x  ../bin/fitpolsq-git

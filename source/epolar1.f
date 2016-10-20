@@ -151,6 +151,7 @@ c
       damp_gordon = .false.
       damp_piquemal = .false.
       damp_gordonreg = .false.
+      damp_func = .false.
       call induce
 c
 c     get induced field gradient hessian for forces
@@ -159,6 +160,7 @@ c
       damp_gordon = .false.
       damp_piquemal = .false.
       damp_gordonreg = .false.
+      damp_func = .false.
       if (mutualdamp .eq. "GORDON") damp_gordon = .true.
       if (mutualdamp .eq. "PIQUEMAL") damp_piquemal = .true.
       if (mutualdamp .eq. "THOLE") damp_thole = .true.
@@ -168,6 +170,7 @@ c
       end if
       if (directdamp .eq. "PIQUEMAL") damp_piquemal = .true.
       if (directdamp .eq. "THOLE") damp_thole = .true.
+      if (directdamp .eq. "FUNC10") damp_func = .true.
 c
       call mutualfield3
 c
@@ -238,6 +241,18 @@ c
          upgradfieldd_damp = upgradfieldd_thole
          udhessfieldp_damp = udhessfieldp_thole
          uphessfieldd_damp = uphessfieldd_thole
+      else if (directdamp .eq. "FUNC10") then
+         fieldd_damp = fieldd_func
+         fieldp_damp = fieldp_func
+         gradfieldd_damp = gradfieldd_func
+         gradfieldp_damp = gradfieldp_func
+c     
+         udfieldp_damp = udfieldp_func
+         upfieldd_damp = upfieldd_func
+         udgradfieldp_damp = udgradfieldp_func
+         upgradfieldd_damp = upgradfieldd_func
+         udhessfieldp_damp = udhessfieldp_func
+         uphessfieldd_damp = uphessfieldd_func
       end if
 c
 c     check what kind of mutual damping was used
@@ -249,6 +264,14 @@ c
          upgradfield_damp = upgradfield_gordon
          udhessfield_damp = udhessfield_gordon
          uphessfield_damp = uphessfield_gordon
+         if (use_muscale) then
+            udfield_damp = udfieldmu_gordon
+            upfield_damp = upfieldmu_gordon
+            udgradfield_damp = udgradfieldmu_gordon
+            upgradfield_damp = upgradfieldmu_gordon
+            udhessfield_damp = udhessfieldmu_gordon
+            uphessfield_damp = uphessfieldmu_gordon
+         end if
 c
 c         udnucfieldp_damp = udnucfieldp_gordon
 c         upnucfieldd_damp = upnucfieldd_gordon
@@ -420,6 +443,10 @@ c     charges - electrons
             fy = fy + qi*dpfield(2)
             fz = fz + qi*dpfield(3)
          else if (directdamp .eq. "THOLE") then
+            fx = fx + ci*dpfield(1)
+            fy = fy + ci*dpfield(2)
+            fz = fz + ci*dpfield(3)
+         else if (directdamp .eq. "FUNC10") then
             fx = fx + ci*dpfield(1)
             fy = fy + ci*dpfield(2)
             fz = fz + ci*dpfield(3)
@@ -648,6 +675,7 @@ c
       damp_gordon = .false.
       damp_piquemal = .false.
       damp_gordonreg = .false.
+      damp_func = .false.
       call induce
 c
 c     get mutual field, field gradient and field hessian
@@ -656,6 +684,7 @@ c
       damp_gordon = .false.
       damp_piquemal = .false.
       damp_gordonreg = .false.
+      damp_func = .false.
       if (mutualdamp .eq. "GORDON") damp_gordon = .true.
       if (mutualdamp .eq. "PIQUEMAL") damp_piquemal = .true.
       if (mutualdamp .eq. "THOLE") damp_thole = .true.
@@ -665,6 +694,7 @@ c
       end if
       if (directdamp .eq. "PIQUEMAL") damp_piquemal = .true.
       if (directdamp .eq. "THOLE") damp_thole = .true.
+      if (directdamp .eq. "FUNC10") damp_func = .true.
       call mutualfield3
 c
 c     perform dynamic allocation of some local arrays
@@ -734,6 +764,18 @@ c
          upgradfieldd_damp = upgradfieldd_thole
          udhessfieldp_damp = udhessfieldp_thole
          uphessfieldd_damp = uphessfieldd_thole
+      else if (directdamp .eq. "FUNC10") then
+         fieldd_damp = fieldd_func
+         fieldp_damp = fieldp_func
+         gradfieldd_damp = gradfieldd_func
+         gradfieldp_damp = gradfieldp_func
+c     
+         udfieldp_damp = udfieldp_func
+         upfieldd_damp = upfieldd_func
+         udgradfieldp_damp = udgradfieldp_func
+         upgradfieldd_damp = upgradfieldd_func
+         udhessfieldp_damp = udhessfieldp_func
+         uphessfieldd_damp = uphessfieldd_func
       end if
 c
 c     check what kind of mutual damping was used
@@ -745,7 +787,15 @@ c
          upgradfield_damp = upgradfield_gordon
          udhessfield_damp = udhessfield_gordon
          uphessfield_damp = uphessfield_gordon
-c
+         if (use_muscale) then
+            udfield_damp = udfieldmu_gordon
+            upfield_damp = upfieldmu_gordon
+            udgradfield_damp = udgradfieldmu_gordon
+            upgradfield_damp = upgradfieldmu_gordon
+            udhessfield_damp = udhessfieldmu_gordon
+            uphessfield_damp = uphessfieldmu_gordon
+         end if
+c     
 c         udnucfieldp_damp = udnucfieldp_gordon
 c         upnucfieldd_damp = upnucfieldd_gordon
 c         udfieldp_damp = udfieldp_gordon
@@ -992,6 +1042,10 @@ c     charges - electrons
             fy = fy + qi*updfield_tot(2)
             fz = fz + qi*updfield_tot(3)
          else if (directdamp .eq. "THOLE") then
+            fx = fx + ci*updfield_tot(1)
+            fy = fy + ci*updfield_tot(2)
+            fz = fz + ci*updfield_tot(3)
+         else if (directdamp .eq. "FUNC10") then
             fx = fx + ci*updfield_tot(1)
             fy = fy + ci*updfield_tot(2)
             fz = fz + ci*updfield_tot(3)

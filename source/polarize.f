@@ -182,6 +182,8 @@ c
       use polar
       use polpot
       use units
+      use potderivs
+      use chgpen
       implicit none
       integer i,j,iter
       integer maxiter
@@ -191,7 +193,7 @@ c
       real*8 umol(3)
       real*8 exfield(3)
       real*8, allocatable :: poli(:)
-      real*8, allocatable :: field(:,:)
+      real*8, allocatable :: ufield(:,:)
       real*8, allocatable :: rsd(:,:)
       real*8, allocatable :: zrsd(:,:)
       real*8, allocatable :: conj(:,:)
@@ -201,6 +203,10 @@ c
 c
 c     set induced dipoles to polarizability times external field
 c
+c     hack
+      call kextra
+      call cutoffs
+c     
       do i = 1, npole
          do j = 1, 3
             uind(j,i) = polarity(i) * exfield(j)
@@ -210,7 +216,7 @@ c
 c     perform dynamic allocation of some local arrays
 c
       allocate (poli(npole))
-      allocate (field(3,npole))
+      allocate (ufield(3,npole))
       allocate (rsd(3,npole))
       allocate (zrsd(3,npole))
       allocate (conj(3,npole))
@@ -224,11 +230,34 @@ c
          iter = 0
          eps = 100.0d0
          polmin = 0.00000001d0
-         call ufield (field)
+ccccccccccccccccccccccccccc
+         damp_gordon = .false.
+         damp_piquemal = .false.
+         damp_thole = .false.
+         if (mutualdamp .eq. "GORDON") then
+            damp_gordon = .true.
+         else if (mutualdamp .eq. "PIQUEMAL") then
+            damp_piquemal = .true.
+         else if (mutualdamp .eq. "THOLE") then
+            damp_thole = .true.
+         end if
+         call mutualfield1
+c         call ufield (field)
+         if (mutualdamp .eq. "GORDON") then
+            ufield = udfield_gordon
+            if (use_muscale) then
+               ufield = udfieldmu_gordon
+            end if
+         else if (mutualdamp .eq. "PIQUEMAL") then
+            ufield = udfield_piquemal
+         else if (mutualdamp .eq. "THOLE") then
+            ufield = udfield_thole
+         end if
+ccccccccccccccccccccccc
          do i = 1, npole
             poli(i) = max(polmin,polarity(i))
             do j = 1, 3
-               rsd(j,i) = field(j,i)
+               rsd(j,i) = -ufield(j,i)
                zrsd(j,i) = rsd(j,i) * poli(i)
                conj(j,i) = zrsd(j,i)
             end do
@@ -244,11 +273,35 @@ c
                   uind(j,i) = conj(j,i)
                end do
             end do
-            call ufield (field)
+cccccccccccccccccccccccccccc
+            damp_gordon = .false.
+            damp_piquemal = .false.
+            damp_thole = .false.
+            if (mutualdamp .eq. "GORDON") then
+               damp_gordon = .true.
+            else if (mutualdamp .eq. "PIQUEMAL") then
+               damp_piquemal = .true.
+            else if (mutualdamp .eq. "THOLE") then
+               damp_thole = .true.
+            end if
+            call mutualfield1
+c     call ufield (field)
+            if (mutualdamp .eq. "GORDON") then
+               ufield = udfield_gordon
+               if (use_muscale) then
+                  ufield = udfieldmu_gordon
+               end if
+            else if (mutualdamp .eq. "PIQUEMAL") then
+               ufield = udfield_piquemal
+            else if (mutualdamp .eq. "THOLE") then
+               ufield = udfield_thole
+            end if
+cccccccccccccccccccccccccccccccccccccccccc
             do i = 1, npole
                do j = 1, 3
                   uind(j,i) = vec(j,i)
-                  vec(j,i) = conj(j,i)/poli(i) - field(j,i)
+ccccc
+                  vec(j,i) = conj(j,i)/poli(i) + ufield(j,i)
                end do
             end do
             a = 0.0d0
@@ -321,7 +374,7 @@ c
 c     perform deallocation of some local arrays
 c
       deallocate (poli)
-      deallocate (field)
+      deallocate (ufield)
       deallocate (rsd)
       deallocate (zrsd)
       deallocate (conj)

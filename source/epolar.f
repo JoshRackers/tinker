@@ -128,6 +128,8 @@ c
          fieldp_damp = fieldp_piquemal
       else if (directdamp .eq. "THOLE") then
          fieldp_damp = fieldp_thole
+      else if (directdamp .eq. "FUNC10") then
+         fieldp_damp = fieldp_func
       end if
 c
 c     set conversion factor
@@ -238,6 +240,8 @@ c
          fieldp_damp = fieldp_piquemal
       else if (directdamp .eq. "THOLE") then
          fieldp_damp = fieldp_thole
+      else if (directdamp .eq. "FUNC10") then
+         fieldp_damp = fieldp_func
       end if
 c
 c     compute the real space, reciprocal space and self-energy 

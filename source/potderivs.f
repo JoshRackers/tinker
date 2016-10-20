@@ -44,6 +44,11 @@ c
       real*8, allocatable :: gradfieldd_thole(:,:,:)
       real*8, allocatable :: gradfieldp_thole(:,:,:)
 c
+      real*8, allocatable :: fieldd_func(:,:)
+      real*8, allocatable :: fieldp_func(:,:)
+      real*8, allocatable :: gradfieldd_func(:,:,:)
+      real*8, allocatable :: gradfieldp_func(:,:,:)
+c
       real*8, allocatable :: potm_gordon(:)
       real*8, allocatable :: fieldm_gordon(:,:)
       real*8, allocatable :: gradfieldm_gordon(:,:,:)
@@ -62,10 +67,19 @@ c
 c
       real*8, allocatable :: udfield_gordon(:,:)
       real*8, allocatable :: upfield_gordon(:,:)
+c
+      real*8, allocatable :: udfieldmu_gordon(:,:)
+      real*8, allocatable :: upfieldmu_gordon(:,:)
+c
       real*8, allocatable :: udgradfield_gordon(:,:,:)
       real*8, allocatable :: upgradfield_gordon(:,:,:)
       real*8, allocatable :: udhessfield_gordon(:,:,:,:)
       real*8, allocatable :: uphessfield_gordon(:,:,:,:)
+c
+      real*8, allocatable :: udgradfieldmu_gordon(:,:,:)
+      real*8, allocatable :: upgradfieldmu_gordon(:,:,:)
+      real*8, allocatable :: udhessfieldmu_gordon(:,:,:,:)
+      real*8, allocatable :: uphessfieldmu_gordon(:,:,:,:)
 c
       real*8, allocatable :: udfieldp_gordon(:,:)
       real*8, allocatable :: udgradfieldp_gordon(:,:,:)
@@ -159,6 +173,21 @@ c
       real*8, allocatable :: udgradfieldp_thole(:,:,:)
       real*8, allocatable :: udhessfieldp_thole(:,:,:,:)
 c
+      real*8, allocatable :: udfield_func(:,:)
+      real*8, allocatable :: upfield_func(:,:)
+      real*8, allocatable :: udgradfield_func(:,:,:)
+      real*8, allocatable :: upgradfield_func(:,:,:)
+      real*8, allocatable :: udhessfield_func(:,:,:,:)
+      real*8, allocatable :: uphessfield_func(:,:,:,:)
+c
+      real*8, allocatable :: upfieldd_func(:,:)
+      real*8, allocatable :: upgradfieldd_func(:,:,:)
+      real*8, allocatable :: uphessfieldd_func(:,:,:,:)
+c     
+      real*8, allocatable :: udfieldp_func(:,:)
+      real*8, allocatable :: udgradfieldp_func(:,:,:)
+      real*8, allocatable :: udhessfieldp_func(:,:,:,:)
+c
 c     reciprocal space field quantities
 c
       real*8, allocatable :: pot_recip(:)
@@ -188,6 +217,7 @@ c
       logical damp_none
       logical damp_ewald
       logical damp_thole
+      logical damp_func
       logical damp_gordon
       logical damp_piquemal
       logical damp_gordonreg

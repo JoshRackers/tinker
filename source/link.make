@@ -69,3 +69,4 @@ ifort -O3 -no-ipo -no-prec-div -mdynamic-no-pic -openmp -static-intel -mmacosx-v
 ifort -O3 -no-ipo -no-prec-div -mdynamic-no-pic -openmp -static-intel -mmacosx-version-min=10.6 -Wl,-stack_size,0x10000000 -o xyzint.x xyzint.o libtinker.a libfftw3_threads.a libfftw3.a ; strip xyzint.x
 ifort -O3 -no-ipo -no-prec-div -mdynamic-no-pic -openmp -static-intel -mmacosx-version-min=10.6 -Wl,-stack_size,0x10000000 -o xyzpdb.x xyzpdb.o libtinker.a libfftw3_threads.a libfftw3.a ; strip xyzpdb.x
 ifort -O3 -no-ipo -no-prec-div -mdynamic-no-pic -openmp -static-intel -mmacosx-version-min=10.6 -Wl,-stack_size,0x10000000 -o xyzsybyl.x xyzsybyl.o libtinker.a libfftw3_threads.a libfftw3.a ; strip xyzsybyl.x
+ifort -O3 -no-ipo -no-prec-div -mdynamic-no-pic -openmp -static-intel -mmacosx-version-min=10.6 -Wl,-stack_size,0x10000000 -o fitpolsq.x fitpolsq.o libtinker.a libfftw3_threads.a libfftw3.a ; strip fitpolsq.x

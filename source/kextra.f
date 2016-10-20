@@ -71,6 +71,9 @@ c            call getword (record,penetration,next)
          if (keyword(1:15) .eq. 'MUTUAL-DAMPING ') then
             read (string,*,err=10,end=10)  mutualdamp
          end if
+         if (keyword(1:15) .eq. 'USE-MUSCALE ') then
+            use_muscale = .true.
+         end if
          if (keyword(1:8) .eq. 'BFACTOR ') then
             read (string,*,err=10,end=10)  bfactor_mode
          end if
@@ -124,7 +127,14 @@ c     read in polfactors by class
             read (string,*,err=41,end=41)  pen
  41         continue
             alphaf = pen
-            print *,"alphaf",alphaf
+         end if
+         if (keyword(1:18) .eq. 'FUNC-10 ') then
+            ii = 0
+            pen = 0.0d0
+            string = record(next:120)
+            read (string,*,err=42,end=42)  ii,pen
+ 42         continue
+            if (ii .ne. 0)  func10(ii) = pen
          end if
          if (keyword(1:8) .eq. 'REGULAR ') then
             ii = 0
@@ -143,6 +153,14 @@ c     read in polfactors by class
             do k = 1, n
                if (type(k).eq.ii) cpclass(k) = pen
             end do
+         end if
+         if (keyword(1:11) .eq. 'EX-OVERLAP ') then
+            ii = 0
+            pen = 0.0d0
+            string = record(next:120)
+            read (string,*,err=70,end=70)  ii,pen
+ 70         continue
+            if (ii .ne. 0)  overlap(ii) = pen
          end if
       end do
 c     

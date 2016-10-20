@@ -485,5 +485,6 @@ xtals.o \
 xyzatm.o \
 zatom.o \
 zclose.o \
-zcoord.o
+zcoord.o \
+fitprm.o 
 ranlib -c libtinker.a

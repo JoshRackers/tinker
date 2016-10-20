@@ -60,6 +60,9 @@ c
       if (.not.allocated(fieldd_thole)) allocate (fieldd_thole(3,npole))
       if (.not.allocated(fieldp_thole)) allocate (fieldp_thole(3,npole))
 c
+      if (.not.allocated(fieldd_func)) allocate (fieldd_func(3,npole))
+      if (.not.allocated(fieldp_func)) allocate (fieldp_func(3,npole))
+c
 c     gordon charge penetration damping
 c
       if (.not.allocated(potm_gordon)) allocate (potm_gordon(npole))
@@ -88,7 +91,6 @@ c
      &     allocate (fieldd_gordonreg(3,npole))
       if (.not.allocated(fieldp_gordonreg))
      &     allocate (fieldp_gordonreg(3,npole))
-
 c
 c     get the electrostatic potential, field and field gradient
 c     due to permanent multipoles
@@ -179,6 +181,8 @@ c
             field_ewald(j,i) = 0.0d0
             fieldd_thole(j,i) = 0.0d0
             fieldp_thole(j,i) = 0.0d0
+            fieldd_func(j,i) = 0.0d0
+            fieldp_func(j,i) = 0.0d0
             fieldm_gordon(j,i) = 0.0d0
             fieldd_gordon(j,i) = 0.0d0
             fieldp_gordon(j,i) = 0.0d0
@@ -400,6 +404,30 @@ c
                         fieldp_thole(j,i) = fieldp_thole(j,i) +
      &                       fieldi(j)*pscale(kk)
                         fieldp_thole(j,k) = fieldp_thole(j,k) +
+     &                       fieldk(j)*pscale(kk)
+                     end do
+                  end if
+c
+c     thole-derived damping functions
+c
+                  if (damp_func) then
+                     call dampfunc(i,k,rorder,r,scale)
+                     t0 = t0rr1*scale(1)
+                     t1 = t1rr3*scale(3)
+                     t2 = t2rr3*scale(3) + t2rr5*scale(5)
+                     t2 = t2rr3*scale(3) + t2rr5*scale(5)
+                     t3 = t3rr5*scale(5) + t3rr7*scale(7)
+                     t4 = t4rr5*scale(5) + t4rr7*scale(7) +
+     &                    t4rr9*scale(9)
+                     call fieldik(i,k,t1,t2,t3,fieldi,fieldk)
+                     do j = 1, 3
+                        fieldd_func(j,i) = fieldd_func(j,i) +
+     &                       fieldi(j)*dscale(kk)
+                        fieldd_func(j,k) = fieldd_func(j,k) +
+     &                       fieldk(j)*dscale(kk)
+                        fieldp_func(j,i) = fieldp_func(j,i) +
+     &                       fieldi(j)*pscale(kk)
+                        fieldp_func(j,k) = fieldp_func(j,k) +
      &                       fieldk(j)*pscale(kk)
                      end do
                   end if
@@ -830,6 +858,30 @@ c
                      end do
                   end if
 c
+c     thole-derived damping functions
+c
+                  if (damp_func) then
+                     call dampfunc(i,k,rorder,r,scale)
+                     t0 = t0rr1*scale(1)
+                     t1 = t1rr3*scale(3)
+                     t2 = t2rr3*scale(3) + t2rr5*scale(5)
+                     t2 = t2rr3*scale(3) + t2rr5*scale(5)
+                     t3 = t3rr5*scale(5) + t3rr7*scale(7)
+                     t4 = t4rr5*scale(5) + t4rr7*scale(7) +
+     &                    t4rr9*scale(9)
+                     call fieldik(i,k,t1,t2,t3,fieldi,fieldk)
+                     do j = 1, 3
+                        fieldd_func(j,i) = fieldd_func(j,i) +
+     &                       fieldi(j)*dscale(kk)
+                        fieldd_func(j,k) = fieldd_func(j,k) +
+     &                       fieldk(j)*dscale(kk)
+                        fieldp_func(j,i) = fieldp_func(j,i) +
+     &                       fieldi(j)*pscale(kk)
+                        fieldp_func(j,k) = fieldp_func(j,k) +
+     &                       fieldk(j)*pscale(kk)
+                     end do
+                  end if
+c
 c     gordon damping
 c
                   if (damp_gordon) then
@@ -1058,6 +1110,8 @@ c
       real*8, allocatable :: gradfield_ewaldo(:,:,:)
       real*8, allocatable :: fieldp_tholeo(:,:)
       real*8, allocatable :: fieldd_tholeo(:,:)
+      real*8, allocatable :: fieldp_funco(:,:)
+      real*8, allocatable :: fieldd_funco(:,:)
       real*8, allocatable :: potm_gordono(:)
       real*8, allocatable :: nucpotm_gordono(:)
       real*8, allocatable :: fieldm_gordono(:,:)
@@ -1087,6 +1141,9 @@ c
 c
       allocate (fieldd_tholeo(3,npole))
       allocate (fieldp_tholeo(3,npole))
+c
+      allocate (fieldd_funco(3,npole))
+      allocate (fieldp_funco(3,npole))
 c
       allocate (potm_gordono(npole))
       allocate (fieldm_gordono(3,npole))
@@ -1121,6 +1178,8 @@ c
             field_ewald(j,i) = 0.0d0
             fieldd_thole(j,i) = 0.0d0
             fieldp_thole(j,i) = 0.0d0
+            fieldd_func(j,i) = 0.0d0
+            fieldp_func(j,i) = 0.0d0
             fieldm_gordon(j,i) = 0.0d0
             fieldd_gordon(j,i) = 0.0d0
             fieldp_gordon(j,i) = 0.0d0
@@ -1133,6 +1192,8 @@ c
             field_ewaldo(j,i) = 0.0d0
             fieldd_tholeo(j,i) = 0.0d0
             fieldp_tholeo(j,i) = 0.0d0
+            fieldd_funco(j,i) = 0.0d0
+            fieldp_funco(j,i) = 0.0d0
             fieldm_gordono(j,i) = 0.0d0
             fieldd_gordono(j,i) = 0.0d0
             fieldp_gordono(j,i) = 0.0d0
@@ -1210,7 +1271,8 @@ c
 !$OMP& nucpotm_gordono,nucfieldm_gordono, 
 !$OMP& fieldd_gordonrego,fieldp_gordonrego,
 !$OMP& fieldd_gordono,fieldp_gordono, 
-!$OMP& fieldd_tholeo,fieldp_tholeo)
+!$OMP& fieldd_tholeo,fieldp_tholeo,
+!$OMP& fieldd_funco,fieldp_funco) 
 !$OMP& schedule(guided)
 c
 c     calculate the multipole interaction
@@ -1374,6 +1436,30 @@ c
                      fieldp_tholeo(j,i) = fieldp_tholeo(j,i) +
      &                    fieldi(j)*pscale(kk)
                      fieldp_tholeo(j,k) = fieldp_tholeo(j,k) +
+     &                    fieldk(j)*pscale(kk)
+                  end do
+               end if
+c
+c     thole-derived damping functions
+c
+               if (damp_func) then
+                  call dampfunc(i,k,rorder,r,scale)
+                  t0 = t0rr1*scale(1)
+                  t1 = t1rr3*scale(3)
+                  t2 = t2rr3*scale(3) + t2rr5*scale(5)
+                  t2 = t2rr3*scale(3) + t2rr5*scale(5)
+                  t3 = t3rr5*scale(5) + t3rr7*scale(7)
+                  t4 = t4rr5*scale(5) + t4rr7*scale(7) +
+     &                 t4rr9*scale(9)
+                  call fieldik(i,k,t1,t2,t3,fieldi,fieldk)
+                  do j = 1, 3
+                     fieldd_funco(j,i) = fieldd_funco(j,i) +
+     &                    fieldi(j)*dscale(kk)
+                     fieldd_funco(j,k) = fieldd_funco(j,k) +
+     &                    fieldk(j)*dscale(kk)
+                     fieldp_funco(j,i) = fieldp_funco(j,i) +
+     &                    fieldi(j)*pscale(kk)
+                     fieldp_funco(j,k) = fieldp_funco(j,k) +
      &                    fieldk(j)*pscale(kk)
                   end do
                end if
@@ -1545,6 +1631,9 @@ c
       fieldd_thole = fieldd_tholeo
       fieldp_thole = fieldp_tholeo
 c
+      fieldd_func = fieldd_funco
+      fieldp_func = fieldp_funco
+c
       potm_gordon = potm_gordono
       fieldm_gordon = fieldm_gordono
       gradfieldm_gordon = gradfieldm_gordono
@@ -1576,5 +1665,7 @@ c
       deallocate (gradfield_ewaldo)
       deallocate (fieldd_tholeo)
       deallocate (fieldp_tholeo)
+      deallocate (fieldd_funco)
+      deallocate (fieldp_funco)
       return
       end

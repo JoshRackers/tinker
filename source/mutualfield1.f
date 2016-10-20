@@ -53,6 +53,11 @@ c
       if (.not.allocated(upfield_gordon))
      &     allocate (upfield_gordon(3,npole))
 c
+      if (.not.allocated(udfieldmu_gordon))
+     &     allocate (udfieldmu_gordon(3,npole))
+      if (.not.allocated(upfieldmu_gordon))
+     &     allocate (upfieldmu_gordon(3,npole))
+c
 c     get the electrostatic potential, field and field gradient
 c     due to the induced dipoles
 c
@@ -108,7 +113,7 @@ c
       real*8 potid,potkd,potip,potkp
       real*8 fieldid(3),fieldkd(3)
       real*8 fieldip(3),fieldkp(3)
-      real*8, allocatable :: pscale(:)
+      real*8, allocatable :: muscale(:)
       real*8, allocatable :: scale(:)
       real*8, allocatable :: scalei(:)
       real*8, allocatable :: scalek(:)
@@ -129,6 +134,8 @@ c
             upfield_thole(j,i) = 0.0d0
             udfield_gordon(j,i) = 0.0d0
             upfield_gordon(j,i) = 0.0d0
+            udfieldmu_gordon(j,i) = 0.0d0
+            upfieldmu_gordon(j,i) = 0.0d0
          end do
       end do
 c
@@ -141,10 +148,6 @@ c
          mode = 'MPOLE'
          call switch (mode)
       end if
-c
-c     perform dynamic allocation of some local arrays
-c
-      allocate (pscale(n))
 c
 c     set highest order rr and damping terms needed
 c     1 = up to field (rr5 for induced dipoles)
@@ -161,6 +164,10 @@ c
           scalek(i) = 0.0d0
           scaleik(i) = 0.0d0
       end do
+      allocate (muscale(n))
+      do i = 1, n
+         muscale(i) = 1.0d0
+      end do
 c
 c     find the electrostatic potential, field and field gradient 
 c     due to induced dipoles
@@ -170,6 +177,25 @@ c
          iz = zaxis(i)
          ix = xaxis(i)
          iy = yaxis(i)
+c
+c     set mutual dipole-dipole exclusion rules
+c
+         do j = i+1, npole
+            muscale(ipole(j)) = 1.0d0
+         end do
+         do j = 1, n12(ii)
+            muscale(i12(j,ii)) = mu2scale
+         end do
+         do j = 1, n13(ii)
+            muscale(i13(j,ii)) = mu3scale
+         end do
+         do j = 1, n14(ii)
+            muscale(i14(j,ii)) = mu4scale
+         end do
+         do j = 1, n15(ii)
+            muscale(i15(j,ii)) = mu5scale
+         end do
+ccccccccccccccc
          do k = i+1, npole
             kk = ipole(k)
             proceed = .true.
@@ -261,6 +287,15 @@ c
      &                       fieldip(j)
                         upfield_gordon(j,k) = upfield_gordon(j,k) +
      &                       fieldkp(j)
+c
+                        udfieldmu_gordon(j,i) = udfieldmu_gordon(j,i) +
+     &                       fieldid(j)*muscale(kk)
+                        udfieldmu_gordon(j,k) = udfieldmu_gordon(j,k) +
+     &                       fieldkd(j)*muscale(kk)
+                        upfieldmu_gordon(j,i) = upfieldmu_gordon(j,i) +
+     &                       fieldip(j)*muscale(kk)
+                        upfieldmu_gordon(j,k) = upfieldmu_gordon(j,k) +
+     &                       fieldkp(j)*muscale(kk)
                      end do
                   end if
 c
@@ -478,6 +513,24 @@ c
          iy = yaxis(i)
          ii = ipole(i)
 c
+c     set mutual dipole-dipole exclusion rules
+c
+         do j = i+1, npole
+            muscale(ipole(j)) = 1.0d0
+         end do
+         do j = 1, n12(ii)
+            muscale(i12(j,ii)) = mu2scale
+         end do
+         do j = 1, n13(ii)
+            muscale(i13(j,ii)) = mu3scale
+         end do
+         do j = 1, n14(ii)
+            muscale(i14(j,ii)) = mu4scale
+         end do
+         do j = 1, n15(ii)
+            muscale(i15(j,ii)) = mu5scale
+         end do
+c
 c     decide whether to compute the current interaction
 c
          do k = i, npole
@@ -583,6 +636,15 @@ c
      &                       fieldip(j)
                         upfield_gordon(j,k) = upfield_gordon(j,k) +
      &                       fieldkp(j)
+c
+                        udfieldmu_gordon(j,i) = udfieldmu_gordon(j,i) +
+     &                       fieldid(j)*muscale(kk)
+                        udfieldmu_gordon(j,k) = udfieldmu_gordon(j,k) +
+     &                       fieldkd(j)*muscale(kk)
+                        upfieldmu_gordon(j,i) = upfieldmu_gordon(j,i) +
+     &                       fieldip(j)*muscale(kk)
+                        upfieldmu_gordon(j,k) = upfieldmu_gordon(j,k) +
+     &                       fieldkp(j)*muscale(kk)
                      end do
                   end if
                   end if
@@ -643,6 +705,7 @@ c
       real*8, allocatable :: scalei(:)
       real*8, allocatable :: scalek(:)
       real*8, allocatable :: scaleik(:)
+      real*8, allocatable :: muscale(:)
       real*8, allocatable :: udfieldo(:,:)
       real*8, allocatable :: upfieldo(:,:)
       real*8, allocatable :: udfield_ewaldo(:,:)
@@ -651,6 +714,8 @@ c
       real*8, allocatable :: upfield_tholeo(:,:)
       real*8, allocatable :: udfield_gordono(:,:)
       real*8, allocatable :: upfield_gordono(:,:)
+      real*8, allocatable :: udfieldmu_gordono(:,:)
+      real*8, allocatable :: upfieldmu_gordono(:,:)
       logical proceed
       logical usei,usek
       character*6 mode
@@ -665,6 +730,8 @@ c
       allocate (upfield_tholeo(3,npole))
       allocate (udfield_gordono(3,npole))
       allocate (upfield_gordono(3,npole))
+      allocate (udfieldmu_gordono(3,npole))
+      allocate (upfieldmu_gordono(3,npole))
 c
 c     zero out the value of the field at each site
 c
@@ -678,6 +745,8 @@ c
             upfield_thole(j,i) = 0.0d0
             udfield_gordon(j,i) = 0.0d0
             upfield_gordon(j,i) = 0.0d0
+            udfieldmu_gordon(j,i) = 0.0d0
+            upfieldmu_gordon(j,i) = 0.0d0
 c
             udfieldo(j,i) = 0.0d0
             upfieldo(j,i) = 0.0d0
@@ -687,6 +756,8 @@ c
             upfield_tholeo(j,i) = 0.0d0
             udfield_gordono(j,i) = 0.0d0
             upfield_gordono(j,i) = 0.0d0
+            udfieldmu_gordono(j,i) = 0.0d0
+            upfieldmu_gordono(j,i) = 0.0d0
          end do
       end do
 c
@@ -715,6 +786,10 @@ c
           scalek(i) = 0.0d0
           scaleik(i) = 0.0d0
       end do
+      allocate (muscale(n))
+      do i = 1, n
+         muscale(i) = 1.0d0
+      end do
 c
 c     set OpenMP directives for the major loop structure
 c
@@ -724,10 +799,12 @@ c
 !$OMP& fieldid,fieldkd,fieldip,fieldkp,
 !$OMP& t0rr1,t1rr3,t2rr3,t2rr5,t3rr5,t3rr7,
 !$OMP& t0,t1,t2,t3,scale,scalei,scalek,scaleik)
+!$OMP& firstprivate(muscale)
 !$OMP DO reduction(+:udfieldo,upfieldo,
 !$OMP& udfield_ewaldo,upfield_ewaldo,
 !$OMP& udfield_tholeo,upfield_tholeo,
-!$OMP& udfield_gordono,upfield_gordono)  
+!$OMP& udfield_gordono,upfield_gordono,
+!$OMP& udfieldmu_gordono,upfieldmu_gordono)   
 !$OMP& schedule(guided)
 c
 c     calculate the multipole interaction
@@ -738,6 +815,24 @@ c
          ix = xaxis(i)
          iy = yaxis(i)
          usei = (use(ii) .or. use(iz) .or. use(ix) .or. use(iy))
+c
+c     set mutual dipole-dipole exclusion rules
+c
+         do j = i+1, npole
+            muscale(ipole(j)) = 1.0d0
+         end do
+         do j = 1, n12(ii)
+            muscale(i12(j,ii)) = mu2scale
+         end do
+         do j = 1, n13(ii)
+            muscale(i13(j,ii)) = mu3scale
+         end do
+         do j = 1, n14(ii)
+            muscale(i14(j,ii)) = mu4scale
+         end do
+         do j = 1, n15(ii)
+            muscale(i15(j,ii)) = mu5scale
+         end do
 c
 c     decide whether to compute the current interaction
 c
@@ -830,6 +925,15 @@ c
      &                    fieldip(j)
                      upfield_gordono(j,k) = upfield_gordono(j,k) +
      &                    fieldkp(j)
+c
+                     udfieldmu_gordono(j,i) = udfieldmu_gordono(j,i) +
+     &                    fieldid(j)*muscale(kk)
+                     udfieldmu_gordono(j,k) = udfieldmu_gordono(j,k) +
+     &                    fieldkd(j)*muscale(kk)
+                     upfieldmu_gordono(j,i) = upfieldmu_gordono(j,i) +
+     &                    fieldip(j)*muscale(kk)
+                     upfieldmu_gordono(j,k) = upfieldmu_gordono(j,k) +
+     &                    fieldkp(j)*muscale(kk)
                   end do
                end if
             end if
@@ -851,6 +955,8 @@ c
       upfield_thole = upfield_tholeo
       udfield_gordon = udfield_gordono
       upfield_gordon = upfield_gordono
+      udfieldmu_gordon = udfieldmu_gordono
+      upfieldmu_gordon = upfieldmu_gordono
 c
 c     perform deallocation of some local arrays
 c

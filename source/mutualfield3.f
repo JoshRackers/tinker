@@ -86,6 +86,34 @@ c
          if (.not.allocated(udhessfieldp_thole))
      &        allocate (udhessfieldp_thole(3,3,3,npole))
       end if
+      if ((directdamp.eq."FUNC10").or.(mutualdamp.eq."FUNC10")) then
+         if (.not.allocated(udfield_func))
+     &        allocate (udfield_func(3,npole))
+         if (.not.allocated(upfield_func))
+     &        allocate (upfield_func(3,npole))
+         if (.not.allocated(udgradfield_func)) 
+     &        allocate (udgradfield_func(3,3,npole))
+         if (.not.allocated(upgradfield_func)) 
+     &        allocate (upgradfield_func(3,3,npole))
+         if (.not.allocated(udhessfield_func))
+     &        allocate (udhessfield_func(3,3,3,npole))
+         if (.not.allocated(uphessfield_func))
+     &        allocate (uphessfield_func(3,3,3,npole))
+c
+         if (.not.allocated(upfieldd_func))
+     &        allocate (upfieldd_func(3,npole))
+         if (.not.allocated(upgradfieldd_func))
+     &        allocate (upgradfieldd_func(3,3,npole))
+         if (.not.allocated(uphessfieldd_func))
+     &        allocate (uphessfieldd_func(3,3,3,npole))
+c
+         if (.not.allocated(udfieldp_func))
+     &        allocate (udfieldp_func(3,npole))
+         if (.not.allocated(udgradfieldp_func))
+     &        allocate (udgradfieldp_func(3,3,npole))
+         if (.not.allocated(udhessfieldp_func))
+     &        allocate (udhessfieldp_func(3,3,3,npole))
+      end if
       if ((directdamp.eq."GORDON").or.(mutualdamp.eq."GORDON"))then
          if (.not.allocated(udfield_gordon))
      &        allocate (udfield_gordon(3,npole))
@@ -99,6 +127,19 @@ c
      &        allocate (udhessfield_gordon(3,3,3,npole))
          if (.not.allocated(uphessfield_gordon))
      &        allocate (uphessfield_gordon(3,3,3,npole))
+c
+         if (.not.allocated(udfieldmu_gordon))
+     &        allocate (udfieldmu_gordon(3,npole))
+         if (.not.allocated(upfieldmu_gordon))
+     &        allocate (upfieldmu_gordon(3,npole))
+         if (.not.allocated(udgradfieldmu_gordon))
+     &        allocate (udgradfieldmu_gordon(3,3,npole))
+         if (.not.allocated(upgradfieldmu_gordon))
+     &        allocate (upgradfieldmu_gordon(3,3,npole))
+         if (.not.allocated(udhessfieldmu_gordon))
+     &        allocate (udhessfieldmu_gordon(3,3,3,npole))
+         if (.not.allocated(uphessfieldmu_gordon))
+     &        allocate (uphessfieldmu_gordon(3,3,3,npole))
 c
          if (.not.allocated(upnucfieldd_gordon))
      &        allocate (upnucfieldd_gordon(3,npole))
@@ -191,6 +232,7 @@ c
       real*8, allocatable :: scaleik(:)
       real*8, allocatable :: dscale(:)
       real*8, allocatable :: pscale(:)
+      real*8, allocatable :: muscale(:)
       logical proceed
       logical usei,usek
       character*6 mode
@@ -209,10 +251,18 @@ c
                upfieldd_thole(j,i) = 0.0d0
                udfieldp_thole(j,i) = 0.0d0
             end if
+            if((directdamp.eq."FUNC10").or.(mutualdamp.eq."FUNC10"))then
+               udfield_func(j,i) = 0.0d0
+               upfield_func(j,i) = 0.0d0
+               upfieldd_func(j,i) = 0.0d0
+               udfieldp_func(j,i) = 0.0d0
+            end if
             if ((directdamp .eq. "GORDON").or.
      &              (mutualdamp .eq. "GORDON")) then
                udfield_gordon(j,i) = 0.0d0
                upfield_gordon(j,i) = 0.0d0
+               udfieldmu_gordon(j,i) = 0.0d0
+               upfieldmu_gordon(j,i) = 0.0d0
                upnucfieldd_gordon(j,i) = 0.0d0
                udnucfieldp_gordon(j,i) = 0.0d0
                upfieldd_gordon(j,i) = 0.0d0
@@ -230,10 +280,19 @@ c
                   upgradfieldd_thole(k,j,i) = 0.0d0
                   udgradfieldp_thole(k,j,i) = 0.0d0
                end if
+               if ((directdamp .eq. "FUNC10").or.
+     &              (mutualdamp .eq. "FUNC10")) then
+                  udgradfield_func(k,j,i) = 0.0d0
+                  upgradfield_func(k,j,i) = 0.0d0
+                  upgradfieldd_func(k,j,i) = 0.0d0
+                  udgradfieldp_func(k,j,i) = 0.0d0
+               end if
                if ((directdamp .eq. "GORDON").or.
      &                 (mutualdamp .eq. "GORDON")) then
                   udgradfield_gordon(k,j,i) = 0.0d0
                   upgradfield_gordon(k,j,i) = 0.0d0
+                  udgradfieldmu_gordon(k,j,i) = 0.0d0
+                  upgradfieldmu_gordon(k,j,i) = 0.0d0
                   upgradfieldd_gordon(k,j,i) = 0.0d0
                   udgradfieldp_gordon(k,j,i) = 0.0d0
                end if
@@ -249,10 +308,19 @@ c
                      uphessfieldd_thole(l,k,j,i) = 0.0d0
                      udhessfieldp_thole(l,k,j,i) = 0.0d0
                   end if
+                  if ((directdamp .eq. "FUNC10").or.
+     &                 (mutualdamp .eq. "FUNC10")) then
+                     udhessfield_func(l,k,j,i) = 0.0d0
+                     uphessfield_func(l,k,j,i) = 0.0d0
+                     uphessfieldd_func(l,k,j,i) = 0.0d0
+                     udhessfieldp_func(l,k,j,i) = 0.0d0
+                  end if
                   if ((directdamp.eq."GORDON").or.
      &                    (mutualdamp.eq."GORDON")) then
                      udhessfield_gordon(l,k,j,i) = 0.0d0
                      uphessfield_gordon(l,k,j,i) = 0.0d0
+                     udhessfieldmu_gordon(l,k,j,i) = 0.0d0
+                     uphessfieldmu_gordon(l,k,j,i) = 0.0d0
                      uphessfieldd_gordon(l,k,j,i) = 0.0d0
                      udhessfieldp_gordon(l,k,j,i) = 0.0d0
                   end if
@@ -275,6 +343,7 @@ c     perform dynamic allocation of some local arrays
 c
       allocate (dscale(n))
       allocate (pscale(n))
+      allocate (muscale(n))
 c
 c     set highest order rr and damping terms needed
 c     3 = up to field hessian (rr9 for induced dipoles)
@@ -306,15 +375,19 @@ c
          do j = i+1, npole
             dscale(ipole(j)) = 1.0d0
             pscale(ipole(j)) = 1.0d0
+            muscale(ipole(j)) = 1.0d0
          end do
          do j = 1, n12(ii)
             pscale(i12(j,ii)) = p2scale
+            muscale(i12(j,ii)) = mu2scale
          end do
          do j = 1, n13(ii)
             pscale(i13(j,ii)) = p3scale
+            muscale(i13(j,ii)) = mu3scale
          end do
          do j = 1, n14(ii)
             pscale(i14(j,ii)) = p4scale
+            muscale(i14(j,ii)) = mu4scale
             do k = 1, np11(ii)
                if (i14(j,ii) .eq. ip11(k,ii))
      &            pscale(i14(j,ii)) = p4scale * p41scale
@@ -322,6 +395,7 @@ c
          end do
          do j = 1, n15(ii)
             pscale(i15(j,ii)) = p5scale
+            muscale(i15(j,ii)) = mu5scale
          end do
          do j = 1, np11(ii)
             dscale(ip11(j,ii)) = d1scale
@@ -548,6 +622,92 @@ c
                      end do
                   end if
 c
+c     thole-derived damping
+c
+                  if (damp_func) then
+                     call dampfunc(i,k,rorder,r,scale)
+                     t2 = t2rr3*scale(3) + t2rr5*scale(5)
+                     t3 = t3rr5*scale(5) + t3rr7*scale(7)
+                     t4 = t4rr5*scale(5) + t4rr7*scale(7) +
+     &                    t4rr9*scale(9)
+                     call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
+     &                    fieldkp)
+                     call ugradfieldik(i,k,t3,gradfieldid,gradfieldkd,
+     &                    gradfieldip,gradfieldkp)
+                     call uhessfieldik(i,k,t4,hessfieldid,hessfieldkd,
+     &                    hessfieldip,hessfieldkp)
+                     do j = 1, 3
+                        udfield_func(j,i) = udfield_func(j,i) +
+     &                       fieldid(j)
+                        udfield_func(j,k) = udfield_func(j,k) +
+     &                       fieldkd(j)
+                        upfield_func(j,i) = upfield_func(j,i) +
+     &                       fieldip(j)
+                        upfield_func(j,k) = upfield_func(j,k) +
+     &                       fieldkp(j)
+                        udfieldp_func(j,i) = udfieldp_func(j,i) +
+     &                       fieldid(j)*pscale(kk)
+                        udfieldp_func(j,k) = udfieldp_func(j,k) +
+     &                       fieldkd(j)*pscale(kk)
+                        upfieldd_func(j,i) = upfieldd_func(j,i) +
+     &                       fieldip(j)*dscale(kk)
+                        upfieldd_func(j,k) = upfieldd_func(j,k) +
+     &                       fieldkp(j)*dscale(kk)
+                        do l = 1, 3
+                           udgradfield_func(l,j,i) = 
+     &                          udgradfield_func(l,j,i) +
+     &                          gradfieldid(l,j)
+                           udgradfield_func(l,j,k) = 
+     &                          udgradfield_func(l,j,k) +
+     &                          gradfieldkd(l,j)
+                           upgradfield_func(l,j,i) = 
+     &                          upgradfield_func(l,j,i) +
+     &                          gradfieldip(l,j)
+                           upgradfield_func(l,j,k) = 
+     &                          upgradfield_func(l,j,k) +
+     &                          gradfieldkp(l,j)
+                           udgradfieldp_func(l,j,i) =
+     &                          udgradfieldp_func(l,j,i) +
+     &                          gradfieldid(l,j)*pscale(kk)
+                           udgradfieldp_func(l,j,k) =
+     &                          udgradfieldp_func(l,j,k) +
+     &                          gradfieldkd(l,j)*pscale(kk)
+                           upgradfieldd_func(l,j,i) =
+     &                          upgradfieldd_func(l,j,i) +
+     &                          gradfieldip(l,j)*dscale(kk)
+                           upgradfieldd_func(l,j,k) =
+     &                          upgradfieldd_func(l,j,k) +
+     &                          gradfieldkp(l,j)*dscale(kk)
+                           do h = 1, 3
+                              udhessfield_func(h,l,j,i) =
+     &                             udhessfield_func(h,l,j,i) +
+     &                             hessfieldid(h,l,j)
+                              udhessfield_func(h,l,j,k) =
+     &                             udhessfield_func(h,l,j,k) +
+     &                             hessfieldkd(h,l,j)
+                              uphessfield_func(h,l,j,i) =
+     &                             uphessfield_func(h,l,j,i) +
+     &                             hessfieldip(h,l,j)
+                              uphessfield_func(h,l,j,k) =
+     &                             uphessfield_func(h,l,j,k) +
+     &                             hessfieldkp(h,l,j)
+                              udhessfieldp_func(h,l,j,i) =
+     &                             udhessfieldp_func(h,l,j,i) +
+     &                             hessfieldid(h,l,j)*pscale(kk)
+                              udhessfieldp_func(h,l,j,k) =
+     &                             udhessfieldp_func(h,l,j,k) +
+     &                             hessfieldkd(h,l,j)*pscale(kk)
+                              uphessfieldd_func(h,l,j,i) =
+     &                             uphessfieldd_func(h,l,j,i) +
+     &                             hessfieldip(h,l,j)*dscale(kk)
+                              uphessfieldd_func(h,l,j,k) =
+     &                             uphessfieldd_func(h,l,j,k) +
+     &                             hessfieldkp(h,l,j)*dscale(kk)
+                           end do
+                        end do
+                     end do
+                  end if
+c
 c     gordon damping
 c
                   if (damp_gordon) then
@@ -577,6 +737,16 @@ c     &                    fieldkp)
      &                       elefieldip(j)
                         upfield_gordon(j,k) = upfield_gordon(j,k) +
      &                       elefieldkp(j)
+c
+                        udfieldmu_gordon(j,i) = udfieldmu_gordon(j,i) +
+     &                       elefieldid(j)*muscale(kk)
+                        udfieldmu_gordon(j,k) = udfieldmu_gordon(j,k) +
+     &                       elefieldkd(j)*muscale(kk)
+                        upfieldmu_gordon(j,i) = upfieldmu_gordon(j,i) +
+     &                       elefieldip(j)*muscale(kk)
+                        upfieldmu_gordon(j,k) = upfieldmu_gordon(j,k) +
+     &                       elefieldkp(j)*muscale(kk)
+c
                         udfieldp_gordon(j,i) = udfieldp_gordon(j,i) +
      &                       elefieldid(j)*pscale(kk)
                         udfieldp_gordon(j,k) = udfieldp_gordon(j,k) +
@@ -611,6 +781,20 @@ c
                            upgradfield_gordon(l,j,k) = 
      &                          upgradfield_gordon(l,j,k) +
      &                          gradfieldkp(l,j)
+c
+                           udgradfieldmu_gordon(l,j,i) =
+     &                          udgradfieldmu_gordon(l,j,i) +
+     &                          gradfieldid(l,j)*muscale(kk)
+                           udgradfieldmu_gordon(l,j,k) =
+     &                          udgradfieldmu_gordon(l,j,k) +
+     &                          gradfieldkd(l,j)*muscale(kk)
+                           upgradfieldmu_gordon(l,j,i) =
+     &                          upgradfieldmu_gordon(l,j,i) +
+     &                          gradfieldip(l,j)*muscale(kk)
+                           upgradfieldmu_gordon(l,j,k) =
+     &                          upgradfieldmu_gordon(l,j,k) +
+     &                          gradfieldkp(l,j)*muscale(kk)
+c
                            udgradfieldp_gordon(l,j,i) =
      &                          udgradfieldp_gordon(l,j,i) +
      &                          gradfieldid(l,j)*pscale(kk)
@@ -636,6 +820,20 @@ c
                               uphessfield_gordon(h,l,j,k) =
      &                             uphessfield_gordon(h,l,j,k) +
      &                             hessfieldkp(h,l,j)
+c
+                              udhessfieldmu_gordon(h,l,j,i) =
+     &                             udhessfieldmu_gordon(h,l,j,i) +
+     &                             hessfieldid(h,l,j)*muscale(kk)
+                              udhessfieldmu_gordon(h,l,j,k) =
+     &                             udhessfieldmu_gordon(h,l,j,k) +
+     &                             hessfieldkd(h,l,j)*muscale(kk)
+                              uphessfieldmu_gordon(h,l,j,i) =
+     &                             uphessfieldmu_gordon(h,l,j,i) +
+     &                             hessfieldip(h,l,j)*muscale(kk)
+                              uphessfieldmu_gordon(h,l,j,k) =
+     &                             uphessfieldmu_gordon(h,l,j,k) +
+     &                             hessfieldkp(h,l,j)*muscale(kk)
+c
                               udhessfieldp_gordon(h,l,j,i) =
      &                             udhessfieldp_gordon(h,l,j,i) +
      &                             hessfieldid(h,l,j)*pscale(kk)
@@ -950,6 +1148,92 @@ c
                      end do
                   end if
 c
+c     thole-derived damping
+c
+                  if (damp_func) then
+                     call dampfunc(i,k,rorder,r,scale)
+                     t2 = t2rr3*scale(3) + t2rr5*scale(5)
+                     t3 = t3rr5*scale(5) + t3rr7*scale(7)
+                     t4 = t4rr5*scale(5) + t4rr7*scale(7) +
+     &                    t4rr9*scale(9)
+                     call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
+     &                    fieldkp)
+                     call ugradfieldik(i,k,t3,gradfieldid,gradfieldkd,
+     &                    gradfieldip,gradfieldkp)
+                     call uhessfieldik(i,k,t4,hessfieldid,hessfieldkd,
+     &                    hessfieldip,hessfieldkp)
+                     do j = 1, 3
+                        udfield_func(j,i) = udfield_func(j,i) +
+     &                       fieldid(j)
+                        udfield_func(j,k) = udfield_func(j,k) +
+     &                       fieldkd(j)
+                        upfield_func(j,i) = upfield_func(j,i) +
+     &                       fieldip(j)
+                        upfield_func(j,k) = upfield_func(j,k) +
+     &                       fieldkp(j)
+                        udfieldp_func(j,i) = udfieldp_func(j,i) +
+     &                       fieldid(j)*pscale(kk)
+                        udfieldp_func(j,k) = udfieldp_func(j,k) +
+     &                       fieldkd(j)*pscale(kk)
+                        upfieldd_func(j,i) = upfieldd_func(j,i) +
+     &                       fieldip(j)*dscale(kk)
+                        upfieldd_func(j,k) = upfieldd_func(j,k) +
+     &                       fieldkp(j)*dscale(kk)
+                        do l = 1, 3
+                           udgradfield_func(l,j,i) = 
+     &                          udgradfield_func(l,j,i) +
+     &                          gradfieldid(l,j)
+                           udgradfield_func(l,j,k) = 
+     &                          udgradfield_func(l,j,k) +
+     &                          gradfieldkd(l,j)
+                           upgradfield_func(l,j,i) = 
+     &                          upgradfield_func(l,j,i) +
+     &                          gradfieldip(l,j)
+                           upgradfield_func(l,j,k) = 
+     &                          upgradfield_func(l,j,k) +
+     &                          gradfieldkp(l,j)
+                           udgradfieldp_func(l,j,i) =
+     &                          udgradfieldp_func(l,j,i) +
+     &                          gradfieldid(l,j)*pscale(kk)
+                           udgradfieldp_func(l,j,k) =
+     &                          udgradfieldp_func(l,j,k) +
+     &                          gradfieldkd(l,j)*pscale(kk)
+                           upgradfieldd_func(l,j,i) =
+     &                          upgradfieldd_func(l,j,i) +
+     &                          gradfieldip(l,j)*dscale(kk)
+                           upgradfieldd_func(l,j,k) =
+     &                          upgradfieldd_func(l,j,k) +
+     &                          gradfieldkp(l,j)*dscale(kk)
+                           do h = 1, 3
+                              udhessfield_func(h,l,j,i) =
+     &                             udhessfield_func(h,l,j,i) +
+     &                             hessfieldid(h,l,j)
+                              udhessfield_func(h,l,j,k) =
+     &                             udhessfield_func(h,l,j,k) +
+     &                             hessfieldkd(h,l,j)
+                              uphessfield_func(h,l,j,i) =
+     &                             uphessfield_func(h,l,j,i) +
+     &                             hessfieldip(h,l,j)
+                              uphessfield_func(h,l,j,k) =
+     &                             uphessfield_func(h,l,j,k) +
+     &                             hessfieldkp(h,l,j)
+                              udhessfieldp_func(h,l,j,i) =
+     &                             udhessfieldp_func(h,l,j,i) +
+     &                             hessfieldid(h,l,j)*pscale(kk)
+                              udhessfieldp_func(h,l,j,k) =
+     &                             udhessfieldp_func(h,l,j,k) +
+     &                             hessfieldkd(h,l,j)*pscale(kk)
+                              uphessfieldd_func(h,l,j,i) =
+     &                             uphessfieldd_func(h,l,j,i) +
+     &                             hessfieldip(h,l,j)*dscale(kk)
+                              uphessfieldd_func(h,l,j,k) =
+     &                             uphessfieldd_func(h,l,j,k) +
+     &                             hessfieldkp(h,l,j)*dscale(kk)
+                           end do
+                        end do
+                     end do
+                  end if
+c
 c     gordon damping
 c
                   if (damp_gordon) then
@@ -979,6 +1263,16 @@ c     &                    fieldkp)
      &                       elefieldip(j)
                         upfield_gordon(j,k) = upfield_gordon(j,k) +
      &                       elefieldkp(j)
+c
+                        udfieldmu_gordon(j,i) = udfieldmu_gordon(j,i) +
+     &                       elefieldid(j)*muscale(kk)
+                        udfieldmu_gordon(j,k) = udfieldmu_gordon(j,k) +
+     &                       elefieldkd(j)*muscale(kk)
+                        upfieldmu_gordon(j,i) = upfieldmu_gordon(j,i) +
+     &                       elefieldip(j)*muscale(kk)
+                        upfieldmu_gordon(j,k) = upfieldmu_gordon(j,k) +
+     &                       elefieldkp(j)*muscale(kk)
+c
                         udfieldp_gordon(j,i) = udfieldp_gordon(j,i) +
      &                       elefieldid(j)*pscale(kk)
                         udfieldp_gordon(j,k) = udfieldp_gordon(j,k) +
@@ -1013,6 +1307,20 @@ c
                            upgradfield_gordon(l,j,k) = 
      &                          upgradfield_gordon(l,j,k) +
      &                          gradfieldkp(l,j)
+c
+                           udgradfieldmu_gordon(l,j,i) =
+     &                          udgradfieldmu_gordon(l,j,i) +
+     &                          gradfieldid(l,j)*muscale(kk)
+                           udgradfieldmu_gordon(l,j,k) =
+     &                          udgradfieldmu_gordon(l,j,k) +
+     &                          gradfieldkd(l,j)*muscale(kk)
+                           upgradfieldmu_gordon(l,j,i) =
+     &                          upgradfieldmu_gordon(l,j,i) +
+     &                          gradfieldip(l,j)*muscale(kk)
+                           upgradfieldmu_gordon(l,j,k) =
+     &                          upgradfieldmu_gordon(l,j,k) +
+     &                          gradfieldkp(l,j)*muscale(kk)
+c
                            udgradfieldp_gordon(l,j,i) =
      &                          udgradfieldp_gordon(l,j,i) +
      &                          gradfieldid(l,j)*pscale(kk)
@@ -1038,6 +1346,20 @@ c
                               uphessfield_gordon(h,l,j,k) =
      &                             uphessfield_gordon(h,l,j,k) +
      &                             hessfieldkp(h,l,j)
+c
+                              udhessfieldmu_gordon(h,l,j,i) =
+     &                             udhessfieldmu_gordon(h,l,j,i) +
+     &                             hessfieldid(h,l,j)*muscale(kk)
+                              udhessfieldmu_gordon(h,l,j,k) =
+     &                             udhessfieldmu_gordon(h,l,j,k) +
+     &                             hessfieldkd(h,l,j)*muscale(kk)
+                              uphessfieldmu_gordon(h,l,j,i) =
+     &                             uphessfieldmu_gordon(h,l,j,i) +
+     &                             hessfieldip(h,l,j)*muscale(kk)
+                              uphessfieldmu_gordon(h,l,j,k) =
+     &                             uphessfieldmu_gordon(h,l,j,k) +
+     &                             hessfieldkp(h,l,j)*muscale(kk)
+c
                               udhessfieldp_gordon(h,l,j,i) =
      &                             udhessfieldp_gordon(h,l,j,i) +
      &                             hessfieldid(h,l,j)*pscale(kk)
@@ -1080,6 +1402,8 @@ c
 c     perform deallocation of some local arrays
 c
       deallocate (scale)
+      deallocate (pscale)
+      deallocate (muscale)
       return
       end
 c
@@ -1145,6 +1469,7 @@ c
       real*8, allocatable :: scaleik(:)
       real*8, allocatable :: dscale(:)
       real*8, allocatable :: pscale(:)
+      real*8, allocatable :: muscale(:)
       real*8, allocatable :: udfieldo(:,:)
       real*8, allocatable :: upfieldo(:,:)
       real*8, allocatable :: udgradfieldo(:,:,:)
@@ -1169,12 +1494,30 @@ c
       real*8, allocatable :: udfieldp_tholeo(:,:)
       real*8, allocatable :: udgradfieldp_tholeo(:,:,:)
       real*8, allocatable :: udhessfieldp_tholeo(:,:,:,:)
+      real*8, allocatable :: udfield_funco(:,:)
+      real*8, allocatable :: upfield_funco(:,:)
+      real*8, allocatable :: udgradfield_funco(:,:,:)
+      real*8, allocatable :: upgradfield_funco(:,:,:)
+      real*8, allocatable :: udhessfield_funco(:,:,:,:)
+      real*8, allocatable :: uphessfield_funco(:,:,:,:)
+      real*8, allocatable :: upfieldd_funco(:,:)
+      real*8, allocatable :: upgradfieldd_funco(:,:,:)
+      real*8, allocatable :: uphessfieldd_funco(:,:,:,:)
+      real*8, allocatable :: udfieldp_funco(:,:)
+      real*8, allocatable :: udgradfieldp_funco(:,:,:)
+      real*8, allocatable :: udhessfieldp_funco(:,:,:,:)
       real*8, allocatable :: udfield_gordono(:,:)
       real*8, allocatable :: upfield_gordono(:,:)
       real*8, allocatable :: udgradfield_gordono(:,:,:)
       real*8, allocatable :: upgradfield_gordono(:,:,:)
       real*8, allocatable :: udhessfield_gordono(:,:,:,:)
       real*8, allocatable :: uphessfield_gordono(:,:,:,:)
+      real*8, allocatable :: udfieldmu_gordono(:,:)
+      real*8, allocatable :: upfieldmu_gordono(:,:)
+      real*8, allocatable :: udgradfieldmu_gordono(:,:,:)
+      real*8, allocatable :: upgradfieldmu_gordono(:,:,:)
+      real*8, allocatable :: udhessfieldmu_gordono(:,:,:,:)
+      real*8, allocatable :: uphessfieldmu_gordono(:,:,:,:)
       real*8, allocatable :: upnucfieldd_gordono(:,:)
       real*8, allocatable :: upfieldd_gordono(:,:)
       real*8, allocatable :: upgradfieldd_gordono(:,:,:)
@@ -1219,6 +1562,22 @@ c
          allocate (udgradfieldp_tholeo(3,3,npole))
          allocate (udhessfieldp_tholeo(3,3,3,npole))
       end if
+      if ((directdamp.eq."FUNC10").or.(mutualdamp.eq."FUNC10")) then
+         allocate (udfield_funco(3,npole))
+         allocate (upfield_funco(3,npole))
+         allocate (udgradfield_funco(3,3,npole))
+         allocate (upgradfield_funco(3,3,npole))
+         allocate (udhessfield_funco(3,3,3,npole))
+         allocate (uphessfield_funco(3,3,3,npole))
+c     
+         allocate (upfieldd_funco(3,npole))
+         allocate (upgradfieldd_funco(3,3,npole))
+         allocate (uphessfieldd_funco(3,3,3,npole))
+c     
+         allocate (udfieldp_funco(3,npole))
+         allocate (udgradfieldp_funco(3,3,npole))
+         allocate (udhessfieldp_funco(3,3,3,npole))
+      end if
       if ((directdamp.eq."GORDON").or.(mutualdamp.eq."GORDON"))then
          allocate (udfield_gordono(3,npole))
          allocate (upfield_gordono(3,npole))
@@ -1226,6 +1585,12 @@ c
          allocate (upgradfield_gordono(3,3,npole))
          allocate (udhessfield_gordono(3,3,3,npole))
          allocate (uphessfield_gordono(3,3,3,npole))
+         allocate (udfieldmu_gordono(3,npole))
+         allocate (upfieldmu_gordono(3,npole))
+         allocate (udgradfieldmu_gordono(3,3,npole))
+         allocate (upgradfieldmu_gordono(3,3,npole))
+         allocate (udhessfieldmu_gordono(3,3,3,npole))
+         allocate (uphessfieldmu_gordono(3,3,3,npole))
 c
          allocate (upnucfieldd_gordono(3,npole))
          allocate (upfieldd_gordono(3,npole))
@@ -1262,10 +1627,23 @@ c
                upfieldd_tholeo(j,i) = 0.0d0
                udfieldp_tholeo(j,i) = 0.0d0
             end if
+            if((directdamp.eq."FUNC10").or.(mutualdamp.eq."FUNC10"))then
+               udfield_func(j,i) = 0.0d0
+               upfield_func(j,i) = 0.0d0
+               upfieldd_func(j,i) = 0.0d0
+               udfieldp_func(j,i) = 0.0d0
+c     
+               udfield_funco(j,i) = 0.0d0
+               upfield_funco(j,i) = 0.0d0
+               upfieldd_funco(j,i) = 0.0d0
+               udfieldp_funco(j,i) = 0.0d0
+            end if
             if ((directdamp .eq. "GORDON").or.
      &              (mutualdamp .eq. "GORDON")) then
                udfield_gordon(j,i) = 0.0d0
                upfield_gordon(j,i) = 0.0d0
+               udfieldmu_gordon(j,i) = 0.0d0
+               upfieldmu_gordon(j,i) = 0.0d0
                upnucfieldd_gordon(j,i) = 0.0d0
                udnucfieldp_gordon(j,i) = 0.0d0
                upfieldd_gordon(j,i) = 0.0d0
@@ -1273,6 +1651,8 @@ c
 c
                udfield_gordono(j,i) = 0.0d0
                upfield_gordono(j,i) = 0.0d0
+               udfieldmu_gordono(j,i) = 0.0d0
+               upfieldmu_gordono(j,i) = 0.0d0
                upnucfieldd_gordono(j,i) = 0.0d0
                udnucfieldp_gordono(j,i) = 0.0d0
                upfieldd_gordono(j,i) = 0.0d0
@@ -1300,15 +1680,31 @@ c
                   upgradfieldd_tholeo(k,j,i) = 0.0d0
                   udgradfieldp_tholeo(k,j,i) = 0.0d0
                end if
+               if ((directdamp .eq. "FUNC10").or.
+     &              (mutualdamp .eq. "FUNC10")) then
+                  udgradfield_func(k,j,i) = 0.0d0
+                  upgradfield_func(k,j,i) = 0.0d0
+                  upgradfieldd_func(k,j,i) = 0.0d0
+                  udgradfieldp_func(k,j,i) = 0.0d0
+c     
+                  udgradfield_funco(k,j,i) = 0.0d0
+                  upgradfield_funco(k,j,i) = 0.0d0
+                  upgradfieldd_funco(k,j,i) = 0.0d0
+                  udgradfieldp_funco(k,j,i) = 0.0d0
+               end if
                if ((directdamp .eq. "GORDON").or.
      &                 (mutualdamp .eq. "GORDON")) then
                   udgradfield_gordon(k,j,i) = 0.0d0
                   upgradfield_gordon(k,j,i) = 0.0d0
+                  udgradfieldmu_gordon(k,j,i) = 0.0d0
+                  upgradfieldmu_gordon(k,j,i) = 0.0d0
                   upgradfieldd_gordon(k,j,i) = 0.0d0
                   udgradfieldp_gordon(k,j,i) = 0.0d0
 c
                   udgradfield_gordono(k,j,i) = 0.0d0
                   upgradfield_gordono(k,j,i) = 0.0d0
+                  udgradfieldmu_gordono(k,j,i) = 0.0d0
+                  upgradfieldmu_gordono(k,j,i) = 0.0d0
                   upgradfieldd_gordono(k,j,i) = 0.0d0
                   udgradfieldp_gordono(k,j,i) = 0.0d0
                end if
@@ -1334,15 +1730,31 @@ c
                      uphessfieldd_tholeo(l,k,j,i) = 0.0d0
                      udhessfieldp_tholeo(l,k,j,i) = 0.0d0
                   end if
+                  if ((directdamp .eq. "FUNC10").or.
+     &                 (mutualdamp .eq. "FUNC10")) then
+                     udhessfield_func(l,k,j,i) = 0.0d0
+                     uphessfield_func(l,k,j,i) = 0.0d0
+                     uphessfieldd_func(l,k,j,i) = 0.0d0
+                     udhessfieldp_func(l,k,j,i) = 0.0d0
+c     
+                     udhessfield_funco(l,k,j,i) = 0.0d0
+                     uphessfield_funco(l,k,j,i) = 0.0d0
+                     uphessfieldd_funco(l,k,j,i) = 0.0d0
+                     udhessfieldp_funco(l,k,j,i) = 0.0d0
+                  end if
                   if ((directdamp.eq."GORDON").or.
      &                    (mutualdamp.eq."GORDON")) then
                      udhessfield_gordon(l,k,j,i) = 0.0d0
                      uphessfield_gordon(l,k,j,i) = 0.0d0
+                     udhessfieldmu_gordon(l,k,j,i) = 0.0d0
+                     uphessfieldmu_gordon(l,k,j,i) = 0.0d0
                      uphessfieldd_gordon(l,k,j,i) = 0.0d0
                      udhessfieldp_gordon(l,k,j,i) = 0.0d0
 c
                      udhessfield_gordono(l,k,j,i) = 0.0d0
                      uphessfield_gordono(l,k,j,i) = 0.0d0
+                     udhessfieldmu_gordono(l,k,j,i) = 0.0d0
+                     uphessfieldmu_gordono(l,k,j,i) = 0.0d0
                      uphessfieldd_gordono(l,k,j,i) = 0.0d0
                      udhessfieldp_gordono(l,k,j,i) = 0.0d0
                   end if
@@ -1381,12 +1793,14 @@ c     perform dynamic allocation of some local arrays
 c
       allocate (dscale(n))
       allocate (pscale(n))
+      allocate (muscale(n))
 c
 c     set arrays needed to scale connected atom interactions
 c
       do i = 1, n
          dscale(i) = 1.0d0
          pscale(i) = 1.0d0
+         muscale(i) = 1.0d0
       end do
 c
 c     set OpenMP directives for the major loop structure
@@ -1402,7 +1816,7 @@ c
 !$OMP& t2rr3,t2rr5,t3rr5,t3rr7,t4rr5,t4rr7,t4rr9,
 !$OMP& t2,t3,t4,t2i,t3i,t4i,t2k,t3k,t4k,t2ik,t3ik,t4ik,
 !$OMP& scale,scalei,scalek,scaleik)
-!$OMP& firstprivate(dscale,pscale)
+!$OMP& firstprivate(dscale,pscale,muscale)
 !$OMP DO reduction(+:udfieldo,upfieldo,
 !$OMP& udgradfieldo,upgradfieldo,
 !$OMP& udhessfieldo,uphessfieldo,
@@ -1415,9 +1829,18 @@ c
 !$OMP& udfieldp_tholeo,upfieldd_tholeo,
 !$OMP& udgradfieldp_tholeo,upgradfieldd_tholeo,
 !$OMP& udhessfieldp_tholeo,uphessfieldd_tholeo,
+!$OMP& udfield_funco,upfield_funco,
+!$OMP& udgradfield_funco,upgradfield_funco,
+!$OMP& udhessfield_funco,uphessfield_funco,
+!$OMP& udfieldp_funco,upfieldd_funco,
+!$OMP& udgradfieldp_funco,upgradfieldd_funco,
+!$OMP& udhessfieldp_funco,uphessfieldd_funco, 
 !$OMP& udfield_gordono,upfield_gordono, 
 !$OMP& udgradfield_gordono,upgradfield_gordono,
 !$OMP& udhessfield_gordono,uphessfield_gordono,
+!$OMP& udfieldmu_gordono,upfieldmu_gordono,
+!$OMP& udgradfieldmu_gordono,upgradfieldmu_gordono,
+!$OMP& udhessfieldmu_gordono,uphessfieldmu_gordono,
 !$OMP& udnucfieldp_gordono,upnucfieldd_gordono,
 !$OMP& udfieldp_gordono,upfieldd_gordono,
 !$OMP& udgradfieldp_gordono,upgradfieldd_gordono,
@@ -1441,12 +1864,15 @@ c
          end do
          do j = 1, n12(ii)
             pscale(i12(j,ii)) = p2scale
+            muscale(i12(j,ii)) = mu2scale
          end do
          do j = 1, n13(ii)
             pscale(i13(j,ii)) = p3scale
+            muscale(i13(j,ii)) = mu3scale
          end do
          do j = 1, n14(ii)
             pscale(i14(j,ii)) = p4scale
+            muscale(i14(j,ii)) = mu4scale
             do k = 1, np11(ii)
                if (i14(j,ii) .eq. ip11(k,ii))
      &            pscale(i14(j,ii)) = p4scale * p41scale
@@ -1454,6 +1880,7 @@ c
          end do
          do j = 1, n15(ii)
             pscale(i15(j,ii)) = p5scale
+            muscale(i15(j,ii)) = mu5scale
          end do
          do j = 1, np11(ii)
             dscale(ip11(j,ii)) = d1scale
@@ -1681,6 +2108,92 @@ c
                   end do
                end if
 c
+c     thole-derived damping
+c
+               if (damp_func) then
+                  call dampfunc(i,k,rorder,r,scale)
+                  t2 = t2rr3*scale(3) + t2rr5*scale(5)
+                  t3 = t3rr5*scale(5) + t3rr7*scale(7)
+                  t4 = t4rr5*scale(5) + t4rr7*scale(7) +
+     &                 t4rr9*scale(9)
+                  call ufieldik(i,k,t2,fieldid,fieldkd,fieldip,
+     &                 fieldkp)
+                  call ugradfieldik(i,k,t3,gradfieldid,gradfieldkd,
+     &                 gradfieldip,gradfieldkp)
+                  call uhessfieldik(i,k,t4,hessfieldid,hessfieldkd,
+     &                 hessfieldip,hessfieldkp)
+                  do j = 1, 3
+                     udfield_funco(j,i) = udfield_funco(j,i) +
+     &                    fieldid(j)
+                     udfield_funco(j,k) = udfield_funco(j,k) +
+     &                    fieldkd(j)
+                     upfield_funco(j,i) = upfield_funco(j,i) +
+     &                    fieldip(j)
+                     upfield_funco(j,k) = upfield_funco(j,k) +
+     &                    fieldkp(j)
+                     udfieldp_funco(j,i) = udfieldp_funco(j,i) +
+     &                    fieldid(j)*pscale(kk)
+                     udfieldp_funco(j,k) = udfieldp_funco(j,k) +
+     &                    fieldkd(j)*pscale(kk)
+                     upfieldd_funco(j,i) = upfieldd_funco(j,i) +
+     &                    fieldip(j)*dscale(kk)
+                     upfieldd_funco(j,k) = upfieldd_funco(j,k) +
+     &                    fieldkp(j)*dscale(kk)
+                     do l = 1, 3
+                        udgradfield_funco(l,j,i) = 
+     &                       udgradfield_funco(l,j,i) +
+     &                       gradfieldid(l,j)
+                        udgradfield_funco(l,j,k) = 
+     &                       udgradfield_funco(l,j,k) +
+     &                       gradfieldkd(l,j)
+                        upgradfield_funco(l,j,i) = 
+     &                       upgradfield_funco(l,j,i) +
+     &                       gradfieldip(l,j)
+                        upgradfield_funco(l,j,k) = 
+     &                       upgradfield_funco(l,j,k) +
+     &                       gradfieldkp(l,j)
+                        udgradfieldp_funco(l,j,i) =
+     &                       udgradfieldp_funco(l,j,i) +
+     &                       gradfieldid(l,j)*pscale(kk)
+                        udgradfieldp_funco(l,j,k) =
+     &                       udgradfieldp_funco(l,j,k) +
+     &                       gradfieldkd(l,j)*pscale(kk)
+                        upgradfieldd_funco(l,j,i) =
+     &                       upgradfieldd_funco(l,j,i) +
+     &                       gradfieldip(l,j)*dscale(kk)
+                        upgradfieldd_funco(l,j,k) =
+     &                       upgradfieldd_funco(l,j,k) +
+     &                       gradfieldkp(l,j)*dscale(kk)
+                        do h = 1, 3
+                           udhessfield_funco(h,l,j,i) =
+     &                          udhessfield_funco(h,l,j,i) +
+     &                          hessfieldid(h,l,j)
+                           udhessfield_funco(h,l,j,k) =
+     &                          udhessfield_funco(h,l,j,k) +
+     &                          hessfieldkd(h,l,j)
+                           uphessfield_funco(h,l,j,i) =
+     &                          uphessfield_funco(h,l,j,i) +
+     &                          hessfieldip(h,l,j)
+                           uphessfield_funco(h,l,j,k) =
+     &                          uphessfield_funco(h,l,j,k) +
+     &                          hessfieldkp(h,l,j)
+                           udhessfieldp_funco(h,l,j,i) =
+     &                          udhessfieldp_funco(h,l,j,i) +
+     &                          hessfieldid(h,l,j)*pscale(kk)
+                           udhessfieldp_funco(h,l,j,k) =
+     &                          udhessfieldp_funco(h,l,j,k) +
+     &                          hessfieldkd(h,l,j)*pscale(kk)
+                           uphessfieldd_funco(h,l,j,i) =
+     &                          uphessfieldd_funco(h,l,j,i) +
+     &                          hessfieldip(h,l,j)*dscale(kk)
+                           uphessfieldd_funco(h,l,j,k) =
+     &                          uphessfieldd_funco(h,l,j,k) +
+     &                          hessfieldkp(h,l,j)*dscale(kk)
+                        end do
+                     end do
+                  end do
+               end if
+c
 c     gordon damping
 c
                if (damp_gordon) then
@@ -1710,6 +2223,16 @@ c     &                    fieldkp)
      &                    elefieldip(j)
                      upfield_gordono(j,k) = upfield_gordono(j,k) +
      &                    elefieldkp(j)
+c     
+                     udfieldmu_gordono(j,i) = udfieldmu_gordono(j,i) +
+     &                    elefieldid(j)*muscale(kk)
+                     udfieldmu_gordono(j,k) = udfieldmu_gordono(j,k) +
+     &                    elefieldkd(j)*muscale(kk)
+                     upfieldmu_gordono(j,i) = upfieldmu_gordono(j,i) +
+     &                    elefieldip(j)*muscale(kk)
+                     upfieldmu_gordono(j,k) = upfieldmu_gordono(j,k) +
+     &                    elefieldkp(j)*muscale(kk)
+c     
                      udfieldp_gordono(j,i) = udfieldp_gordono(j,i) +
      &                    elefieldid(j)*pscale(kk)
                      udfieldp_gordono(j,k) = udfieldp_gordono(j,k) +
@@ -1744,6 +2267,20 @@ c
                         upgradfield_gordono(l,j,k) = 
      &                       upgradfield_gordono(l,j,k) +
      &                       gradfieldkp(l,j)
+c     
+                        udgradfieldmu_gordono(l,j,i) =
+     &                       udgradfieldmu_gordono(l,j,i) +
+     &                       gradfieldid(l,j)*muscale(kk)
+                        udgradfieldmu_gordono(l,j,k) =
+     &                       udgradfieldmu_gordono(l,j,k) +
+     &                       gradfieldkd(l,j)*muscale(kk)
+                        upgradfieldmu_gordono(l,j,i) =
+     &                       upgradfieldmu_gordono(l,j,i) +
+     &                       gradfieldip(l,j)*muscale(kk)
+                        upgradfieldmu_gordono(l,j,k) =
+     &                       upgradfieldmu_gordono(l,j,k) +
+     &                       gradfieldkp(l,j)*muscale(kk)
+c     
                         udgradfieldp_gordono(l,j,i) =
      &                       udgradfieldp_gordono(l,j,i) +
      &                       gradfieldid(l,j)*pscale(kk)
@@ -1769,6 +2306,20 @@ c
                            uphessfield_gordono(h,l,j,k) =
      &                          uphessfield_gordono(h,l,j,k) +
      &                          hessfieldkp(h,l,j)
+c     
+                           udhessfieldmu_gordono(h,l,j,i) =
+     &                          udhessfieldmu_gordono(h,l,j,i) +
+     &                          hessfieldid(h,l,j)*muscale(kk)
+                           udhessfieldmu_gordono(h,l,j,k) =
+     &                          udhessfieldmu_gordono(h,l,j,k) +
+     &                          hessfieldkd(h,l,j)*muscale(kk)
+                           uphessfieldmu_gordono(h,l,j,i) =
+     &                          uphessfieldmu_gordono(h,l,j,i) +
+     &                          hessfieldip(h,l,j)*muscale(kk)
+                           uphessfieldmu_gordono(h,l,j,k) =
+     &                          uphessfieldmu_gordono(h,l,j,k) +
+     &                          hessfieldkp(h,l,j)*muscale(kk)
+c     
                            udhessfieldp_gordono(h,l,j,i) =
      &                          udhessfieldp_gordono(h,l,j,i) +
      &                          hessfieldid(h,l,j)*pscale(kk)
@@ -1834,6 +2385,13 @@ c
       udhessfield_thole = udhessfield_tholeo
       uphessfield_thole = uphessfield_tholeo
 c
+      udfield_func = udfield_funco
+      upfield_func = upfield_funco
+      udgradfield_func = udgradfield_funco
+      upgradfield_func = upgradfield_funco
+      udhessfield_func = udhessfield_funco
+      uphessfield_func = uphessfield_funco
+c
       udfieldp_thole = udfieldp_tholeo
       upfieldd_thole = upfieldd_tholeo
       udgradfieldp_thole = udgradfieldp_tholeo
@@ -1841,12 +2399,26 @@ c
       udhessfieldp_thole = udhessfieldp_tholeo
       uphessfieldd_thole = uphessfieldd_tholeo
 c
+      udfieldp_func = udfieldp_funco
+      upfieldd_func = upfieldd_funco
+      udgradfieldp_func = udgradfieldp_funco
+      upgradfieldd_func = upgradfieldd_funco
+      udhessfieldp_func = udhessfieldp_funco
+      uphessfieldd_func = uphessfieldd_funco
+c
       udfield_gordon = udfield_gordono
       upfield_gordon = upfield_gordono
       udgradfield_gordon = udgradfield_gordono
       upgradfield_gordon = upgradfield_gordono
       udhessfield_gordon = udhessfield_gordono
       uphessfield_gordon = uphessfield_gordono
+c
+      udfieldmu_gordon = udfieldmu_gordono
+      upfieldmu_gordon = upfieldmu_gordono
+      udgradfieldmu_gordon = udgradfieldmu_gordono
+      upgradfieldmu_gordon = upgradfieldmu_gordono
+      udhessfieldmu_gordon = udhessfieldmu_gordono
+      uphessfieldmu_gordon = uphessfieldmu_gordono
 c
       udnucfieldp_gordon = udnucfieldp_gordono
       upnucfieldd_gordon = upnucfieldd_gordono
@@ -1889,6 +2461,22 @@ c
          deallocate (udgradfieldp_tholeo)
          deallocate (udhessfieldp_tholeo)
       end if
+      if ((directdamp.eq."FUNC10").or.(mutualdamp.eq."FUNC10")) then
+         deallocate (udfield_funco)
+         deallocate (upfield_funco)
+         deallocate (udgradfield_funco)
+         deallocate (upgradfield_funco)
+         deallocate (udhessfield_funco)
+         deallocate (uphessfield_funco)
+c     
+         deallocate (upfieldd_funco)
+         deallocate (upgradfieldd_funco)
+         deallocate (uphessfieldd_funco)
+c     
+         deallocate (udfieldp_funco)
+         deallocate (udgradfieldp_funco)
+         deallocate (udhessfieldp_funco)
+      end if
       if ((directdamp.eq."GORDON").or.(mutualdamp.eq."GORDON"))then
          deallocate (udfield_gordono)
          deallocate (upfield_gordono)
@@ -1896,6 +2484,12 @@ c
          deallocate (upgradfield_gordono)
          deallocate (udhessfield_gordono)
          deallocate (uphessfield_gordono)
+         deallocate (udfieldmu_gordono)
+         deallocate (upfieldmu_gordono)
+         deallocate (udgradfieldmu_gordono)
+         deallocate (upgradfieldmu_gordono)
+         deallocate (udhessfieldmu_gordono)
+         deallocate (uphessfieldmu_gordono)
 c
          deallocate (upnucfieldd_gordono)
          deallocate (upfieldd_gordono)

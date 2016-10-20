@@ -132,6 +132,67 @@ c
       end
 c
 c
+c     ####################################################################
+c     ##                                                                ##
+c     ##  subroutine dampfunc  --  generate func damping coefficients ##
+c     ##                                                                ##
+c     ####################################################################
+c
+c
+c     "dampfunc" generates the damping coefficients for the thole 
+c     damping functional form that go with corresponding powers of r
+c
+      subroutine dampfunc(i,k,rorder,r,scale)
+      use sizes
+      use chgpen
+      use polar
+      implicit none
+      integer i,k,j
+      integer rorder
+      real*8 r
+      real*8 damp,expdamp
+      real*8 pdi,pti,pdk,ptk
+      real*8 pgamma
+      real*8 scale(*)
+c     
+c     set damping factors to one
+c
+      do j = 1, rorder
+         scale(j) = 1.0d0
+      end do
+c
+c     read in damping parameters
+c
+      pdi = pdamp(i)
+      pdk = pdamp(k)
+      pti = func10(cpclass(i))
+      ptk = func10(cpclass(k))
+c
+c     assign thole damping scale factors
+c
+      damp = pdi * pdk
+      if (damp .ne. 0.0d0) then
+         pgamma = min(pti,ptk)
+         damp   = pgamma*(r/(pdi*pdk))**(3.0d0/2.0d0)
+         if (damp .lt. 50.0d0) then
+            expdamp = exp(-damp)
+            scale(3) = 1.0d0 - expdamp
+            scale(5) = 1.0d0 - (1.0d0 + (1.0d0/2.0d0)*damp)*expdamp
+            if (rorder.ge.7) then
+               scale(7) = 1.0d0 - (1.0d0 + (39.0d0/60.0d0)*damp +
+     &                   (9.0d0/60.0d0)*damp**2.0d0)*expdamp
+            end if
+            if (rorder.ge.9) then
+               scale(9) = 1.0d0 - (1.0d0 + (609.0d0/840.0d0)*damp + 
+     &                 (189.0d0/840.0d0)*damp**2.0d0 + 
+     &                 (27.0d0/840.0d0)*damp**3.0d0 )*expdamp
+            end if
+         end if
+      end if
+      return
+      end
+c
+c
 c     ######################################################################
 c     ##                                                                  ##
 c     ##  subroutine dampgordon  --  generate gordon damping coefficents  ##
