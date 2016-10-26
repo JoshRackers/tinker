@@ -46,12 +46,12 @@ c
 c     initialize cp parameter arrays
 c
       alphaf = 1.0d0
-      do k = 1, 18
+c      do k = 1, 18
 c         cpclass(k) = 0.0d0
 c         alpha(k) = 0.0d0
 c         regular(k) = 0.0d0
 c         xpolr(k) = 0.0d0
-      end do
+c      end do
 c
 c     check for keyword for charge penetration form
 c
@@ -85,6 +85,9 @@ c            call getword (record,penetration,next)
          end if
          if (keyword(1:11) .eq. 'REGULARIZE ') then
             read (string,*,err=10,end=10)  regularize
+         end if
+         if (keyword(1:9) .eq. 'EXCH-MIX ') then
+            read (string,*,err=10,end=10)  exmix
          end if
  10      continue
       end do
@@ -154,6 +157,16 @@ c     read in polfactors by class
                if (type(k).eq.ii) cpclass(k) = pen
             end do
          end if
+         if (keyword(1:8) .eq. 'VDWCLASS ') then
+            ii = 0
+            pen = 0.0d0
+            string = record(next:120)
+            read (string,*,err=61,end=61)  ii,pen
+ 61         continue
+            do k = 1, n
+               if (type(k).eq.ii) vdwclass(k) = pen
+            end do
+         end if
          if (keyword(1:11) .eq. 'EX-OVERLAP ') then
             ii = 0
             pen = 0.0d0
@@ -161,6 +174,15 @@ c     read in polfactors by class
             read (string,*,err=70,end=70)  ii,pen
  70         continue
             if (ii .ne. 0)  overlap(ii) = pen
+         end if
+         if (keyword(1:13) .eq. 'SING-OVERLAP ') then
+            ii = 0
+            pen = 0.0d0
+            string = record(next:120)
+            read (string,*,err=80,end=80)  pen
+ 80         continue
+            singoverlap = .true.
+            soverlap = pen
          end if
       end do
 c     

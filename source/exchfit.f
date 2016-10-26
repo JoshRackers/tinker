@@ -7,17 +7,17 @@ c     ###################################################
 c
 c     #################################################################
 c     ##                                                             ##
-c     ##  program xtalfit  --  fit parameters to structure & energy  ##
+c     ##  program exchfit  --  fit parameters to structure & energy  ##
 c     ##                                                             ##
 c     #################################################################
 c
 c
-c     "xtalfit" determines optimized van der Waals and electrostatic
+c     "exchfit" determines optimized van der Waals and electrostatic
 c     parameters by fitting to crystal structures, lattice energies,
 c     and dimer structures and interaction energies
 c
 c
-      program xtalfit
+      program exchfit
       use sizes
       use bound
       use boxes
@@ -57,20 +57,9 @@ c
       write (iout,10)
    10 format (/,' The Following Parameters can be Fit for',
      &           ' each Atom Type :',
-     &        //,4x,'(1) Van der Waals Atomic Radius',
-     &        /,4x,'(2) Van der Waals Well Depth',
-     &        /,4x,'(3) Hydrogen Atom Reduction Factor',
-     &        /,4x,'(4) Atomic Partial Charge',
-     &        /,4x,'(5) Bond Dipole Moment Magnitude',
-     &        /,4x,'(6) Bond Dipole Moment Position',
-     &        /,4x,'(7) Atomic Polarizability',
-     &        /,4x,'(8) Penetration Alpha Value',
-     &        /,4x,'(9) Penetration Beta Value',
-     &        /,4x,'(10) Halgren Delta',
-     &        /,4x,'(11) Halgren Gamma',
-     &        /,4x,'(12) Buckingham A',
-     &        /,4x,'(13) Buckingham B',
-     &        /,4x,'(14) Buckingham C')
+     &        //,4x,'(1) Exchange-Repulsion Scalar',
+     &        /,4x,'(2) Gordon Damping Parameter',
+     &        /,4x,'(3) Single Ex-Rep Scalar')
 c
 c     get types of potential parameters to be optimized
 c
@@ -176,29 +165,6 @@ c
             read (input,150)  e0_lattice
   150       format (f20.0)
          end if
-         if (e0_lattice .gt. 0.0d0)  e0_lattice = -e0_lattice
-c
-c     set the types of residuals for use in optimization
-c
-         do i = 1, 6
-            iresid(nresid+i) = ixtal
-         end do
-         if (use_bounds) then
-            rsdtyp(nresid+1) = 'Force a-Axis'
-            rsdtyp(nresid+2) = 'Force b-Axis'
-            rsdtyp(nresid+3) = 'Force c-Axis'
-            rsdtyp(nresid+4) = 'Force Alpha'
-            rsdtyp(nresid+5) = 'Force Beta'
-            rsdtyp(nresid+6) = 'Force Gamma'
-         else
-            rsdtyp(nresid+1) = 'Force Mol1 X'
-            rsdtyp(nresid+2) = 'Force Mol1 Y'
-            rsdtyp(nresid+3) = 'Force Mol1 Z'
-            rsdtyp(nresid+4) = 'Force Mol2 X'
-            rsdtyp(nresid+5) = 'Force Mol2 Y'
-            rsdtyp(nresid+6) = 'Force Mol2 Z'
-         end if
-         nresid = nresid + 6
 c
 c     print molecules per structure, energy and dipole values
 c
@@ -231,23 +197,13 @@ c
       use_dipole = .true.
       use_mpole = .true.
       use_polar = .true.
+      use_extra = .true.
 c
 c     types of variables for use in optimization
 c
-      label(1) = 'Atomic Radius'
-      label(2) = 'Well Depth'
-      label(3) = 'H Reduction'
-      label(4) = 'Partial Charge'
-      label(5) = 'Dipole Magnitude'
-      label(6) = 'Dipole Position'
-      label(7) = 'Polarizability'
-      label(8) = 'Penetr Alpha'
-      label(9) = 'Penetr Beta'
-      label(10) = 'Hal Delta  '
-      label(11) = 'Hal Gamma  '
-      label(12) = 'A Buck     '
-      label(13) = 'B Buck     '
-      label(14) = 'C Buck     '
+      label(1) = 'Overlap Scalar'
+      label(2) = 'Gordon Alpha  '
+      label(3) = 'Single Scalar '
       do i = 1, nvary
          vartyp(i) = label(ivary(i))
       end do
@@ -282,13 +238,8 @@ c
 c     set upper and lower bounds based on the parameter type
 c
       do i = 1, nvary
-         if (ivary(i).eq.4 .or. ivary(i).eq.5) then
-            xlo(i) = xx(i) - 0.5d0
-            xhi(i) = xx(i) + 0.5d0
-         else
-            xlo(i) = 0.25d0 * xx(i)
-            xhi(i) = 2.0d0 * xx(i)
-         end if
+         xlo(i) = 0.25d0 * xx(i)
+         xhi(i) = 4.0d0 * xx(i)
       end do
 c
 c     use nonlinear least squares to refine the parameters
@@ -367,7 +318,7 @@ c
       use atoms
       use atomid
       use bound
-      use boxes
+c      use boxes
       use charge
       use dipole
       use files
@@ -380,10 +331,11 @@ c
       use vdw
       use vdwpot
       use xtals
+      use chgpen
       implicit none
       integer i,j,k
       integer ixtal,prmtyp
-      integer atom1,atom2
+      integer jclass
       real*8 rd,ep,sixth
       real*8 xmid,ymid,zmid
       real*8 e0_lattices(maxref)
@@ -410,36 +362,36 @@ c
 c
 c     perform dynamic allocation of some global arrays
 c
-      if (mode .eq. 'RESET') then
-         if (first) then
-            first = .false.
-            allocate (xfrac(nmol))
-            allocate (yfrac(nmol))
-            allocate (zfrac(nmol))
-         end if
-      end if
+c      if (mode .eq. 'RESET') then
+c         if (first) then
+c            first = .false.
+c            allocate (xfrac(nmol))
+c            allocate (yfrac(nmol))
+c            allocate (zfrac(nmol))
+c         end if
+c      end if
 c
 c     coordinates of molecular centers of mass
 c
-      if (mode .eq. 'RESET') then
-         do i = 1, nmol
-            xmid = 0.0d0
-            ymid = 0.0d0
-            zmid = 0.0d0
-            do j = imol(1,i), imol(2,i)
-               k = kmol(j)
-               xmid = xmid + x(k)*mass(k)
-               ymid = ymid + y(k)*mass(k)
-               zmid = zmid + z(k)*mass(k)
-            end do
-            zmid = zmid / gamma_term
-            ymid = (ymid - zmid*beta_term) / gamma_sin
-            xmid = xmid - ymid*gamma_cos - zmid*beta_cos
-            xfrac(i) = xmid / (xbox * molmass(i))
-            yfrac(i) = ymid / (ybox * molmass(i))
-            zfrac(i) = zmid / (zbox * molmass(i))
-         end do
-      end if
+c      if (mode .eq. 'RESET') then
+c         do i = 1, nmol
+c            xmid = 0.0d0
+c            ymid = 0.0d0
+c            zmid = 0.0d0
+c            do j = imol(1,i), imol(2,i)
+c               k = kmol(j)
+c               xmid = xmid + x(k)*mass(k)
+c               ymid = ymid + y(k)*mass(k)
+c               zmid = zmid + z(k)*mass(k)
+c            end do
+c            zmid = zmid / gamma_term
+c            ymid = (ymid - zmid*beta_term) / gamma_sin
+c            xmid = xmid - ymid*gamma_cos - zmid*beta_cos
+c            xfrac(i) = xmid / (xbox * molmass(i))
+c            yfrac(i) = ymid / (ybox * molmass(i))
+c            zfrac(i) = zmid / (zbox * molmass(i))
+c         end do
+c      end if
 c
 c     values of ideal intermolecular or lattice energy
 c
@@ -453,163 +405,25 @@ c     store or reset values of the optimization variables
 c
       do j = 1, nvary
          prmtyp = ivary(j)
-         atom1 = vary(1,j)
+         jclass = vary(1,j)
+ccccccccccccccccccccccccccccccccc
          if (prmtyp .eq. 1) then
             if (mode .eq. 'STORE') then
-               xx(j) = rad(atom1)
+               xx(j) = overlap(jclass)
             else if (mode .eq. 'RESET') then
-               rad(atom1) = xx(j)
-               do i = 1, maxclass
-                  if (rad(i).eq.0.0d0 .and. rad(atom1).eq.0.0d0) then
-                     rd = 0.0d0
-                  else if (radrule(1:10) .eq. 'ARITHMETIC') then
-                     rd = rad(i) + rad(atom1)
-                  else if (radrule(1:9) .eq. 'GEOMETRIC') then
-                     rd = 2.0d0 * sqrt(rad(i) * rad(atom1))
-                  else if (radrule(1:10) .eq. 'CUBIC-MEAN') then
-                     rd = 2.0d0 * (rad(i)**3+rad(atom1)**3)
-     &                       / (rad(i)**2+rad(atom1)**2)
-                  else
-                     rd = rad(i) + rad(atom1)
-                  end if
-                  radmin(i,atom1) = rd
-                  radmin(atom1,i) = rd
-               end do
+               overlap(jclass) = xx(j)
             end if
          else if (prmtyp .eq. 2) then
             if (mode .eq. 'STORE') then
-               xx(j) = eps(atom1)
+               xx(j) = alpha(jclass)
             else if (mode .eq. 'RESET') then
-               eps(atom1) = abs(xx(j))
-               do i = 1, maxclass
-                  if (eps(i).eq.0.0d0 .and. eps(atom1).eq.0.0d0) then
-                     ep = 0.0d0
-                  else if (epsrule(1:10) .eq. 'ARITHMETIC') then
-                     ep = 0.5d0 * (eps(i) + eps(atom1))
-                  else if (epsrule(1:9) .eq. 'GEOMETRIC') then
-                     ep = sqrt(eps(i) * eps(atom1))
-                  else if (epsrule(1:8) .eq. 'HARMONIC') then
-                     ep = 2.0d0 * (eps(i)*eps(atom1))
-     &                       / (eps(i)+eps(atom1))
-                  else if (epsrule(1:3) .eq. 'HHG') then
-                     ep = 4.0d0 * (eps(i)*eps(atom1))
-     &                      / (sqrt(eps(i))+sqrt(eps(atom1)))**2
-                  else if (epsrule(1:3) .eq. 'W-H') then
-                     ep = 2.0d0 * sqrt(eps(i)) * sqrt(eps(atom1)) * 
-     &                    (rad(i)*rad(atom1))**3 /
-     &                    (rad(i)**6 + rad(atom1)**6)
-                  else
-                     ep = sqrt(eps(i) * eps(atom1))
-                  end if
-                  epsilon(i,atom1) = ep
-                  epsilon(atom1,i) = ep
-               end do
+               alpha(jclass) = xx(j)
             end if
          else if (prmtyp .eq. 3) then
             if (mode .eq. 'STORE') then
-               do i = 1, n
-                  if (class(i) .eq. atom1) then
-                     xx(j) = kred(i)
-                     goto 10
-                  end if
-               end do
+               xx(j) = soverlap
             else if (mode .eq. 'RESET') then
-               do i = 1, n
-                  if (class(i) .eq. atom1)  kred(i) = xx(j)
-               end do
-            end if
-         else if (prmtyp .eq. 4) then
-            if (mode .eq. 'STORE') then
-               do i = 1, nion
-                  if (type(iion(i)) .eq. atom1) then
-                     xx(j) = pchg(i)
-                     goto 10
-                  end if
-               end do
-            else if (mode .eq. 'RESET') then
-               do i = 1, nion
-                  if (type(iion(i)) .eq. atom1)  pchg(i) = xx(j)
-               end do
-            end if
-         else if (prmtyp .eq. 5) then
-            atom2 = vary(2,j)
-            if (mode .eq. 'STORE') then
-               do i = 1, ndipole
-                  if (type(idpl(1,i)).eq.atom1 .and.
-     &                type(idpl(2,i)).eq.atom2) then
-                     xx(j) = bdpl(i)
-                     goto 10
-                  end if
-               end do
-            else if (mode .eq. 'RESET') then
-               do i = 1, ndipole
-                  if (type(idpl(1,i)).eq.atom1 .and.
-     &                type(idpl(2,i)).eq.atom2)  bdpl(i) = xx(j)
-               end do
-            end if
-         else if (prmtyp .eq. 6) then
-            atom2 = vary(2,j)
-            if (mode .eq. 'STORE') then
-               do i = 1, ndipole
-                  if (type(idpl(1,i)).eq.atom1 .and.
-     &                type(idpl(2,i)).eq.atom2) then
-                     xx(j) = sdpl(i)
-                     goto 10
-                  end if
-               end do
-            else if (mode .eq. 'RESET') then
-               do i = 1, ndipole
-                  if (type(idpl(1,i)).eq.atom1 .and.
-     &                type(idpl(2,i)).eq.atom2)  sdpl(i) = xx(j)
-               end do
-            end if
-         else if (prmtyp .eq. 7) then
-            if (mode .eq. 'STORE') then
-               do i = 1, npole
-                  if (type(ipole(i)) .eq. atom1) then
-                     xx(j) = polarity(i)
-                     goto 10
-                  end if
-               end do
-            else if (mode .eq. 'RESET') then
-               sixth = 1.0d0 / 6.0d0
-               do i = 1, npole
-                  if (type(ipole(i)) .eq. atom1) then
-                     polarity(i) = xx(j)
-                     if (thole(i) .ne. 0.0d0)  pdamp(i) = xx(j)**sixth
-                  end if
-               end do
-            end if
-ccccccccccccccccccccccccccccccccc
-         else if (prmtyp .eq. 10) then
-            if (mode .eq. 'STORE') then
-               xx(j) = dhal
-            else if (mode .eq. 'RESET') then
-               dhal = xx(j)
-            end if
-         else if (prmtyp .eq. 11) then
-            if (mode .eq. 'STORE') then
-               xx(j) = ghal
-            else if (mode .eq. 'RESET') then
-               ghal = xx(j)
-            end if
-         else if (prmtyp .eq. 12) then
-            if (mode .eq. 'STORE') then
-               xx(j) = abuck
-            else if (mode .eq. 'RESET') then
-               abuck = xx(j)
-            end if
-         else if (prmtyp .eq. 13) then
-            if (mode .eq. 'STORE') then
-               xx(j) = bbuck
-            else if (mode .eq. 'RESET') then
-               bbuck = xx(j)
-            end if
-         else if (prmtyp .eq. 14) then
-            if (mode .eq. 'STORE') then
-               xx(j) = cbuck
-            else if (mode .eq. 'RESET') then
-               cbuck = xx(j)
+               soverlap = xx(j)
             end if
 cccccccccccccccccccccccccccccccccc
          end if
@@ -671,168 +485,8 @@ c     set force field parameter values and find the base energy
 c
       do ixtal = 1, nxtal
          call xtalprm ('RESET',ixtal,xx)
-         e = energy ()
-         e0 = ev + ec + ecd + ed + em + ep
-c
-c     perturb crystal lattice parameters and compute energies
-c
-         if (use_bounds) then
-            temp = xbox
-            xbox = xbox + eps
-            call xtalmove
-            e = energy ()
-            e1 = ev + ec + ecd + ed + em + ep
-            xbox = temp
-            temp = ybox
-            ybox = ybox + eps
-            call xtalmove
-            e = energy ()
-            e2 = ev + ec + ecd + ed + em + ep
-            ybox = temp
-            temp = zbox
-            zbox = zbox + eps
-            call xtalmove
-            e = energy ()
-            e3 = ev + ec + ecd + ed + em + ep
-            zbox = temp
-            temp = alpha
-            alpha = alpha + radian*eps
-            call xtalmove
-            e = energy ()
-            e4 = ev + ec + ecd + ed + em + ep
-            alpha = temp
-            temp = beta
-            beta = beta + radian*eps
-            call xtalmove
-            e = energy ()
-            e5 = ev + ec + ecd + ed + em + ep
-            beta = temp
-            temp = gamma
-            gamma = gamma + radian*eps
-            call xtalmove
-            e = energy ()
-            e6 = ev + ec + ecd + ed + em + ep
-            gamma = temp
-            call xtalmove
-c
-c     translate dimer component molecules and compute energies
-c
-         else
-            do i = imol(1,1), imol(2,1)
-               k = kmol(i)
-               x(k) = x(k) + eps
-            end do
-            e = energy ()
-            e1 = ev + ec + ecd + ed + em + ep
-            do i = imol(1,1), imol(2,1)
-               k = kmol(i)
-               x(k) = x(k) - eps
-            end do
-            do i = imol(1,1), imol(2,1)
-               k = kmol(i)
-               y(k) = y(k) + eps
-            end do
-            e = energy ()
-            e2 = ev + ec + ecd + ed + em + ep
-            do i = imol(1,1), imol(2,1)
-               k = kmol(i)
-               y(k) = y(k) - eps
-            end do
-            do i = imol(1,1), imol(2,1)
-               k = kmol(i)
-               z(k) = z(k) + eps
-            end do
-            e = energy ()
-            e3 = ev + ec + ecd + ed + em + ep
-            do i = imol(1,1), imol(2,1)
-               k = kmol(i)
-               z(k) = z(k) - eps
-            end do
-            do i = imol(1,1), imol(2,1)
-               k = kmol(i)
-               x(k) = x(k) + eps
-            end do
-            e = energy ()
-            e4 = ev + ec + ecd + ed + em + ep
-            do i = imol(1,2), imol(2,2)
-               k = kmol(i)
-               x(k) = x(k) - eps
-            end do
-            do i = imol(1,2), imol(2,2)
-               k = kmol(i)
-               y(k) = y(k) + eps
-            end do
-            e = energy ()
-            e5 = ev + ec + ecd + ed + em + ep
-            do i = imol(1,2), imol(2,2)
-               k = kmol(i)
-               y(k) = y(k) - eps
-            end do
-            do i = imol(1,2), imol(2,2)
-               k = kmol(i)
-               z(k) = z(k) + eps
-            end do
-            e = energy ()
-            e6 = ev + ec + ecd + ed + em + ep
-            do i = imol(1,2), imol(2,2)
-               k = kmol(i)
-               z(k) = z(k) - eps
-            end do
-         end if
-c
-c     get the gradient with respect to structure perturbations
-c
-         g1 = (e1 - e0) / eps
-         nresid = nresid + 1
-         resid(nresid) = g1
-         g2 = (e2 - e0) / eps
-         nresid = nresid + 1
-         resid(nresid) = g2
-         g3 = (e3 - e0) / eps
-         nresid = nresid + 1
-         resid(nresid) = g3
-         g4 = (e4 - e0) / eps
-         nresid = nresid + 1
-         resid(nresid) = g4
-         g5 = (e5 - e0) / eps
-         nresid = nresid + 1
-         resid(nresid) = g5
-         g6 = (e6 - e0) / eps
-         nresid = nresid + 1
-         resid(nresid) = g6
-c
-c     setup to compute properties of monomer from crystal
-c
-         if (use_bounds) then
-            n = n / nmol
-            nvdw = nvdw / nmol
-            nion = nion / nmol
-            ndipole = ndipole / nmol
-            npole = npole / nmol
-            npolar = npolar / nmol
-            use_bounds = .false.
-            use_replica = .false.
-            use_ewald = .false.
-            big = 1.0d12
-            vdwcut = big
-            vdwtaper = big
-            chgcut = big
-            chgtaper = big
-            dplcut = big
-            dpltaper = big
-            mpolecut = big
-            mpoletaper = big
-c
-c     compute the intermolecular or crystal lattice energy
-c
-            e = energy ()
-            e_monomer = ev + ec + ecd + ed + em + ep
-            dmol = dble(nmol)
-            e_lattice = (e0 - dmol*e_monomer) / dmol
-         else
-            e_monomer = 0.0d0
-            e_lattice = e0
-         end if
+         call analysis
+         e_lattice = ex
 c
 c     compute residual due to intermolecular or lattice energy;
 c     weight energies more heavily, since there are fewer of them
@@ -840,12 +494,6 @@ c
          if (e0_lattice .ne. 0.0d0) then
             nresid = nresid + 1
             resid(nresid) = e_lattice - e0_lattice
-            if (ixtal .le. 11) then
-c               resid(nresid) = 3.0d0 * resid(nresid)
-               resid(nresid) = 100.0d0 * resid(nresid)
-            else
-               resid(nresid) = 10.0d0 * resid(nresid)
-            end if
          end if
       end do
       return

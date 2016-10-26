@@ -36,6 +36,7 @@ c
       real*8 xathl(maxtyp)
       real*8 polfactor(maxtyp)
       real*8 overlap(maxtyp)
+      real*8 soverlap
       real*8 alphaf
 ccccccccc
 c     ignore these
@@ -43,6 +44,7 @@ c     ignore these
       real*8 dalpha(3)
 ccccccccc
       integer cpclass(maxatm)
+      integer vdwclass(maxatm)
       character*20 penetration
       character*20 directdamp
       character*20 mutualdamp
@@ -50,6 +52,8 @@ ccccccccc
       character*20 chgpen_mode
       character*20 num_ele
       character*20 regularize
+      character*20 exmix
       logical use_muscale
+      logical singoverlap
       save
       end
