@@ -90,6 +90,9 @@ c
       use usage
       use vdw
       use vdwpot
+c
+      use chgpen
+c
       implicit none
       integer i,j,k
       integer ii,iv,it
@@ -121,6 +124,10 @@ c
          aev(i) = 0.0d0
       end do
       header = .true.
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c     HACK
+c      if (exmodel.eq."14-ONLY") print *,"WARNING: INTER REPULSION ONLY!"
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 c     perform dynamic allocation of some local arrays
 c
@@ -228,8 +235,22 @@ c
                      rik7 = rik**7
                      rho = rik7 + ghal*rv7
                      tau = (dhal+1.0d0) / (rik + dhal*rv)
-                     e = eps * rv7 * tau**7
-     &                      * ((ghal+1.0d0)*rv7/rho-2.0d0)
+c                     e = eps * rv7 * tau**7
+c     &                      * ((ghal+1.0d0)*rv7/rho-2.0d0)
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c     HACK TO GET JUST THE REPULSIVE PART
+                     if (exmodel .eq. "14-ONLY") then
+                        if (molcule(i) .ne. molcule(k)) then
+                           e = eps * rv7 * tau**7
+     &                          * ((ghal+1.0d0)*rv7/rho)
+                        else
+                           e = 0.0d0
+                        end if
+                     else
+                        e = eps * rv7 * tau**7
+     &                       * ((ghal+1.0d0)*rv7/rho-2.0d0)
+                     end if
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
                   end if
 c
 c     use energy switching if near the cutoff distance

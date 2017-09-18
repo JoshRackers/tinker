@@ -192,6 +192,8 @@ extra.o \
 extra1.o \
 extra2.o \
 extra3.o \
+edisp3.o \
+exfer3.o \
 faces.o \
 fatal.o \
 fft.o \
@@ -350,6 +352,7 @@ nucleo.o \
 number.o \
 numeral.o \
 numgrad.o \
+numgradrgd.o \
 ocvm.o \
 omega.o \
 opbend.o \

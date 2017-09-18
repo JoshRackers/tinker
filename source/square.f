@@ -135,6 +135,10 @@ c
             read (string,*,err=10,end=10)  iprint
          else if (keyword(1:9) .eq. 'WRITEOUT ') then
             read (string,*,err=10,end=10)  iwrite
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+         else if (keyword(1:8) .eq. 'STEPMAX ') then
+            read (string,*,err=10,end=10)  stpmax
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
          end if
    10    continue
       end do
@@ -513,10 +517,11 @@ c     check for several consecutive maximum steps taken
 c
       else if (bigstp) then
          nbigstp = nbigstp + 1
-         if (nbigstp .eq. 5) then
+c         if (nbigstp .eq. 5) then
+         if (nbigstp .eq. 50) then
             done = .true.
             write (iout,130)
-  130       format (/,' SQUARE  --  Five Consecutive Maximum',
+  130       format (/,' SQUARE  --  Fifty Consecutive Maximum',
      &                 ' Length Steps',
      &              //,' Either the function is unbounded below,',
      &                 ' or has a finite',
@@ -920,7 +925,7 @@ c
       implicit none
       integer maxlsq,maxrsd
       parameter (maxlsq=1000)
-      parameter (maxrsd=1000)
+      parameter (maxrsd=3000)
       integer i,j,k
       integer m,n,icode
       integer ncalls,nactive

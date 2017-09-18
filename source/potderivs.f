@@ -54,6 +54,11 @@ c
       real*8, allocatable :: gradfieldm_gordon(:,:,:)
       real*8, allocatable :: hessfieldm_gordon(:,:,:,:)
 c
+      real*8, allocatable :: potm_goverlap(:)
+      real*8, allocatable :: fieldm_goverlap(:,:)
+      real*8, allocatable :: gradfieldm_goverlap(:,:,:)
+      real*8, allocatable :: hessfieldm_goverlap(:,:,:,:)
+c
       real*8, allocatable :: nucpotm_gordon(:)
       real*8, allocatable :: nucfieldm_gordon(:,:)
 c
@@ -221,5 +226,6 @@ c
       logical damp_gordon
       logical damp_piquemal
       logical damp_gordonreg
+      logical damp_goverlap
       save
       end

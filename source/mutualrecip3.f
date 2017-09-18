@@ -140,7 +140,7 @@ c
          upfield_recip(1,i) = upfield_recip(1,i) + cphip(2,i)
          upfield_recip(2,i) = upfield_recip(2,i) + cphip(3,i)
          upfield_recip(3,i) = upfield_recip(3,i) + cphip(4,i)
-c
+c     FIELD GRADIENT
          udgradfield_recip(1,1,i) = udgradfield_recip(1,1,i) + 
      &        cphid(5,i)
          udgradfield_recip(2,2,i) = udgradfield_recip(2,2,i) + 

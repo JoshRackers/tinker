@@ -49,5 +49,7 @@ c
       integer nec,necd,ned,nem
       integer nep,new,ner,nes
       integer nelf,neg,nex
+ccccccccccccccccccccccc
+      integer nedis,necp,nexfr
       save
       end

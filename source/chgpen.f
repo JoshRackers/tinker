@@ -27,6 +27,9 @@ c
       implicit none
       real*8 zeta(maxtyp)
       real*8 alpha(maxtyp)
+      real*8 exch_alpha(maxtyp)
+      real*8 val_ele(maxtyp)
+      real*8 exch_val_ele(maxtyp)
       real*8 func10(maxtyp)
       real*8 alphap(maxtyp)
       real*8 bfactor(maxtyp)
@@ -36,8 +39,12 @@ c
       real*8 xathl(maxtyp)
       real*8 polfactor(maxtyp)
       real*8 overlap(maxtyp)
+      real*8 boverlap(maxtyp)
+      real*8 coverlap(maxtyp)
+      real*8 overlapr(maxtyp)
       real*8 soverlap
       real*8 alphaf
+      real*8 csix(maxtyp)
 ccccccccc
 c     ignore these
       real*8 malpha
@@ -46,14 +53,22 @@ ccccccccc
       integer cpclass(maxatm)
       integer vdwclass(maxatm)
       character*20 penetration
+      character*20 gtype
+      character*20 cptype
       character*20 directdamp
       character*20 mutualdamp
       character*20 bfactor_mode
       character*20 chgpen_mode
       character*20 num_ele
+      character*20 exch_num_ele
       character*20 regularize
       character*20 exmix
+      character*20 exmodel
+      character*20 xfermodel
+      character*20 dispersiondamping
       logical use_muscale
       logical singoverlap
+      logical use_vdwclass
+      logical nanflag
       save
       end

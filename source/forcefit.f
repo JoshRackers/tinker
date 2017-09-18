@@ -17,7 +17,8 @@ c     parameters by fitting to crystal structures, lattice energies,
 c     and dimer structures and interaction energies
 c
 c
-      program xtalfit
+      program forcefit
+      use atoms
       use sizes
       use bound
       use boxes
@@ -40,7 +41,7 @@ c
       real*8, allocatable :: fjac(:,:)
       logical exist,query
       character*5 vindex
-      character*16 label(21)
+      character*16 label(11)
       character*120 record
       character*120 string
       external xtalerr,xtalwrt
@@ -75,9 +76,7 @@ c
      &        /,4x,'(16) Dispersion C6',
      &        /,4x,'(17) Exchange Boverlap',
      &        /,4x,'(18) Exchange OverlapR',
-     &        /,4x,'(19) Exchange Alpha Value',
-     &        /,4x,'(20) Polarization Regularization',
-     &        /,4x,'(21) Number of Valence Electrons (Exchange)')
+     &        /,4x,'(18) Polarization Regularization')
 c
 c     get types of potential parameters to be optimized
 c
@@ -116,13 +115,6 @@ c
             end if
          end if
       end do
-c
-c     choose whether to include molecule rotations
-c
-      write (iout,51)
- 51   format (/,' Include rotational degrees of freedom?  ',$)
-      read (input,52)  rotate
- 52   format (A10)
 c
 c     get termination criterion as RMS gradient over parameters
 c
@@ -194,45 +186,15 @@ c
 c
 c     set the types of residuals for use in optimization
 c
-         if (rotate .eq. "YES") then
-            do i = 1, 12
-               iresid(nresid+i) = ixtal
-            end do
-         else
-            do i = 1, 6
-               iresid(nresid+i) = ixtal
-            end do
-         end if
-         if (use_bounds) then
-            rsdtyp(nresid+1) = 'Force a-Axis'
-            rsdtyp(nresid+2) = 'Force b-Axis'
-            rsdtyp(nresid+3) = 'Force c-Axis'
-            rsdtyp(nresid+4) = 'Force Alpha'
-            rsdtyp(nresid+5) = 'Force Beta'
-            rsdtyp(nresid+6) = 'Force Gamma'
-            nresid = nresid + 6
-         else
-            rsdtyp(nresid+1) = 'Force Mol1 X'
-            rsdtyp(nresid+2) = 'Force Mol1 Y'
-            rsdtyp(nresid+3) = 'Force Mol1 Z'
+         do i = 1, 6
+            iresid(nresid+i) = ixtal
+         end do
+         do i = 1, n
+            rsdtyp(nresid+1) = 'Force X'
+            rsdtyp(nresid+2) = 'Force Y'
+            rsdtyp(nresid+3) = 'Force Z'
             nresid = nresid + 3
-            if (rotate .eq. "YES") then
-               rsdtyp(nresid+1) = 'Force Mol1 Phi'
-               rsdtyp(nresid+2) = 'Force Mol1 Theta'
-               rsdtyp(nresid+3) = 'Force Mol1 Psi'
-               nresid = nresid + 3
-            end if
-            rsdtyp(nresid+1) = 'Force Mol2 X'
-            rsdtyp(nresid+2) = 'Force Mol2 Y'
-            rsdtyp(nresid+3) = 'Force Mol2 Z'
-            nresid = nresid + 3
-            if (rotate .eq. "YES") then
-               rsdtyp(nresid+1) = 'Force Mol2 Phi'
-               rsdtyp(nresid+2) = 'Force Mol2 Theta'
-               rsdtyp(nresid+3) = 'Force Mol2 Psi'
-               nresid = nresid + 3
-            end if
-         end if
+         end do
 c
 c     print molecules per structure, energy and dipole values
 c
@@ -242,11 +204,7 @@ c
          if (e0_lattice .ne. 0.0d0) then
             nresid = nresid + 1
             iresid(nresid) = ixtal
-            if (use_bounds) then
-               rsdtyp(nresid) = 'Lattice Energy'
-            else
-               rsdtyp(nresid) = 'E Intermolecular'
-            end if
+            rsdtyp(nresid) = 'E Intermolecular'
             write (iout,170)  e0_lattice
   170       format (' Target E-Lattice or E-Inter Value :  ',f13.2)
          end if
@@ -286,9 +244,7 @@ c
       label(16) = 'C6-COEFFICIENT'
       label(17) = 'EX-BOVERLAP'
       label(18) = 'EX-OVERLAPR'
-      label(19) = 'ALPHA-EXCH '
-      label(20) = 'REGULAR    '
-      label(21) = 'VALENCE-ELE-EXCH '
+      label(19) = 'REGULAR    '
       do i = 1, nvary
          vartyp(i) = label(ivary(i))
       end do
@@ -327,7 +283,7 @@ c
             xlo(i) = xx(i) - 0.5d0
             xhi(i) = xx(i) + 0.5d0
          else
-            if (xx(i).ge.0.0d0) then
+            if (xx(i) .ge. 0.0d0) then
                xlo(i) = 0.25d0 * xx(i)
                xhi(i) = 4.0d0 * xx(i)
             else
@@ -692,21 +648,9 @@ ccccccccccccccccccccccccccccccccc
             end if
          else if (prmtyp .eq. 19) then
             if (mode .eq. 'STORE') then
-               xx(j) = exch_alpha(atom1)
-            else if (mode .eq. 'RESET') then
-               exch_alpha(atom1) = xx(j)
-            end if
-         else if (prmtyp .eq. 20) then
-            if (mode .eq. 'STORE') then
                xx(j) = regular(atom1)
             else if (mode .eq. 'RESET') then
                regular(atom1) = xx(j)
-            end if
-         else if (prmtyp .eq. 21) then
-            if (mode .eq. 'STORE') then
-               xx(j) = exch_val_ele(atom1)
-            else if (mode .eq. 'RESET') then
-               exch_val_ele(atom1) = xx(j)
             end if
 cccccccccccccccccccccccccccccccccc
          end if
@@ -743,9 +687,6 @@ c
       use polar
       use vdw
       use xtals
-c
-      use group
-      use rigid
       implicit none
       integer i,j,k,ixtal
       integer nresid,nvaried
@@ -772,229 +713,25 @@ c     set force field parameter values and find the base energy
 c
       do ixtal = 1, nxtal
          call xtalprm ('RESET',ixtal,xx)
-c     this must be energy () to work, not analysis
-c     not sure why
          e = energy ()
-c         call analysis (e)
-         e0 = ev + ec + ecd + ed + em + ep + ex + edis + exfr
-c         print *,"energy",e
-c         print *,e0
-c         e0 = ev + ec + ecd + ed + em + ep
-c         call analysis (e)
-c         e0 = ev + ec + ecd + ed + em + ep + ex + edis
-c         print *,"analysis",e
-c         print *,e0
+         e0 = ev + ec + ecd + ed + em + ep + ex + edis
 c
-c     perturb crystal lattice parameters and compute energies
+c     get gradient
 c
-c         if (use_bounds) then
-c            temp = xbox
-c            xbox = xbox + eps
-c            call xtalmove
-c            e = energy ()
-c            e1 = ev + ec + ecd + ed + em + ep
-c            call analysis (e)
-c            e1 = ev + ec + ecd + ed + em + ep + ex+ edis
-c            xbox = temp
-c            temp = ybox
-c            ybox = ybox + eps
-c            call xtalmove
-c            e = energy ()
-c            e2 = ev + ec + ecd + ed + em + ep
-c            call analysis (e)
-c            e2 = ev + ec + ecd + ed + em + ep + ex+ edis
-c            ybox = temp
-c            temp = zbox
-c            zbox = zbox + eps
-c            call xtalmove
-c            e = energy ()
-c            e3 = ev + ec + ecd + ed + em + ep
-c            call analysis (e)
-c            e3 = ev + ec + ecd + ed + em + ep + ex+ edis
-c            zbox = temp
-c            temp = alpha
-c            alpha = alpha + radian*eps
-c            call xtalmove
-c            e = energy ()
-c            e4 = ev + ec + ecd + ed + em + ep
-c            call analysis (e)
-c            e4 = ev + ec + ecd + ed + em + ep + ex+ edis
-c            alpha = temp
-c            temp = beta
-c            beta = beta + radian*eps
-c            call xtalmove
-c            e = energy ()
-c            e5 = ev + ec + ecd + ed + em + ep
-c            call analysis (e)
-c            e5 = ev + ec + ecd + ed + em + ep + ex+ edis
-c            beta = temp
-c            temp = gamma
-c            gamma = gamma + radian*eps
-c            call xtalmove
-c            e = energy ()
-c            e6 = ev + ec + ecd + ed + em + ep
-c            call analysis (e)
-c            e6 = ev + ec + ecd + ed + em + ep + ex+ edis
-c            gamma = temp
-c            call xtalmove
-c
-c     translate dimer component molecules and compute energies
-c
-c         else
-         if (rotate .eq. "YES") then
-            allocate (derivs(6,ngrp))
-            use_rigid = .true.
-            call orient
-            call numgradrgd (energy,derivs)
-            do i = 1, ngrp
-               do j = 1, 3
-                  nresid = nresid + 1
-                  resid(nresid) = derivs(j,i)
-               end do
-               do k = 1, 3
-                  nresid = nresid + 1
-c                  resid(nresid) = derivs(k,i)*3.0d0
-                  resid(nresid) = derivs(k,i)*10.0d0
-               end do
+         allocate (derivs(3,n))
+         call numgrad(energy,derivs,eps)
+         do i = 1, n
+            do j = 1, 3
+               nresid = nresid + 1
+               resid(nresid) = derivs(j,i)
             end do
-            deallocate (derivs)
-         else
-            do i = imol(1,1), imol(2,1)
-               k = kmol(i)
-               x(k) = x(k) + eps
-            end do
-c            e = energy ()
-c            e1 = ev + ec + ecd + ed + em + ep
-            call analysis (e)
-            e1 = ev + ec + ecd + ed + em + ep + ex+ edis + exfr
-            do i = imol(1,1), imol(2,1)
-               k = kmol(i)
-               x(k) = x(k) - eps
-            end do
-            do i = imol(1,1), imol(2,1)
-               k = kmol(i)
-               y(k) = y(k) + eps
-            end do
-c            e = energy ()
-c            e2 = ev + ec + ecd + ed + em + ep
-            call analysis (e)
-            e2 = ev + ec + ecd + ed + em + ep + ex+ edis + exfr
-            do i = imol(1,1), imol(2,1)
-               k = kmol(i)
-               y(k) = y(k) - eps
-            end do
-            do i = imol(1,1), imol(2,1)
-               k = kmol(i)
-               z(k) = z(k) + eps
-            end do
-c            e = energy ()
-c            e3 = ev + ec + ecd + ed + em + ep
-            call analysis (e)
-            e3 = ev + ec + ecd + ed + em + ep + ex+ edis + exfr
-            do i = imol(1,1), imol(2,1)
-               k = kmol(i)
-               z(k) = z(k) - eps
-            end do
-c            do i = imol(1,1), imol(2,1)
-c     BUG FIX!!!!!!!!!!!
-            do i = imol(1,2), imol(2,2)
-               k = kmol(i)
-               x(k) = x(k) + eps
-            end do
-c            e = energy ()
-c            e4 = ev + ec + ecd + ed + em + ep
-            call analysis (e)
-            e4 = ev + ec + ecd + ed + em + ep + ex+ edis + exfr
-            do i = imol(1,2), imol(2,2)
-               k = kmol(i)
-               x(k) = x(k) - eps
-            end do
-            do i = imol(1,2), imol(2,2)
-               k = kmol(i)
-               y(k) = y(k) + eps
-            end do
-c            e = energy ()
-c            e5 = ev + ec + ecd + ed + em + ep
-            call analysis (e)
-            e5 = ev + ec + ecd + ed + em + ep + ex+ edis + exfr
-            do i = imol(1,2), imol(2,2)
-               k = kmol(i)
-               y(k) = y(k) - eps
-            end do
-            do i = imol(1,2), imol(2,2)
-               k = kmol(i)
-               z(k) = z(k) + eps
-            end do
-c            e = energy ()
-c            e6 = ev + ec + ecd + ed + em + ep
-            call analysis (e)
-            e6 = ev + ec + ecd + ed + em + ep + ex+ edis + exfr
-            do i = imol(1,2), imol(2,2)
-               k = kmol(i)
-               z(k) = z(k) - eps
-            end do
-c
-c     get the gradient with respect to structure perturbations
-c
-            g1 = (e1 - e0) / eps
-            nresid = nresid + 1
-            resid(nresid) = g1
-c            resid(nresid) = g1 * -e0_lattice
-            g2 = (e2 - e0) / eps
-            nresid = nresid + 1
-            resid(nresid) = g2
-c            resid(nresid) = g2 * -e0_lattice
-            g3 = (e3 - e0) / eps
-            nresid = nresid + 1
-            resid(nresid) = g3
-c            resid(nresid) = g3 * -e0_lattice
-            g4 = (e4 - e0) / eps
-            nresid = nresid + 1
-            resid(nresid) = g4
-c            resid(nresid) = g4 * -e0_lattice
-            g5 = (e5 - e0) / eps
-            nresid = nresid + 1
-            resid(nresid) = g5
-c            resid(nresid) = g5 * -e0_lattice
-            g6 = (e6 - e0) / eps
-            nresid = nresid + 1
-            resid(nresid) = g6
-c            resid(nresid) = g6 * -e0_lattice
-         end if
+         end do
+         deallocate (derivs)
 c
 c     setup to compute properties of monomer from crystal
 c
-         if (use_bounds) then
-            n = n / nmol
-            nvdw = nvdw / nmol
-            nion = nion / nmol
-            ndipole = ndipole / nmol
-            npole = npole / nmol
-            npolar = npolar / nmol
-            use_bounds = .false.
-            use_replica = .false.
-            use_ewald = .false.
-            big = 1.0d12
-            vdwcut = big
-            vdwtaper = big
-            chgcut = big
-            chgtaper = big
-            dplcut = big
-            dpltaper = big
-            mpolecut = big
-            mpoletaper = big
-c
-c     compute the intermolecular or crystal lattice energy
-c
-c            e = energy ()
-            call analysis (e)
-            e_monomer = ev + ec + ecd + ed + em + ep
-            dmol = dble(nmol)
-            e_lattice = (e0 - dmol*e_monomer) / dmol
-         else
-            e_monomer = 0.0d0
-            e_lattice = e0
-         end if
+         e_monomer = 0.0d0
+         e_lattice = e0
 c
 c     compute residual due to intermolecular or lattice energy;
 c     weight energies more heavily, since there are fewer of them
@@ -1003,10 +740,10 @@ c
             nresid = nresid + 1
             resid(nresid) = e_lattice - e0_lattice
             if (ixtal .le. 11) then
-               resid(nresid) = 3.0d0 * resid(nresid)
+               resid(nresid) = 10.0d0 * resid(nresid)
 c               resid(nresid) = 100.0d0 * resid(nresid)
             else
-               resid(nresid) = 3.0d0 * resid(nresid)
+               resid(nresid) = 10.0d0 * resid(nresid)
             end if
          end if
       end do

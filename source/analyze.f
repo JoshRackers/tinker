@@ -1460,6 +1460,14 @@ c
       if (use_extra .and. (nex.ne.0.or.ex.ne.0.0d0)) then
          fstr = '('' Extra Energy Terms'',9x,'//form1//')'
          write (iout,fstr)  ex,nex
+         fstr = '('' Dispersion Energy Term'',9x,'//form1//')'
+         write (iout,fstr)  edis,nedis
+         fstr = '('' Charge Penetration Energy'',9x,'//form1//')'
+         write (iout,fstr)  ecp,necp
+      end if
+      if (use_xfer .and. (nexfr.ne.0.or.exfr.ne.0.0d0)) then
+         fstr = '('' Charge Transfer Energy'',9x,'//form1//')'
+         write (iout,fstr)  exfr,nexfr
       end if
       return
       end

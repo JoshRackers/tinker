@@ -29,13 +29,20 @@ c
       implicit none
       integer maxlsq,maxrsd
       parameter (maxlsq=1000)
-      parameter (maxrsd=1000)
+      parameter (maxrsd=3000)
       integer nxtal,nvary
       integer ivary(maxlsq)
       integer iresid(maxrsd)
       integer vary(2,maxlsq)
       real*8 e0_lattice
+      real*8 e0_exchange
+      real*8 e0_mpole
+      real*8 e0_disp
+      real*8 e0_vdw
+      real*8 e0_xfer
       character*16 vartyp(maxlsq)
       character*16 rsdtyp(maxrsd)
+      character*10 rotate
+      character*10 exponential
       save
       end

@@ -172,6 +172,11 @@ c
          if (value .eq. 'ONLY')  call potoff
          use_extra = .true.
          if (value .eq. 'NONE')  use_extra = .false.
+      else if (keyword(1:9) .eq. 'XFERTERM ') then
+         call getword (record,value,next)
+         if (value .eq. 'ONLY')  call potoff
+         use_xfer = .true.
+         if (value .eq. 'NONE')  use_xfer = .false.
       end if
 c
 c     select the name of the force field parameter set

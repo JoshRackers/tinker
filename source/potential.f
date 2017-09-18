@@ -238,6 +238,7 @@ c
       call kdipole
       call kmpole
       call kpolar
+      call kextra
 c
 c     reopen the structure file and read all the structures
 c
@@ -566,6 +567,7 @@ c
                call kdipole
                call kmpole
                call kpolar
+               call kextra
             end if
 c
 c     get potential for each structure and print statistics
@@ -1353,8 +1355,10 @@ c
       subroutine potpoint (xi,yi,zi,pot)
       use sizes
       use atoms
+      use atomid
       use charge
       use chgpot
+      use chgpen
       use dipole
       use mpole
       use polar
@@ -1376,6 +1380,10 @@ c
       real*8 qkyy,qkyz,qkzz
       real*8 qkx,qky,qkz
       real*8 scd,scq,scu
+      real*8 zkk,qk
+      real*8, allocatable :: scalei(:)
+      real*8, allocatable :: scalek(:)
+      real*8, allocatable :: scaleik(:)
 c
 c
 c     zero out charge, dipole and multipole potential terms
@@ -1384,6 +1392,14 @@ c
       ed = 0.0d0
       em = 0.0d0
       ep = 0.0d0
+c
+c
+c
+cccccccccccccccccccccccccccccc
+      allocate (scalei(5))
+      allocate (scalek(5))
+      allocate (scaleik(5))
+cccccccccccccccccccccccccccccc
 c
 c     set charge of probe site and electrostatic constants
 c
@@ -1465,6 +1481,23 @@ c
          rr5 = 3.0d0 * rr3 / r2
          e = ck*rr1 - scd*rr3 + scq*rr5
          ei = -scu * rr3
+ccccccccccccccccccccccccccccccccccc
+         if (penetration .eq. "GORDON") then
+            zkk = atomic(k)
+            if (num_ele .eq. "VALENCE") then
+               if (atomic(k) .gt. 2)  zkk = zkk - 2.0d0
+               if (atomic(k) .gt. 10)  zkk = zkk - 8.0d0
+               if (atomic(k) .gt. 18)  zkk = zkk - 8.0d0
+               if (atomic(k) .gt. 20)  zkk = zkk - 10.0d0
+            end if
+            qk = ck - zkk
+            call dampgordon(1,k,5,r,scalei,scalek,scaleik)
+c            print *,"cpclass",k,cpclass(k),zkk,qk
+            e = zkk*rr1 + qk*scalek(1)*rr1 - scd*scalek(3)*rr3 + 
+     &           scq*scalek(5)*rr5
+            ei = 0.0d0
+         end if
+cccccccccccccccccccccccccccccccccccc
 c
 c     increment the overall multipole and polarization terms
 c

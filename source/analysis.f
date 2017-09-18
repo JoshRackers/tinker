@@ -29,6 +29,7 @@ c
       use limits
       use potent
       use vdwpot
+      use chgpen
       implicit none
       integer i
       real*8 energy
@@ -62,6 +63,11 @@ c
       elf = 0.0d0
       eg = 0.0d0
       ex = 0.0d0
+ccccccccccccccccccccccc
+      edis = 0.0d0
+      exfr = 0.0d0
+      ecp = 0.0d0
+cccccccccccccccccccccc
 c
 c     perform dynamic allocation of some global arrays
 c
@@ -222,13 +228,19 @@ c
       if (use_solv)  call esolv3
       if (use_metal)  call emetal3
       if (use_geom)  call egeom3
-      if (use_extra)  call extra3
+      if (use_extra) then
+         call extra3
+         call edisp3
+      end if
+      if (use_xfer) call exfer3
 c
 c     sum up to give the total potential energy
 c
+      energy = 0.0d0
       esum = eb + ea + eba + eub + eaa + eopb + eopd + eid + eit
      &          + et + ept + ebt + eat + ett + ev + ec + ecd + ed
      &          + em + ep + er + es + elf + eg + ex
+     &          + edis + exfr
       energy = esum
 c
 c     sum up to give the total potential energy per atom
@@ -245,11 +257,16 @@ c
 c     check for an illegal value for the total energy
 c
 c     if (isnan(esum)) then
+      nanflag = .false.
       if (esum .ne. esum) then
          write (iout,10)
    10    format (/,' ANALYSIS  --  Illegal Value for the Total',
      &              ' Potential Energy')
-         call fatal
+         print *,"mpole",em
+         print *,"exchange",ex
+         print *,"dispersion",edis
+c         call fatal
+         nanflag = .true.
       end if
       return
       end

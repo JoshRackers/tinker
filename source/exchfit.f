@@ -32,6 +32,7 @@ c
       integer atom1,atom2
       integer nresid,prmtyp
       real*8 grdmin
+      real*8 exchmin1
       real*8, allocatable :: xx(:)
       real*8, allocatable :: resid(:)
       real*8, allocatable :: g(:)
@@ -40,10 +41,12 @@ c
       real*8, allocatable :: fjac(:,:)
       logical exist,query
       character*5 vindex
-      character*16 label(11)
+      character*16 label(15)
       character*120 record
       character*120 string
+      character*10 optimizer
       external xtalerr,xtalwrt
+      external exchmin1,paramwrt1
 c
 c
 c     initialize some variables to be used during fitting
@@ -57,9 +60,19 @@ c
       write (iout,10)
    10 format (/,' The Following Parameters can be Fit for',
      &           ' each Atom Type :',
-     &        //,4x,'(1) Exchange-Repulsion Scalar',
-     &        /,4x,'(2) Gordon Damping Parameter',
-     &        /,4x,'(3) Single Ex-Rep Scalar')
+     &        //,4x,'(1) Exchange-Repulsion A',
+     &        /,4x,'(2) Exchange-Repulsion B/r',
+     &        /,4x,'(3) Exchange-Repulsion sigma',
+     &        /,4x,'(4) Gordon Damping Parameter',
+     &        /,4x,'(5) Single Ex-Rep Scalar',
+     &        /,4x,'(6) C6-COEFFICIENT',
+     &        /,4x,'(7) Exchange-Repulsion C/r2',
+     &        /,4x,'(8) Hydrogen Reduction Factor',
+     &        /,4x,'(11) vdW radius',
+     &        /,4x,'(12) vdW eps',
+     &        /,4x,'(13) Number of Valence Electrons',
+     &        /,4x,'(14) Exchange Alpha',
+     &        /,4x,'(15) Exchange Valence Electrons')
 c
 c     get types of potential parameters to be optimized
 c
@@ -92,12 +105,23 @@ c
             nvary = nvary + 1
             ivary(nvary) = prmtyp
             vary(1,nvary) = atom1
-            if (prmtyp.eq.5 .or. prmtyp.eq.6) then
-               vary(1,nvary) = min(atom1,atom2)
-               vary(2,nvary) = max(atom1,atom2)
-            end if
+c            if (prmtyp.eq.5 .or. prmtyp.eq.6) then
+c               vary(1,nvary) = min(atom1,atom2)
+c               vary(2,nvary) = max(atom1,atom2)
+c            end if
          end if
       end do
+c
+c     determine which optimizer will be used
+c
+      write (iout,51)
+ 51   format (/,' Enter type of optimizer to use :  ',$)
+      read (input,52)  optimizer
+ 52   format (A10)
+      write (iout,53)
+ 53   format (/,' Are you fitting an exponential?  ',$)
+      read (input,54)  exponential
+ 54   format (A10)
 c
 c     get termination criterion as RMS gradient over parameters
 c
@@ -150,45 +174,162 @@ c
 c
 c     get ideal value for intermolecular or lattice energy
 c
-         e0_lattice = 0.0d0
+         e0_exchange = 0.0d0
          query = .true.
          call nextarg (string,exist)
          if (exist) then
-            read (string,*,err=130,end=130)  e0_lattice
+            read (string,*,err=130,end=130)  e0_exchange
             query = .false.
          end if
   130    continue
          if (query) then
             write (iout,140)
-  140       format (/,' Enter Target Elat/Einter Value and Weight',
+  140       format (/,' Enter Target Exchange Value',
      &                 ' [<CR> to omit] :  ',$)
-            read (input,150)  e0_lattice
+            read (input,150)  e0_exchange
   150       format (f20.0)
          end if
+cccccccccccccccccccccccccc
+         e0_mpole = 0.0d0
+         query = .true.
+         call nextarg (string,exist)
+         if (exist) then
+            read (string,*,err=151,end=151)  e0_mpole
+            query = .false.
+         end if
+ 151     continue
+         if (query) then
+            write (iout,152)
+ 152        format (/,' Enter Target MPOLE Value',
+     &           ' [<CR> to omit] :  ',$)
+            read (input,153)  e0_mpole
+ 153        format (f20.0)
+         end if
+ccccccccccccccccccccccccccccc
+         e0_disp = 0.0d0
+         query = .true.
+         call nextarg (string,exist)
+         if (exist) then
+            read (string,*,err=154,end=154)  e0_disp
+            query = .false.
+         end if
+ 154     continue
+         if (query) then
+            write (iout,155)
+ 155        format (/,' Enter Target Dispersion Value',
+     &           ' [<CR> to omit] :  ',$)
+            read (input,156)  e0_disp
+ 156        format (f20.0)
+         end if
+ccccccccccccccccccccccccc
+         e0_vdw = 0.0d0
+         query = .true.
+         call nextarg (string,exist)
+         if (exist) then
+            read (string,*,err=157,end=157)  e0_vdw
+            query = .false.
+         end if
+ 157     continue
+         if (query) then
+            write (iout,158)
+c     co-opted this to do total
+c 158        format (/,' Enter Any Non-zero number for VDW',
+c     &           ' [<CR> to omit] :  ',$)
+ 158        format (/,' Enter Total Interaction Energy',
+     &           ' [<CR> to omit] :  ',$)
+            read (input,159)  e0_vdw
+ 159        format (f20.0)
+         end if
+c
+         e0_xfer = 0.0d0
+         query = .true.
+         call nextarg (string,exist)
+         if (exist) then
+            read (string,*,err=160,end=160)  e0_xfer
+            query = .false.
+         end if
+ 160     continue
+         if (query) then
+            write (iout,161)
+ 161        format (/,' Enter Target Charge Transfer Value',
+     &           ' [<CR> to omit] :  ',$)
+            read (input,162)  e0_xfer
+ 162        format (f20.0)
+         end if
+ccccccccccccccccccccccccc
 c
 c     print molecules per structure, energy and dipole values
 c
-         write (iout,160)  ixtal,filename(1:35),nmol
-  160    format (/,' File Name of Target Structure',i4,' :',8x,a35,
-     &           /,' Number of Molecules per Structure :',i13)
-         if (e0_lattice .ne. 0.0d0) then
+         write (iout,169)  ixtal,filename(1:35),nmol
+ 169     format (/,' File Name of Target Structure',i4,' :',8x,a35,
+     &        /,' Number of Molecules per Structure :',i13)
+         if (e0_exchange .ne. 0.0d0) then
             nresid = nresid + 1
             iresid(nresid) = ixtal
             if (use_bounds) then
-               rsdtyp(nresid) = 'Lattice Energy'
+               rsdtyp(nresid) = 'Exchange Energy'
             else
-               rsdtyp(nresid) = 'E Intermolecular'
+               rsdtyp(nresid) = 'E Exchange     '
             end if
-            write (iout,170)  e0_lattice
-  170       format (' Target E-Lattice or E-Inter Value :  ',f13.2)
+            write (iout,170)  e0_exchange
+  170       format (' Target E-Exchange or E-Inter Value :  ',f13.2)
          end if
+ccccccccccccccccccccccc
+         if (e0_mpole .ne. 0.0d0) then
+            nresid = nresid + 1
+            iresid(nresid) = ixtal
+            if (use_bounds) then
+               rsdtyp(nresid) = 'MPOLE     Energy'
+            else
+               rsdtyp(nresid) = 'E MPOLE         '
+            end if
+            write (iout,171)  e0_mpole
+ 171        format (' Target E-MPOLE or E-Inter Value :  ',f13.2)
+         end if
+cccccccccccccccccccccccc
+         if (e0_disp .ne. 0.0d0) then
+            nresid = nresid + 1
+            iresid(nresid) = ixtal
+            if (use_bounds) then
+               rsdtyp(nresid) = 'DISP     Energy'
+            else
+               rsdtyp(nresid) = 'E DISP         '
+            end if
+            write (iout,172)  e0_disp
+ 172        format (' Target E-DISP or E-Inter Value :  ',f13.2)
+         end if
+cccccccccccccccccccccccccc
+         if (e0_vdw .ne. 0.0d0) then
+            nresid = nresid + 1
+            iresid(nresid) = ixtal
+            if (use_bounds) then
+               rsdtyp(nresid) = 'VDW      Energy'
+            else
+               rsdtyp(nresid) = 'E VDW          '
+            end if
+            write (iout,173)  e0_vdw
+ 173        format (' Target E-VDW or E-Inter Value :  ',f13.2)
+         end if
+ccccccccccccccccccccccc
+         if (e0_xfer .ne. 0.0d0) then
+            nresid = nresid + 1
+            iresid(nresid) = ixtal
+            if (use_bounds) then
+               rsdtyp(nresid) = 'Charge Transfer Energy'
+            else
+               rsdtyp(nresid) = 'E ChgTransfer  '
+            end if
+            write (iout,174)  e0_xfer
+ 174        format (' Target E-XFER or E-Inter Value :  ',f13.2)
+         end if
+ccccccccccccccccccccccccc
 c
 c     set the initial values of the parameters
 c
          call xtalprm ('STORE',ixtal,xx)
       end do
 c
-c     turn off all local interactions and extra terms
+c     turn off all local interactions
 c
       call potoff
       use_vdw = .true.
@@ -201,9 +342,19 @@ c
 c
 c     types of variables for use in optimization
 c
-      label(1) = 'Overlap Scalar'
-      label(2) = 'Gordon Alpha  '
-      label(3) = 'Single Scalar '
+      label(1) = 'EX-OVERLAP    '
+      label(2) = 'EX-BOVERLAP   '
+      label(3) = 'EX-OVERLAPR   '
+      label(4) = 'ALPHA-PERM    '
+      label(5) = 'Single Scalar '
+      label(6) = 'C6 Coefficient'
+      label(7) = 'Overlap C/r2  '
+      label(8) = 'Hydrogen Red  '
+      label(11) = 'vdw radius    '
+      label(12) = 'vdw eps       '
+      label(13) = 'VALENCE-ELE   '
+      label(14) = 'ALPHA-EXCH    '
+      label(15) = 'VALENCE-ELE-EXCH '
       do i = 1, nvary
          vartyp(i) = label(ivary(i))
       end do
@@ -215,16 +366,18 @@ c
       write (iout,180)
   180 format (/,' Initial Values of the Parameters :',/)
       do i = 1, nvary
-         if (ivary(i) .le. 3) then
-            write (iout,190)  i,vartyp(i),vindex,vary(1,i),xx(i)
-  190       format (3x,'(',i2,')',2x,a16,4x,'Atom ',a5,i5,4x,f12.4)
-         else if (ivary(i) .ne. 6) then
-            write (iout,200)  i,vartyp(i),vary(1,i),xx(i)
-  200       format (3x,'(',i2,')',2x,a16,4x,'Atom Type ',i5,4x,f12.4)
-         else
-            write (iout,210)  i,vartyp(i),vary(1,i),vary(2,i),xx(i)
-  210       format (3x,'(',i2,')',2x,a16,4x,'Bond Type ',2i5,f12.4)
-         end if
+         write (iout,190)  i,vartyp(i),vindex,vary(1,i),xx(i)
+ 190     format (3x,'(',i2,')',2x,a16,4x,'Atom ',a5,i5,4x,f12.4)
+c         if (ivary(i) .le. 3) then
+c            write (iout,190)  i,vartyp(i),vindex,vary(1,i),xx(i)
+c  190       format (3x,'(',i2,')',2x,a16,4x,'Atom ',a5,i5,4x,f12.4)
+c         else if (ivary(i) .ne. 6) then
+c            write (iout,200)  i,vartyp(i),vary(1,i),xx(i)
+c  200       format (3x,'(',i2,')',2x,a16,4x,'Atom Type ',i5,4x,f12.4)
+c         else
+c            write (iout,210)  i,vartyp(i),vary(1,i),vary(2,i),xx(i)
+c  210       format (3x,'(',i2,')',2x,a16,4x,'Bond Type ',2i5,f12.4)
+c         end if
       end do
 c
 c     perform dynamic allocation of some local arrays
@@ -238,14 +391,40 @@ c
 c     set upper and lower bounds based on the parameter type
 c
       do i = 1, nvary
-         xlo(i) = 0.25d0 * xx(i)
-         xhi(i) = 4.0d0 * xx(i)
+         if (xx(i).ge.0.0d0) then
+            xlo(i) = 0.25d0 * xx(i)
+            xhi(i) = 4.0d0 * xx(i)
+         else
+            xlo(i) = 4.0d0 * xx(i)
+            xhi(i) = 0.25d0 * xx(i)
+         end if
+         if (ivary(i).eq.8) then
+            xlo(i) = 0.8d0
+            xhi(i) = 1.0d0
+         end if
+         if (ivary(i).eq.13) then
+            xlo(i) = 0.0d0
+            print *,"WARNING: Using vdwclasses"
+            if (vary(1,i).ge.1) xhi(i) = 1.0d0
+            if (vary(1,i).ge.7) xhi(i) = 6.0d0
+            if (vary(1,i).ge.14) xhi(i) = 7.0d0
+            if (vary(1,i).ge.17) xhi(i) = 8.0d0
+            if (vary(1,i).ge.23) xhi(i) = 15.0d0
+            if (vary(1,i).ge.24) xhi(i) = 16.0d0
+            if (vary(1,i).ge.26) xhi(i) = 9.0d0
+            if (vary(1,i).ge.27) xhi(i) = 17.0d0
+            if (vary(1,i).ge.28) xhi(i) = 35.0d0
+         end if
       end do
 c
 c     use nonlinear least squares to refine the parameters
 c
-      call square (nvary,nresid,xlo,xhi,xx,resid,g,fjac,
-     &                  grdmin,xtalerr,xtalwrt)
+      if (optimizer .eq. "lbfgs") then
+         call lbfgs (nvary,xx,resid,grdmin,exchmin1,paramwrt1)
+      else
+         call square (nvary,nresid,xlo,xhi,xx,resid,g,fjac,
+     &        grdmin,xtalerr,xtalwrt)
+      end if
 c
 c     perform deallocation of some local arrays
 c
@@ -259,17 +438,19 @@ c
   220 format (/,' Final Values of Parameters and Scaled',
      &           ' Derivatives :',/)
       do i = 1, nvary
-         if (ivary(i) .le. 3) then
-            write (iout,230)  i,vartyp(i),vindex,vary(1,i),xx(i),g(i)
-  230       format (3x,'(',i2,')',2x,a16,4x,'Atom ',a5,i5,2x,2f14.4)
-         else if (ivary(i) .ne. 6) then
-            write (iout,240)  i,vartyp(i),vary(1,i),xx(i),g(i)
-  240       format (3x,'(',i2,')',2x,a16,4x,'Atom Type ',i5,2x,2f14.4)
-         else
-            write (iout,250)  i,vartyp(i),vary(1,i),vary(2,i),xx(i),g(i)
-  250       format (3x,'(',i2,')',2x,a16,4x,'Bond Type ',2i5,
-     &                 f11.4,f14.4)
-         end if
+         write (iout,230)  i,vartyp(i),vindex,vary(1,i),xx(i),g(i)
+ 230     format (3x,'(',i2,')',2x,a16,4x,'Atom ',a5,i5,2x,2f14.4)
+c         if (ivary(i) .le. 3) then
+c            write (iout,230)  i,vartyp(i),vindex,vary(1,i),xx(i),g(i)
+c  230       format (3x,'(',i2,')',2x,a16,4x,'Atom ',a5,i5,2x,2f14.4)
+c         else if (ivary(i) .ne. 6) then
+c            write (iout,240)  i,vartyp(i),vary(1,i),xx(i),g(i)
+c  240       format (3x,'(',i2,')',2x,a16,4x,'Atom Type ',i5,2x,2f14.4)
+c         else
+c            write (iout,250)  i,vartyp(i),vary(1,i),vary(2,i),xx(i),g(i)
+c  250       format (3x,'(',i2,')',2x,a16,4x,'Bond Type ',2i5,
+c     &                 f11.4,f14.4)
+c         end if
       end do
 c
 c     print final values of the individual residual functions
@@ -328,6 +509,7 @@ c      use boxes
       use molcul
       use mpole
       use polar
+      use potderivs
       use vdw
       use vdwpot
       use xtals
@@ -338,11 +520,19 @@ c      use boxes
       integer jclass
       real*8 rd,ep,sixth
       real*8 xmid,ymid,zmid
-      real*8 e0_lattices(maxref)
+      real*8 e0_exchanges(maxref)
+      real*8 e0_mpoles(maxref)
+      real*8 e0_disps(maxref)
+      real*8 e0_vdws(maxref)
+      real*8 e0_xfers(maxref)
       real*8 xx(*)
       logical first
       character*5 mode
-      save e0_lattices
+      save e0_exchanges
+      save e0_mpoles
+      save e0_disps
+      save e0_vdws
+      save e0_xfers
       save first
       data first  / .true. /
 c
@@ -352,6 +542,69 @@ c
       if (mode .eq. 'STORE') then
          call makeref (ixtal)
       else if (mode .eq. 'RESET') then
+      if (allocated(pot)) deallocate (pot)
+      if (allocated(field)) deallocate (field)
+      if (allocated(gradfield)) deallocate (gradfield)
+c
+c     permanent - permanent exclusion rule
+c
+      if (allocated(potm)) deallocate (potm)
+      if (allocated(fieldm)) deallocate (fieldm)
+      if (allocated(gradfieldm)) deallocate (gradfieldm)
+c
+c     ewald damping
+c
+      if (allocated(pot_ewald)) deallocate (pot_ewald)
+      if (allocated(field_ewald)) deallocate (field_ewald)
+      if (allocated(gradfield_ewald)) 
+     &     deallocate (gradfield_ewald)
+c
+c     thole damping with p and d exclusion rules needed for
+c     computing induced dipoles
+c
+      if (allocated(fieldd_thole)) deallocate (fieldd_thole)
+      if (allocated(fieldp_thole)) deallocate (fieldp_thole)
+c
+      if (allocated(fieldd_func)) deallocate (fieldd_func)
+      if (allocated(fieldp_func)) deallocate (fieldp_func)
+c
+c     gordon charge penetration damping
+c
+      if (allocated(potm_gordon)) deallocate (potm_gordon)
+      if (allocated(fieldm_gordon)) 
+     &     deallocate (fieldm_gordon)
+      if (allocated(gradfieldm_gordon))
+     &     deallocate (gradfieldm_gordon)
+c
+c     gordon overlap damping
+c
+      if (allocated(potm_goverlap)) deallocate (potm_goverlap)
+      if (allocated(fieldm_goverlap))
+     &     deallocate (fieldm_goverlap)
+      if (allocated(gradfieldm_goverlap))
+     &     deallocate (gradfieldm_goverlap)
+c
+c     gordon charge penetration damping - nuclei
+c
+      if (allocated(nucpotm_gordon))
+     &     deallocate (nucpotm_gordon)
+      if (allocated(nucfieldm_gordon))
+     &     deallocate (nucfieldm_gordon)
+c
+c     gordon damping for polarization
+c
+      if (allocated(fieldd_gordon))
+     &     deallocate (fieldd_gordon)
+      if (allocated(fieldp_gordon))
+     &     deallocate (fieldp_gordon)
+c
+c     gordon damping with nuclear regularization
+c
+      if (allocated(fieldd_gordonreg))
+     &     deallocate (fieldd_gordonreg)
+      if (allocated(fieldp_gordonreg))
+     &     deallocate (fieldp_gordonreg)
+c
          call getref (ixtal)
          call basefile (filename)
          silent = .true.
@@ -396,9 +649,17 @@ c
 c     values of ideal intermolecular or lattice energy
 c
       if (mode .eq. 'STORE') then
-         e0_lattices(ixtal) = e0_lattice
+         e0_exchanges(ixtal) = e0_exchange
+         e0_mpoles(ixtal) = e0_mpole
+         e0_disps(ixtal) = e0_disp
+         e0_vdws(ixtal) = e0_vdw
+         e0_xfers(ixtal) = e0_xfer
       else if (mode .eq. 'RESET') then
-         e0_lattice = e0_lattices(ixtal)
+         e0_exchange = e0_exchanges(ixtal)
+         e0_mpole = e0_mpoles(ixtal)
+         e0_disp = e0_disps(ixtal)
+         e0_vdw = e0_vdws(ixtal)
+         e0_xfer = e0_xfers(ixtal)
       end if
 c
 c     store or reset values of the optimization variables
@@ -409,23 +670,134 @@ c
 ccccccccccccccccccccccccccccccccc
          if (prmtyp .eq. 1) then
             if (mode .eq. 'STORE') then
+c               xx(j) = overlap(jclass)
                xx(j) = overlap(jclass)
             else if (mode .eq. 'RESET') then
+c               overlap(jclass) = xx(j)
                overlap(jclass) = xx(j)
             end if
          else if (prmtyp .eq. 2) then
             if (mode .eq. 'STORE') then
-               xx(j) = alpha(jclass)
+               xx(j) = boverlap(jclass)
             else if (mode .eq. 'RESET') then
-               alpha(jclass) = xx(j)
+               boverlap(jclass) = xx(j)
             end if
          else if (prmtyp .eq. 3) then
+            if (mode .eq. 'STORE') then
+               xx(j) = overlapr(jclass)
+            else if (mode .eq. 'RESET') then
+               overlapr(jclass) = xx(j)
+            end if
+         else if (prmtyp .eq. 4) then
+            if (mode .eq. 'STORE') then
+c               xx(j) = alpha(jclass)
+               xx(j) = alpha(jclass)
+            else if (mode .eq. 'RESET') then
+c               alpha(jclass) = xx(j)
+               alpha(jclass) = xx(j)
+            end if
+         else if (prmtyp .eq. 5) then
             if (mode .eq. 'STORE') then
                xx(j) = soverlap
             else if (mode .eq. 'RESET') then
                soverlap = xx(j)
             end if
+         else if (prmtyp .eq. 6) then
+            if (mode .eq. 'STORE') then
+               xx(j) = csix(jclass)
+            else if (mode .eq. 'RESET') then
+               csix(jclass) = xx(j)
+            end if
+         else if (prmtyp .eq. 7) then
+            if (mode .eq. 'STORE') then
+               xx(j) = coverlap(jclass)
+            else if (mode .eq. 'RESET') then
+               coverlap(jclass) = xx(j)
+            end if
+         else if (prmtyp .eq. 8) then
+            if (mode .eq. 'STORE') then
+               do i = 1, n
+                  if (class(i) .eq. jclass) then
+                     xx(j) = kred(i)
+                     goto 10
+                  end if
+               end do
+            else if (mode .eq. 'RESET') then
+               do i = 1, n
+                  if (class(i) .eq. jclass)  kred(i) = xx(j)
+               end do
+            end if
+c     vdw radius and eps
+         else if (prmtyp .eq. 11) then
+            if (mode .eq. 'STORE') then
+               xx(j) = rad(jclass)
+            else if (mode .eq. 'RESET') then
+               rad(jclass) = xx(j)
+               do i = 1, maxclass
+                  if (rad(i).eq.0.0d0 .and. rad(jclass).eq.0.0d0) then
+                     rd = 0.0d0
+                  else if (radrule(1:10) .eq. 'ARITHMETIC') then
+                     rd = rad(i) + rad(jclass)
+                  else if (radrule(1:9) .eq. 'GEOMETRIC') then
+                     rd = 2.0d0 * sqrt(rad(i) * rad(jclass))
+                  else if (radrule(1:10) .eq. 'CUBIC-MEAN') then
+                     rd = 2.0d0 * (rad(i)**3+rad(jclass)**3)
+     &                       / (rad(i)**2+rad(jclass)**2)
+                  else
+                     rd = rad(i) + rad(jclass)
+                  end if
+                  radmin(i,jclass) = rd
+                  radmin(jclass,i) = rd
+               end do
+            end if
+         else if (prmtyp .eq. 12) then
+            if (mode .eq. 'STORE') then
+               xx(j) = eps(jclass)
+            else if (mode .eq. 'RESET') then
+               eps(jclass) = abs(xx(j))
+               do i = 1, maxclass
+                  if (eps(i).eq.0.0d0 .and. eps(jclass).eq.0.0d0) then
+                     ep = 0.0d0
+                  else if (epsrule(1:10) .eq. 'ARITHMETIC') then
+                     ep = 0.5d0 * (eps(i) + eps(jclass))
+                  else if (epsrule(1:9) .eq. 'GEOMETRIC') then
+                     ep = sqrt(eps(i) * eps(jclass))
+                  else if (epsrule(1:8) .eq. 'HARMONIC') then
+                     ep = 2.0d0 * (eps(i)*eps(jclass))
+     &                       / (eps(i)+eps(jclass))
+                  else if (epsrule(1:3) .eq. 'HHG') then
+                     ep = 4.0d0 * (eps(i)*eps(jclass))
+     &                      / (sqrt(eps(i))+sqrt(eps(jclass)))**2
+                  else if (epsrule(1:3) .eq. 'W-H') then
+                     ep = 2.0d0 * sqrt(eps(i)) * sqrt(eps(jclass)) * 
+     &                    (rad(i)*rad(jclass))**3 /
+     &                    (rad(i)**6 + rad(jclass)**6)
+                  else
+                     ep = sqrt(eps(i) * eps(jclass))
+                  end if
+                  epsilon(i,jclass) = ep
+                  epsilon(jclass,i) = ep
+               end do
+            end if
 cccccccccccccccccccccccccccccccccc
+         else if (prmtyp .eq. 13) then
+            if (mode .eq. 'STORE') then
+               xx(j) = val_ele(jclass)
+            else if (mode .eq. 'RESET') then
+               val_ele(jclass) = xx(j)
+            end if
+         else if (prmtyp .eq. 14) then
+            if (mode .eq. 'STORE') then
+               xx(j) = exch_alpha(jclass)
+            else if (mode .eq. 'RESET') then
+               exch_alpha(jclass) = xx(j)
+            end if
+         else if (prmtyp .eq. 15) then
+            if (mode .eq. 'STORE') then
+               xx(j) = exch_val_ele(jclass)
+            else if (mode .eq. 'RESET') then
+               exch_val_ele(jclass) = xx(j)
+            end if
          end if
    10    continue
       end do
@@ -460,13 +832,28 @@ c
       use polar
       use vdw
       use xtals
+c
+      use chgpen
+      use inter
+c
       implicit none
       integer i,k,ixtal
       integer nresid,nvaried
-      real*8 energy,eps,temp
+      real*8 energy
+      real*8 eps,temp
       real*8 e,e0
       real*8 e_monomer
-      real*8 e_lattice
+      real*8 e_exchange
+      real*8 e_mpole
+      real*8 e_disp
+      real*8 e_vdw
+      real*8 e_cp
+      real*8 e_xfer
+      real*8 e0_exchange_log
+      real*8 e0_xfer_log
+      real*8 e0_mpole_log
+      real*8 e0_disp_log
+      real*8 e0_vdw_log
       real*8 dmol,big
       real*8 e1,e2,e3
       real*8 e4,e5,e6
@@ -485,15 +872,73 @@ c     set force field parameter values and find the base energy
 c
       do ixtal = 1, nxtal
          call xtalprm ('RESET',ixtal,xx)
-         call analysis
-         e_lattice = ex
+         call analysis (energy)
+         if (nanflag) then
+            print *,"dimer number: ",ixtal
+            print *,"parameters"
+            do i = 1, nvary
+               print *,i,xx(i)
+            end do
+            call fatal
+         end if
+c         print *,"ixtal",ixtal,ex
+         e_exchange = ex
+c     this only works if intramolecular multipoles are turned off
+         e_mpole = em
+         e_disp = edis
+         e_cp = ecp
+ccccccccccccccccccccccccccc
+c     co-opted for total
+c         e_vdw = e_exchange + e_disp
+         e_vdw = einter
+ccccccccccccccccccccccccccc
+         e_xfer = exfr
+c     get exchange from ehal3
+         if (exmodel .eq. "14-ONLY") e_exchange = ev
+c
+         if (exponential .eq. "YES") then
+            e_exchange = log(ex)
+            if (exmodel .eq. "14-ONLY") e_exchange = log(ev)
+            e0_exchange_log = log(e0_exchange)
+c
+            e_xfer = log(-exfr)
+            if (e0_xfer .le. 0.0d0) then
+               e0_xfer_log = log(-e0_xfer)
+            else
+               e0_xfer_log = e_xfer
+            end if
+         end if
 c
 c     compute residual due to intermolecular or lattice energy;
 c     weight energies more heavily, since there are fewer of them
 c
-         if (e0_lattice .ne. 0.0d0) then
+         if (e0_exchange .ne. 0.0d0) then
             nresid = nresid + 1
-            resid(nresid) = e_lattice - e0_lattice
+            if (exponential .eq. "YES") then
+               resid(nresid) = e_exchange - e0_exchange_log
+            else
+               resid(nresid) = e_exchange - e0_exchange
+            end if
+         end if
+         if (e0_mpole .ne. 0.0d0) then
+            nresid = nresid + 1
+            resid(nresid) = e_mpole - e0_mpole
+         end if
+         if (e0_disp .ne. 0.0d0) then
+            nresid = nresid + 1
+            resid(nresid) = e_disp - e0_disp
+         end if
+         if (e0_vdw .ne. 0.0d0) then
+            nresid = nresid + 1
+            resid(nresid) = e_vdw - e0_vdw
+         end if
+         if (e0_xfer .ne. 0.0d0) then
+            nresid = nresid + 1
+            if (exponential .eq. "YES") then
+               resid(nresid) = e_xfer - e0_xfer_log
+            else
+               resid(nresid) = e_xfer - e0_xfer
+            end if
          end if
       end do
       return
@@ -625,17 +1070,19 @@ c
    10 format (/,' Parameters and Scaled Derivatives at',
      &          ' Iteration',i4,' :',/)
       do i = 1, nvary
-         if (ivary(i) .le. 3) then
-            write (iout,20)  i,vartyp(i),vindex,vary(1,i),xx(i),gs(i)
-   20       format (3x,'(',i2,')',2x,a16,4x,'Atom ',a5,i5,2x,2f14.4)
-         else if (ivary(i) .ne. 6) then
-            write (iout,30)  i,vartyp(i),vary(1,i),xx(i),gs(i)
-   30       format (3x,'(',i2,')',2x,a16,4x,'Atom Type ',i5,2x,2f14.4)
-         else
-            write (iout,40)  i,vartyp(i),vary(1,i),vary(2,i),xx(i),gs(i)
-   40       format (3x,'(',i2,')',2x,a16,4x,'Bond Type ',2i5,
-     &                 f11.4,f14.4)
-         end if
+         write (iout,20)  i,vartyp(i),vindex,vary(1,i),xx(i),gs(i)
+ 20      format (3x,'(',i2,')',2x,a16,4x,'Atom ',a5,i5,2x,2f14.4)
+c         if (ivary(i) .le. 3) then
+c            write (iout,20)  i,vartyp(i),vindex,vary(1,i),xx(i),gs(i)
+c   20       format (3x,'(',i2,')',2x,a16,4x,'Atom ',a5,i5,2x,2f14.4)
+c         else if (ivary(i) .ne. 6) then
+c            write (iout,30)  i,vartyp(i),vary(1,i),xx(i),gs(i)
+c   30       format (3x,'(',i2,')',2x,a16,4x,'Atom Type ',i5,2x,2f14.4)
+c         else
+c            write (iout,40)  i,vartyp(i),vary(1,i),vary(2,i),xx(i),gs(i)
+c   40       format (3x,'(',i2,')',2x,a16,4x,'Bond Type ',2i5,
+c     &                 f11.4,f14.4)
+c         end if
       end do
 c
 c     print the values of the individual residual functions
@@ -654,5 +1101,215 @@ c
       end do
       write (iout,80)
    80 format ()
+      return
+      end
+c
+c
+c     ##########################################################
+c     ##                                                      ##
+c     ##  function exchmin1  --  error function for fitpen     ##
+c     ##                                                      ##
+c     ##########################################################
+c
+c
+c     "exchmin1" computes an error function value derived from
+c     derivatives on each atom as well as the intermolecular
+c     energy.  
+c
+c
+      function exchmin1 (xx,g)
+      use sizes
+      use atoms
+      use boxes
+      use bound
+      use charge
+      use dipole
+      use energi
+      use limits
+      use math
+      use molcul
+      use mpole
+      use polar
+      use vdw
+      use xtals
+      use chgpen
+c
+c      use deriv
+c      use energi
+c      use fitprm
+c      use inter
+c      use molcul
+c      use mplpot
+c      use polar
+c      use chgpen
+      implicit none
+      integer i,j,ixtal
+      real*8 exchmin1
+      real*8 energy,gi,eps,xx0
+      real*8 ediff
+      real*8 value,value0
+      real*8 e,e0
+      real*8 e_monomer
+      real*8 e_exchange,e0_exchange_log
+      real*8 e_mpole
+      real*8 e_disp
+      real*8 e_vdw
+      real*8 resid_ex
+      real*8 resid_mpole
+      real*8 resid_disp
+      real*8 resid_vdw
+      real*8 resid_tot
+      real*8 xx(*)
+      real*8 g(*)
+c
+c     zero out error function
+c
+      exchmin1 = 0.0d0
+      do i = 1, nvary
+         g(i) = 0.0d0
+c         print *,"xx",xx(i)
+      end do
+      do ixtal = 1, nxtal
+         call xtalprm ('RESET',ixtal,xx)
+         call analysis (energy)
+c         print *,"check",energy
+         e_exchange = ex
+         e_mpole = em
+         e_disp = edis
+         e_vdw = e_exchange + e_disp
+c
+         if (exponential .eq. "YES") then
+            e_exchange = log(ex)
+            if (exmodel .eq. "14-ONLY") e_exchange = log(ev)
+            e0_exchange_log = log(e0_exchange)
+         end if
+c
+         if (e0_exchange .ne. 0.0d0) then
+            if (exponential .eq. "YES") then
+               resid_ex = (e_exchange - e0_exchange_log)**2
+               exchmin1 = exchmin1 + resid_ex
+            else
+               resid_ex = (e_exchange - e0_exchange)**2
+               exchmin1 = exchmin1 + resid_ex
+            end if
+         end if
+         if (e0_mpole .ne. 0.0d0) then
+            resid_mpole = (e_mpole - e0_mpole)**2
+            exchmin1 = exchmin1 + resid_mpole
+         end if
+         if (e0_disp .ne. 0.0d0) then
+            resid_disp = (e_disp - e0_disp)**2
+            exchmin1 = exchmin1 + resid_disp
+         end if
+         if (e0_vdw .ne. 0.0d0) then
+            resid_vdw = (e_vdw - e0_vdw)**2
+            exchmin1 = exchmin1 + resid_vdw
+         end if
+c         print *,"residual",ixtal,exchmin1
+         do i = 1, nvary
+            eps = 0.000001d0
+            xx0 = xx(i)
+            xx(i) = xx(i) - 0.5d0*eps
+            call xtalprm ('RESET',ixtal,xx)
+            call analysis (energy)
+            e_exchange = ex
+            e_mpole = em
+            e_disp = edis
+            e_vdw = e_exchange + e_disp
+c            print *,"check 1",energy
+c
+            value0 = 0.0d0
+            if (e0_exchange .ne. 0.0d0) then
+               if (exponential .eq. "YES") then
+                  resid_ex = (e_exchange - e0_exchange_log)**2
+                  value0 = value0 + resid_ex
+               else
+                  resid_ex = (e_exchange - e0_exchange)**2
+                  value0 = value0 + resid_ex
+               end if
+            end if
+            if (e0_mpole .ne. 0.0d0) then
+               resid_mpole = (e_mpole - e0_mpole)**2
+               value0 = value0 + resid_mpole
+            end if
+            if (e0_disp .ne. 0.0d0) then
+               resid_disp = (e_disp - e0_disp)**2
+               value0 = value0 + resid_disp
+            end if
+            if (e0_vdw .ne. 0.0d0) then
+               resid_vdw = (e_vdw - e0_vdw)**2
+               value0 = value0 + resid_vdw
+            end if
+c
+            xx(i) = xx(i) + eps
+            call xtalprm ('RESET',ixtal,xx)
+            call analysis (energy)
+            e_exchange = ex
+            e_mpole = em
+            e_disp = edis
+            e_vdw = e_exchange + e_disp
+c            print *,"check 2",energy
+c     
+            value = 0.0d0
+            if (e0_exchange .ne. 0.0d0) then
+               if (exponential .eq. "YES") then
+                  resid_ex = (e_exchange - e0_exchange_log)**2
+                  value = value + resid_ex
+               else
+                  resid_ex = (e_exchange - e0_exchange)**2
+                  value = value + resid_ex
+               end if
+            end if
+            if (e0_mpole .ne. 0.0d0) then
+               resid_mpole = (e_mpole - e0_mpole)**2
+               value = value + resid_mpole
+            end if
+            if (e0_disp .ne. 0.0d0) then
+               resid_disp = (e_disp - e0_disp)**2
+               value = value + resid_disp
+            end if
+            if (e0_vdw .ne. 0.0d0) then
+               resid_vdw = (e_vdw - e0_vdw)**2
+               value = value + resid_vdw
+            end if
+c
+            gi = (value - value0) / eps
+            g(i) = g(i) + gi
+            xx(i) = xx0
+         end do
+      end do
+      return
+      end
+c
+c     ###############################################################
+c     ##                                                           ## 
+c     ##  subroutine paramwrt1  --  output optimization parameters  ##
+c     ##                                                           ##
+c     ###############################################################
+c
+c     "paramwrt1" is a utility that prints intermediate results     
+c     during fitting of force field parameters
+c
+      subroutine paramwrt1 (niter,f,xx)
+      use xtals
+      use iounit
+      implicit none
+      integer i,niter
+      real*8 f
+      real*8 xx(*)
+c 
+c
+c     write the values of parameters and scaled derivatives
+c
+      write (iout,10)  niter
+ 10       format (/,' Parameter Values at Iteration',i6,' :',/)
+      do i = 1, nvary
+c         write (iout,20)  i,vartyp(i),vary(1,i),abs(xx(i))
+c 20          format (3x,'(',i2,')',2x,a16,7x,'Atom Class',i5,4x,f12.4)
+         write (iout,20)  vartyp(i),vary(1,i),abs(xx(i))
+ 20            format (3x,a16,7x,i5,4x,f12.4)
+      end do
+      write (iout,30)
+ 30       format ()
       return
       end

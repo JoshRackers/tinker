@@ -58,6 +58,9 @@ c
       eg = 0.0d0
       ex = 0.0d0
 c
+      edis = 0.0d0
+      exfr = 0.0d0
+c
 c     maintain any periodic boundary conditions
 c
       if (use_bounds .and. .not.use_rigid)  call bounds
@@ -121,13 +124,18 @@ c
       if (use_solv)  call esolv
       if (use_geom)  call egeom
       if (use_metal)  call emetal
-      if (use_extra)  call extra
+      if (use_extra)  then
+         call extra3
+         call edisp3
+      end if
+      if (use_xfer) call exfer3
 c
 c     sum up to give the total potential energy
 c
       esum = eb + ea + eba + eub + eaa + eopb + eopd + eid + eit
      &          + et + ept + ebt + eat + ett + ev + ec + ecd + ed
      &          + em + ep + er + es + elf + eg + ex
+     &          + edis + exfr
       energy = esum
 c
 c     check for an illegal value for the total energy

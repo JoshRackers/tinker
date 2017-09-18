@@ -31,10 +31,10 @@ c      use xtrpot
       real*8 factor
       real*8 polf,dampf
       real*8 pen
-      integer c1(29),c2(19),c3(26),c4(3),c5(1)
+      integer c1(29),c2(18),c3(26),c4(3),c5(1)
       integer c6(3),c7(25),c8(6),c9(37)
       integer c10(2),c11(3),c12(3),c13(7)
-      integer c14(3),c15(8),c16(3),c17(2),c18(8)
+      integer c14(3),c15(7),c16(3),c17(2),c18(8)
       character*20 keyword
       character*120 record
       character*120 string
@@ -46,12 +46,18 @@ c
 c     initialize cp parameter arrays
 c
       alphaf = 1.0d0
-c      do k = 1, 18
-c         cpclass(k) = 0.0d0
+      do k = 1, n
+         cpclass(k) = 0
 c         alpha(k) = 0.0d0
 c         regular(k) = 0.0d0
 c         xpolr(k) = 0.0d0
-c      end do
+      end do
+      do k = 1, 28
+         xpolr(k) = 0.0d0
+         val_ele(k) = 0.0d0
+      end do
+      xpolr(41) = 0.0d0
+      xpolr(42) = 0.0d0
 c
 c     check for keyword for charge penetration form
 c
@@ -64,6 +70,12 @@ c
          if (keyword(1:12) .eq. 'PENETRATION ') then
 c            call getword (record,penetration,next)
             read (string,*,err=10,end=10)  penetration
+         end if
+         if (keyword(1:12) .eq. 'GORDON-TYPE') then
+            read (string,*,err=10,end=10)  gtype
+         end if
+         if (keyword(1:12) .eq. 'CP-EX-TYPE') then
+            read (string,*,err=10,end=10)  cptype
          end if
          if (keyword(1:15) .eq. 'DIRECT-DAMPING ') then
             read (string,*,err=10,end=10)  directdamp
@@ -83,11 +95,23 @@ c            call getword (record,penetration,next)
          if (keyword(1:9) .eq. 'CORE-ELE ') then
             read (string,*,err=10,end=10)  num_ele
          end if
+         if (keyword(1:14) .eq. 'CORE-ELE-EXCH ') then
+            read (string,*,err=10,end=10)  exch_num_ele
+         end if
          if (keyword(1:11) .eq. 'REGULARIZE ') then
             read (string,*,err=10,end=10)  regularize
          end if
          if (keyword(1:9) .eq. 'EXCH-MIX ') then
             read (string,*,err=10,end=10)  exmix
+         end if
+         if (keyword(1:11) .eq. 'EXCH-MODEL ') then
+            read (string,*,err=10,end=10)  exmodel
+         end if
+         if (keyword(1:19) .eq. 'CHG-TRANSFER-MODEL ') then
+            read (string,*,err=10,end=10)  xfermodel
+         end if
+         if (keyword(1:16) .eq. 'DISPERSION-DAMP ') then
+            read (string,*,err=10,end=10)  dispersiondamping
          end if
  10      continue
       end do
@@ -139,6 +163,30 @@ c     read in polfactors by class
  42         continue
             if (ii .ne. 0)  func10(ii) = pen
          end if
+         if (keyword(1:12) .eq. 'VALENCE-ELE ') then
+            ii = 0
+            pen = 0.0d0
+            string = record(next:120)
+            read (string,*,err=43,end=43)  ii,pen
+ 43         continue
+            if (ii .ne. 0)  val_ele(ii) = pen
+         end if
+         if (keyword(1:11) .eq. 'ALPHA-EXCH ') then
+            ii = 0
+            pen = 0.0d0
+            string = record(next:120)
+            read (string,*,err=44,end=44)  ii,pen
+ 44         continue
+            if (ii .ne. 0)  exch_alpha(ii) = pen
+         end if
+         if (keyword(1:17) .eq. 'VALENCE-ELE-EXCH ') then
+            ii = 0
+            pen = 0.0d0
+            string = record(next:120)
+            read (string,*,err=45,end=45)  ii,pen
+ 45         continue
+            if (ii .ne. 0)  exch_val_ele(ii) = pen
+         end if
          if (keyword(1:8) .eq. 'REGULAR ') then
             ii = 0
             pen = 0.0d0
@@ -166,6 +214,7 @@ c     read in polfactors by class
             do k = 1, n
                if (type(k).eq.ii) vdwclass(k) = pen
             end do
+            use_vdwclass = .true.
          end if
          if (keyword(1:11) .eq. 'EX-OVERLAP ') then
             ii = 0
@@ -175,6 +224,30 @@ c     read in polfactors by class
  70         continue
             if (ii .ne. 0)  overlap(ii) = pen
          end if
+         if (keyword(1:12) .eq. 'EX-BOVERLAP ') then
+            ii = 0
+            pen = 0.0d0
+            string = record(next:120)
+            read (string,*,err=71,end=71)  ii,pen
+ 71         continue
+            if (ii .ne. 0)  boverlap(ii) = pen
+         end if
+         if (keyword(1:12) .eq. 'EX-OVERLAPR ') then
+            ii = 0
+            pen = 0.0d0
+            string = record(next:120)
+            read (string,*,err=72,end=72)  ii,pen
+ 72         continue
+            if (ii .ne. 0)  overlapr(ii) = pen
+         end if
+         if (keyword(1:12) .eq. 'EX-COVERLAP ') then
+            ii = 0
+            pen = 0.0d0
+            string = record(next:120)
+            read (string,*,err=73,end=73)  ii,pen
+ 73         continue
+            if (ii .ne. 0)  coverlap(ii) = pen
+         end if
          if (keyword(1:13) .eq. 'SING-OVERLAP ') then
             ii = 0
             pen = 0.0d0
@@ -183,6 +256,14 @@ c     read in polfactors by class
  80         continue
             singoverlap = .true.
             soverlap = pen
+         end if
+         if (keyword(1:15) .eq. 'C6-COEFFICIENT ') then
+            ii = 0
+            pen = 0.0d0
+            string = record(next:120)
+            read (string,*,err=90,end=90)  ii,pen
+ 90         continue
+            csix(ii) = pen
          end if
       end do
 c     
@@ -207,7 +288,7 @@ cccc
 c         c1 = (/ 404,402,406,408,41,410,411,68,109,
 c     &        155,415,421,445,449,446,533,529,537,538,545,546,547,
 c     &        465,468,471,498,501,602,702 /)
-         c2 = (/ 2,430,438,107,419,442,39,66,151,514,521,558,
+         c2 = (/ 430,438,107,419,442,39,66,151,514,521,558,
      &        454,458,462,526,539,548,508 /)
          c3 = (/ 218,424,426,428,434,436,515,516,517,522,
      &        523,559,560,561,562,563,564,477,478,479,485,486,487,
@@ -229,7 +310,7 @@ c     &        420,506,527,534,535,531,443,447,463,466,469,496,499,601 /)
          c13 = (/ 422,429,437,511,513,520,555 /)
          c14 = (/ 65,505,536 /)
 c         c14 = (/ 65,505,701 /)
-         c15 = (/ 1,150,441,38,544,452,456,460 /)
+         c15 = (/ 150,441,38,544,452,456,460 /)
          c16 = (/ 464,476,497 /)
          c17 = (/ 432,440 /)
          c18 = (/ 105,153,417,530,450,453,457,461 /)
@@ -250,9 +331,11 @@ c               if (polfactor(1).eq.0.0d0) polfactor(1) = 2.5948d0*dampf
 c
 c     values from lbfgs-POL-Gordon-allpolfactors_0.8.log_step0.001 iteration 171
 c
-               if (xpolr(1).eq.0.0d0) xpolr(1) = 0.1497d0
+c               if (xpolr(1).eq.0.0d0) xpolr(1) = 0.1497d0
                if (polfactor(1).eq.0.0d0) polfactor(1) = 4.0758d0
-               cpclass(i) = 1
+               if (cpclass(i) .eq. 0.0d0) then
+                  cpclass(i) = 1
+               end if
 c     H polar
             else if (any(c2==ii)) then
 c               if (alpha(2).eq.0.0d0) alpha(2) = 4.0d0
@@ -276,10 +359,12 @@ c     smith+s101
 c               if (xpolr(2).eq.0.0d0) xpolr(2) = 0.4741d0
 c               if (polfactor(2).eq.0.0d0) polfactor(2) = 3.4631d0
 c     fit_polarizability values
-               if (xpolr(2).eq.0.0d0) xpolr(2) = 0.4283d0
+c               if (xpolr(2).eq.0.0d0) xpolr(2) = 0.4283d0
 c               if (polfactor(2).eq.0.0d0) polfactor(2) = 1.5500d0
                if (polfactor(2).eq.0.0d0) polfactor(2) = 5.1d0
-               cpclass(i) = 2
+               if (cpclass(i) .eq. 0.0d0) then
+                  cpclass(i) = 2
+               end if
 c     H aromatic
             else if (any(c3==ii)) then 
 c               if (alpha(3).eq.0.0d0) alpha(3) = 4.0d0
@@ -289,9 +374,11 @@ c               if (alpha(3).eq.0.0d0) alpha(3) = 3.932770
 c               if (xpolr(3).eq.0.0d0) xpolr(3) = 0.6405d0
 c               if (xpolr(3).eq.0.0d0) xpolr(3) = 0.6346d0 * polf
 c               if (polfactor(3).eq.0.0d0) polfactor(3) = 2.9157d0*dampf
-               if (xpolr(3).eq.0.0d0) xpolr(3) = 0.3629d0
+c               if (xpolr(3).eq.0.0d0) xpolr(3) = 0.3629d0
                if (polfactor(3).eq.0.0d0) polfactor(3) = 3.6035d0
-               cpclass(i) = 3
+               if (cpclass(i) .eq. 0.0d0) then
+                  cpclass(i) = 3
+               end if
 c     P in Phosphate
             else if (any(c4==ii)) then
 c               if (alpha(4).eq.0.0d0) alpha(4) = 3.07d0
@@ -301,9 +388,11 @@ c               if (alpha(4).eq.0.0d0) alpha(4) = 3.10969d0
 c               if (xpolr(4).eq.0.0d0) xpolr(4) = 0.3656d0
 c               if (xpolr(4).eq.0.0d0) xpolr(4) = 0.4135d0 * polf
 c               if (polfactor(4).eq.0.0d0) polfactor(4) = 2.1221d0*dampf
-               if (xpolr(4).eq.0.0d0) xpolr(4) = 0.5918d0
+c               if (xpolr(4).eq.0.0d0) xpolr(4) = 0.5918d0
                if (polfactor(4).eq.0.0d0) polfactor(4) = 2.4756d0
-               cpclass(i) = 4
+               if (cpclass(i) .eq. 0.0d0) then
+                  cpclass(i) = 4
+               end if
 c     S in DMSO
             else if (any(c5==ii)) then 
 c               if (alpha(5).eq.0.0d0) alpha(5) = 2.96d0
@@ -313,9 +402,11 @@ c               if (alpha(5).eq.0.0d0) alpha(5) = 3.29611d0
 c               if (xpolr(5).eq.0.0d0) xpolr(5) = 1.5748d0
 c               if (xpolr(5).eq.0.0d0) xpolr(5) = 1.6143d0 * polf
 c               if (polfactor(5).eq.0.0d0) polfactor(5) = 2.0974d0*dampf
-               if (xpolr(5).eq.0.0d0) xpolr(5) = 1.7085d0
+c               if (xpolr(5).eq.0.0d0) xpolr(5) = 1.7085d0
                if (polfactor(5).eq.0.0d0) polfactor(5) = 2.2328d0
-               cpclass(i) = 5
+               if (cpclass(i) .eq. 0.0d0) then
+                  cpclass(i) = 5
+               end if
 c     Br
             else if (any(c6==ii)) then
 c               if (alpha(6).eq.0.0d0) alpha(6) = 3.72d0
@@ -325,9 +416,11 @@ c               if (alpha(6).eq.0.0d0) alpha(6) = 3.49409d0
 c               if (xpolr(6).eq.0.0d0) xpolr(6) = 1.8793d0
 c               if (xpolr(6).eq.0.0d0) xpolr(6) = 1.8934d0 * polf
 c               if (polfactor(6).eq.0.0d0) polfactor(6) = 2.4807d0*dampf
-               if (xpolr(6).eq.0.0d0) xpolr(6) = 1.8507d0
+c               if (xpolr(6).eq.0.0d0) xpolr(6) = 1.8507d0
                if (polfactor(6).eq.0.0d0) polfactor(6) = 2.3719d0
-               cpclass(i) = 6
+               if (cpclass(i) .eq. 0.0d0) then
+                  cpclass(i) = 6
+               end if
 c     C Sp3
             else if (any(c7==ii)) then 
 c               if (alpha(7).eq.0.0d0) alpha(7) = 3.10d0
@@ -337,9 +430,11 @@ c               if (alpha(7).eq.0.0d0) alpha(7) = 3.52327d0
 c               if (xpolr(7).eq.0.0d0) xpolr(7) = 0.2668d0
 c               if (xpolr(7).eq.0.0d0) xpolr(7) = 0.3036d0 * polf
 c               if (polfactor(7).eq.0.0d0) polfactor(7) = 2.4927d0*dampf
-               if (xpolr(7).eq.0.0d0) xpolr(7) = 0.7299d0
+c               if (xpolr(7).eq.0.0d0) xpolr(7) = 0.7299d0
                if (polfactor(7).eq.0.0d0) polfactor(7) = 2.9134d0
-               cpclass(i) = 7
+               if (cpclass(i) .eq. 0.0d0) then
+                  cpclass(i) = 7
+               end if
 c     C Sp2
             else if (any(c8==ii)) then 
 c               if (alpha(8).eq.0.0d0) alpha(8) = 3.10d0
@@ -349,9 +444,11 @@ c               if (alpha(8).eq.0.0d0) alpha(8) = 3.20696d0
 c               if (xpolr(8).eq.0.0d0) xpolr(8) = 0.2668d0
 c               if (xpolr(8).eq.0.0d0) xpolr(8) = 0.2946d0 * polf
 c               if (polfactor(8).eq.0.0d0) polfactor(8) = 2.4943d0*dampf
-               if (xpolr(8).eq.0.0d0) xpolr(8) = 0.6532d0
+c               if (xpolr(8).eq.0.0d0) xpolr(8) = 0.6532d0
                if (polfactor(8).eq.0.0d0) polfactor(8) = 2.6259d0
-               cpclass(i) = 8
+               if (cpclass(i) .eq. 0.0d0) then
+                  cpclass(i) = 8
+               end if
 c     C aromatic
             else if (any(c9==ii)) then 
 c               if (alpha(9).eq.0.0d0) alpha(9) = 3.10d0
@@ -361,9 +458,11 @@ c               if (alpha(9).eq.0.0d0) alpha(9) = 3.19842d0
 c               if (xpolr(9).eq.0.0d0) xpolr(9) = 0.3500d0
 c               if (xpolr(9).eq.0.0d0) xpolr(9) = 0.3529d0 * polf
 c               if (polfactor(9).eq.0.0d0) polfactor(9) = 2.5030d0*dampf
-               if (xpolr(9).eq.0.0d0) xpolr(9) = 0.3064d0
+c               if (xpolr(9).eq.0.0d0) xpolr(9) = 0.3064d0
                if (polfactor(9).eq.0.0d0) polfactor(9) = 2.7392d0
-               cpclass(i) = 9
+               if (cpclass(i) .eq. 0.0d0) then
+                  cpclass(i) = 9
+               end if
 c     S in SH
             else if (any(c10==ii)) then
 c               if (alpha(10).eq.0.0d0) alpha(10) = 2.96d0
@@ -373,9 +472,11 @@ c               if (alpha(10).eq.0.0d0) alpha(10) = 3.15607d0
 c               if (xpolr(10).eq.0.0d0) xpolr(10) = 2.6487d0
 c               if (xpolr(10).eq.0.0d0) xpolr(10) = 2.6639d0 * polf
 c               if (polfactor(10).eq.0.0d0) polfactor(10) =2.4957d0*dampf
-               if (xpolr(10).eq.0.0d0) xpolr(10) = 2.7396d0
+c               if (xpolr(10).eq.0.0d0) xpolr(10) = 2.7396d0
                if (polfactor(10).eq.0.0d0) polfactor(10) =2.5600d0
-               cpclass(i) = 10
+               if (cpclass(i) .eq. 0.0d0) then
+                  cpclass(i) = 10
+               end if
 c     Cl
             else if (any(c11==ii)) then
 c               if (alpha(11).eq.0.0d0) alpha(11) = 3.5d0
@@ -385,9 +486,11 @@ c               if (alpha(11).eq.0.0d0) alpha(11) = 3.44190d0
 c               if (xpolr(11).eq.0.0d0) xpolr(11) = 1.6454d0
 c               if (xpolr(11).eq.0.0d0) xpolr(11) = 1.6608d0 * polf
 c               if (polfactor(11).eq.0.0d0) polfactor(11) =2.5015d0*dampf
-               if (xpolr(11).eq.0.0d0) xpolr(11) = 1.7132d0
+c               if (xpolr(11).eq.0.0d0) xpolr(11) = 1.7132d0
                if (polfactor(11).eq.0.0d0) polfactor(11) = 2.5723d0
-               cpclass(i) = 11
+               if (cpclass(i) .eq. 0.0d0) then
+                  cpclass(i) = 11
+               end if
 c     N Sp2
             else if (any(c12==ii)) then
 c               if (alpha(12).eq.0.0d0) alpha(12) = 3.73d0
@@ -397,9 +500,11 @@ c               if (alpha(12).eq.0.0d0) alpha(12) = 3.40725d0
 c               if (xpolr(12).eq.0.0d0) xpolr(12) = 0.2146d0
 c               if (xpolr(12).eq.0.0d0) xpolr(12) = 0.2146d0 * polf
 c               if (polfactor(12).eq.0.0d0) polfactor(12) =2.5148d0*dampf
-               if (xpolr(12).eq.0.0d0) xpolr(12) = 0.2073d0
+c               if (xpolr(12).eq.0.0d0) xpolr(12) = 0.2073d0
                if (polfactor(12).eq.0.0d0) polfactor(12) =2.1638d0
-               cpclass(i) = 12
+               if (cpclass(i) .eq. 0.0d0) then
+                  cpclass(i) = 12
+               end if
 c     N aromatic
             else if (any(c13==ii)) then 
 c               if (alpha(13).eq.0.0d0) alpha(13) = 3.73d0
@@ -409,9 +514,11 @@ c               if (alpha(13).eq.0.0d0) alpha(13) = 3.66449d0
 c               if (xpolr(13).eq.0.0d0) xpolr(13) = 0.2146d0
 c               if (xpolr(13).eq.0.0d0) xpolr(13) = 0.2511d0 * polf
 c               if (polfactor(13).eq.0.0d0) polfactor(13) =2.5724d0*dampf
-               if (xpolr(13).eq.0.0d0) xpolr(13) = 0.3823d0
+c               if (xpolr(13).eq.0.0d0) xpolr(13) = 0.3823d0
                if (polfactor(13).eq.0.0d0) polfactor(13) =2.6790d0
-               cpclass(i) = 13
+               if (cpclass(i) .eq. 0.0d0) then
+                  cpclass(i) = 13
+               end if
 c     N Sp3
             else if (any(c14==ii)) then
 c               if (alpha(14).eq.0.0d0) alpha(14) = 3.73d0
@@ -421,9 +528,11 @@ c               if (alpha(14).eq.0.0d0) alpha(14) = 3.27558d0
 c               if (xpolr(14).eq.0.0d0) xpolr(14) = 0.8127d0
 c               if (xpolr(14).eq.0.0d0) xpolr(14) = 0.9143d0 * polf
 c               if (polfactor(14).eq.0.0d0) polfactor(14) =2.2893d0*dampf
-               if (xpolr(14).eq.0.0d0) xpolr(14) = 1.0679d0
+c               if (xpolr(14).eq.0.0d0) xpolr(14) = 1.0679d0
                if (polfactor(14).eq.0.0d0) polfactor(14) =1.8082d0
-               cpclass(i) = 14
+               if (cpclass(i) .eq. 0.0d0) then
+                  cpclass(i) = 14
+               end if
 c     O in OH
             else if (any(c15==ii)) then
 c               if (alpha(15).eq.0.0d0) alpha(15) = 4.14d0
@@ -442,10 +551,12 @@ c     smith+s101
 c               if (xpolr(15).eq.0.0d0) xpolr(15) = 1.0775d0
 c               if (polfactor(15).eq.0.0d0) polfactor(15) = 2.1994d0
 c     fit_polarizability values
-               if (xpolr(15).eq.0.0d0) xpolr(15) = 0.7551d0
+c               if (xpolr(15).eq.0.0d0) xpolr(15) = 0.7551d0
 c               if (polfactor(15).eq.0.0d0) polfactor(15) = 1.6074d0
                if (polfactor(15).eq.0.0d0) polfactor(15) = 2.1d0
-               cpclass(i) = 15
+               if (cpclass(i) .eq. 0.0d0) then
+                  cpclass(i) = 15
+               end if
 c     F
             else if (any(c16==ii)) then
 c               if (alpha(16).eq.0.0d0) alpha(16) = 4.49d0
@@ -455,9 +566,11 @@ c               if (alpha(16).eq.0.0d0) alpha(16) = 4.42983d0
 c               if (xpolr(16).eq.0.0d0) xpolr(16) = 0.4867d0
 c               if (xpolr(16).eq.0.0d0) xpolr(16) = 0.5141d0 * polf
 c               if (polfactor(16).eq.0.0d0) polfactor(16) =2.5886d0*dampf
-               if (xpolr(16).eq.0.0d0) xpolr(16) = 0.5784d0
+c               if (xpolr(16).eq.0.0d0) xpolr(16) = 0.5784d0
                if (polfactor(16).eq.0.0d0) polfactor(16) =2.7087d0
-               cpclass(i) = 16
+               if (cpclass(i) .eq. 0.0d0) then
+                  cpclass(i) = 16
+               end if
 c     O in ur
             else if (any(c17==ii)) then
 c               if (alpha(17).eq.0.0d0) alpha(17) = 4.14d0
@@ -467,9 +580,11 @@ c               if (alpha(17).eq.0.0d0) alpha(17) = 3.76956d0
 c               if (xpolr(17).eq.0.0d0) xpolr(17) = 0.1674d0
 c               if (xpolr(17).eq.0.0d0) xpolr(17) = 0.1956d0 * polf
 c               if (polfactor(17).eq.0.0d0) polfactor(17) =2.6282d0*dampf
-               if (xpolr(17).eq.0.0d0) xpolr(17) = 0.9624d0
+c               if (xpolr(17).eq.0.0d0) xpolr(17) = 0.9624d0
                if (polfactor(17).eq.0.0d0) polfactor(17) =2.1330d0
-               cpclass(i) = 17
+               if (cpclass(i) .eq. 0.0d0) then
+                  cpclass(i) = 17
+               end if
 c     O in C=O
             else if (any(c18==ii)) then 
 c               if (alpha(18).eq.0.0d0) alpha(18) = 4.14d0
@@ -479,15 +594,33 @@ c               if (alpha(18).eq.0.0d0) alpha(18) = 3.35067d0
 c               if (xpolr(18).eq.0.0d0) xpolr(18) = 0.1842d0
 c               if (xpolr(18).eq.0.0d0) xpolr(18) = 0.2210d0 * polf
 c               if (polfactor(18).eq.0.0d0) polfactor(18) =2.6154d0*dampf
-               if (xpolr(18).eq.0.0d0) xpolr(18) = 0.2871d0
+c               if (xpolr(18).eq.0.0d0) xpolr(18) = 0.2871d0
                if (polfactor(18).eq.0.0d0) polfactor(18) =2.5295d0
-               cpclass(i) = 18
+               if (cpclass(i) .eq. 0.0d0) then
+                  cpclass(i) = 18
+               end if
             end if
 c
 c     this allows polarizability and thole damping to vary by cpclass
+c
+            if (use_polar) then
+               if (use_vdwclass) then
+                  if (vdwclass(i) .ne. 0) then 
+                     polarity(i) = xpolr(vdwclass(i))
+                  end if
+               else
+                  if (cpclass(i) .ne. 0) then
+                     polarity(i) = xpolr(cpclass(i))
+                  end if
+               end if
+            end if
+c                     
+c            if (use_polar .and. (xpolr(cpclass(i)) .ne. 0.0d0)) then 
+c               polarity(i) = xpolr(cpclass(i))
+c            end if
 c            xpolr(cpclass(i)) = polarity(i)
 c            xathl(cpclass(i)) = thole(i)
-c            polarity(i) = xpolr(cpclass(i))
+c            if (use_polar) polarity(i) = xpolr(cpclass(i))
 c            thole(i) = xathl(cpclass(i))
 c            alphap(cpclass(i)) = alpha(cpclass(i))
 c            alphap(cpclass(i)) = polfactor(cpclass(i)) *

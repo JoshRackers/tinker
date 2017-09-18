@@ -51,7 +51,8 @@ c
 c
 c     use either analytical or numerical gradients
 c
-      analytic = .true.
+c      analytic = .true.
+      analytic = .false.
       eps = 0.00001d0
 c
 c     search the keywords for output frequency parameters
@@ -254,7 +255,8 @@ c
 c
 c     use either analytical or numerical gradients
 c
-      analytic = .true.
+c      analytic = .true.
+      analytic = .false.
       eps = 0.00001d0
 c
 c     translate optimization parameters to atomic coordinates
@@ -282,6 +284,7 @@ c
       else
          e = energy ()
          call numgrad (energy,derivs,eps)
+         print *,"energy",e
       end if
       minimiz1 = e
 c

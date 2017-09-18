@@ -350,6 +350,13 @@ c
                if (atomic(i) .gt. 10)  zi = zi - 8.0d0
                if (atomic(i) .gt. 18)  zi = zi - 8.0d0
                if (atomic(i) .gt. 20)  zi = zi - 10.0d0
+               if (zi .eq. ci) then
+                  if (atomic(i) .lt. 10) then
+                     zi = 2.0d0 + ci
+                  else
+                     zi = 8.0d0 + ci
+                  end if
+               end if
             end if
             qi = ci - zi
          end if

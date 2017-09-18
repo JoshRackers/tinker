@@ -48,6 +48,17 @@ c
       call molecule
       call kmpole
       call kpolar
+ccccccccccccccccccccccccccccccc
+      call field
+c     to manually turn on polarization
+      call kextra
+c     to read in polarizabilities as xpolrs
+      npole = n
+      do i = 1, n
+         ipole(i) = i
+      end do
+c     !!!!!! HACK ALERT !!!!!!!!
+cccccccccccccccccccccccccccccccc
       call mutate
 c
 c     sum atomic polarizabilities to get additive molecular value

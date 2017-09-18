@@ -71,6 +71,14 @@ c
       if (.not.allocated(gradfieldm_gordon))
      &     allocate (gradfieldm_gordon(3,3,npole))
 c
+c     gordon overlap damping
+c
+      if (.not.allocated(potm_goverlap)) allocate (potm_goverlap(npole))
+      if (.not.allocated(fieldm_goverlap))
+     &     allocate (fieldm_goverlap(3,npole))
+      if (.not.allocated(gradfieldm_goverlap))
+     &     allocate (gradfieldm_goverlap(3,3,npole))
+c
 c     gordon charge penetration damping - nuclei
 c
       if (.not.allocated(nucpotm_gordon))
@@ -131,6 +139,10 @@ c
       use potderivs
       use shunt
       use usage
+ccccccccccccccccccc
+      use molcul
+      use chgpen
+ccccccccccccccccccc
       implicit none
       integer i,j,k,l,m
       integer ii,kk
@@ -156,6 +168,7 @@ c
       real*8 elepoti,elepotk
       real*8 elefieldi(3),elefieldk(3)
       real*8 elegradfieldi(3,3),elegradfieldk(3,3)
+      real*8 oik,overlapi,overlapk,termi,termk,alphai,alphak
       real*8, allocatable :: scale(:)
       real*8, allocatable :: scalei(:)
       real*8, allocatable :: scalek(:)
@@ -175,6 +188,7 @@ c
          pot_ewald(i) = 0.0d0
          potm_gordon(i) = 0.0d0
          nucpotm_gordon(i) = 0.0d0
+         potm_goverlap(i) = 0.0d0
          do j = 1, 3
             field(j,i) = 0.0d0
             fieldm(j,i) = 0.0d0
@@ -189,11 +203,13 @@ c
             fieldd_gordonreg(j,i) = 0.0d0
             fieldp_gordonreg(j,i) = 0.0d0
             nucfieldm_gordon(j,i) = 0.0d0
+            fieldm_goverlap(j,i) = 0.0d0
             do k = 1, 3
                gradfield(k,j,i) = 0.0d0
                gradfieldm(k,j,i) = 0.0d0
                gradfield_ewald(k,j,i) = 0.0d0
                gradfieldm_gordon(k,j,i) = 0.0d0
+               gradfieldm_goverlap(k,j,i) = 0.0d0
             end do
          end do
       end do
@@ -327,6 +343,9 @@ c
                      call fieldik(i,k,t1,t2,t3,fieldi,fieldk)
                      call gradfieldik(i,k,t2,t3,t4,
      &                    gradfieldi,gradfieldk)
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+                     if (molcule(i).ne.molcule(k)) then
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccc
                      pot(i) = pot(i) + poti
                      pot(k) = pot(k) + potk
                      potm(i) = potm(i) + poti*mscale(kk)
@@ -347,6 +366,9 @@ c
      &                          gradfieldk(l,j)*mscale(kk)
                         end do
                      end do
+cccccccccccccccccccccccccccccccccccccccccccc
+                     end if
+ccccccccccccccccccccccccccccccccccccccccccccc
                   end if
 c
 c     error function damping for ewald
@@ -471,6 +493,9 @@ c
 c
 c     accumulate fields in global variables
 c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+                     if (molcule(i).ne.molcule(k)) then
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccc
                      nucpotm_gordon(i) = nucpotm_gordon(i) + 
      &                    nucpoti*mscale(kk)
                      nucpotm_gordon(k) = nucpotm_gordon(k) + 
@@ -503,6 +528,9 @@ c
      &                          elegradfieldk(l,j)*mscale(kk)
                         end do
                      end do
+ccccccccccccccccccccccccccccccc
+                     end if
+ccccccccccccccccccccccccccccccc
                   end if
 c
 c     gordon damping + nuclear regularization
@@ -539,6 +567,9 @@ c
                      call cp_fieldik(i,k,
      &                  t1,t2,t3,t1i,t2i,t3i,t1k,t2k,t3k,t1ik,t2ik,t3ik,
      &                    nucfieldi,nucfieldk,elefieldi,elefieldk)
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+                     if (molcule(i).ne.molcule(k)) then
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
                      do j = 1, 3
                         fieldd_gordonreg(j,i) = fieldd_gordonreg(j,i) +
      &                       elefieldi(j)*dscale(kk)
@@ -549,6 +580,106 @@ c
                         fieldp_gordonreg(j,k) = fieldp_gordonreg(j,k) +
      &                       elefieldk(j)*pscale(kk)
                      end do
+cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+                     end if
+cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+                  end if
+c
+c     gordon overlap damping for exchange repulsion
+c
+                  if (damp_goverlap) then
+c     make sure to arguments match up
+                     call dampgoverlap(i,k,rorder,r,scalei,scalek,
+     &                    scaleik)
+                     t0 = t0rr1
+                     t1 = t1rr3
+                     t2 = t2rr3 + t2rr5
+                     t3 = t3rr5 + t3rr7
+                     t4 = t4rr5 + t4rr7 + t4rr9
+                     t0i = t0rr1*scalei(1)
+                     t1i = t1rr3*scalei(3)
+                     t2i = t2rr3*scalei(3) + t2rr5*scalei(5)
+                     t3i = t3rr5*scalei(5) + t3rr7*scalei(7)
+                     t4i = t4rr5*scalei(5) + t4rr7*scalei(7) +
+     &                     t4rr9*scalei(9)
+                     t0k = t0rr1*scalek(1)
+                     t1k = t1rr3*scalek(3)
+                     t2k = t2rr3*scalek(3) + t2rr5*scalek(5)
+                     t3k = t3rr5*scalek(5) + t3rr7*scalek(7)
+                     t4k = t4rr5*scalek(5) + t4rr7*scalek(7) +
+     &                     t4rr9*scalek(9)
+                     t0ik = t0rr1*scaleik(1)
+                     t1ik = t1rr3*scaleik(3)
+                     t2ik = t2rr3*scaleik(3) + t2rr5*scaleik(5)
+                     t3ik = t3rr5*scaleik(5) + t3rr7*scaleik(7)
+                     t4ik = t4rr5*scaleik(5) + t4rr7*scaleik(7) +
+     &                      t4rr9*scaleik(9)
+                     call cp_potik(i,k,
+     &                  t0,t1,t2,t0i,t1i,t2i,t0k,t1k,t2k,t0ik,t1ik,t2ik,
+     &                  nucpoti,nucpotk,elepoti,elepotk)
+                     call cp_fieldik(i,k,
+     &                  t1,t2,t3,t1i,t2i,t3i,t1k,t2k,t3k,t1ik,t2ik,t3ik,
+     &                    nucfieldi,nucfieldk,elefieldi,elefieldk)
+                     call cp_gradfieldik(i,k,
+     &                  t2,t3,t4,t2i,t3i,t4i,t2k,t3k,t4k,t2ik,t3ik,t4ik,
+     &                    elegradfieldi,elegradfieldk)
+c
+c     apply prefactor to fields
+c
+                     if (use_vdwclass) then
+                        overlapi = overlap(vdwclass(ii))
+                        overlapk = overlap(vdwclass(kk))
+                        alphai = alpha(vdwclass(ii))
+                        alphak = alpha(vdwclass(kk))
+                     else
+                        overlapi = overlap(cpclass(ii))
+                        overlapk = overlap(cpclass(kk))
+                        alphai = alpha(cpclass(ii))
+                        alphak = alpha(cpclass(kk))
+                     end if
+                     oik = sqrt(overlapi*overlapk)
+                     if (exmix .eq. 'ARITHMETIC') then
+                        oik = 0.5d0 * (overlapi + overlapk)
+                     else if (exmix .eq. 'GEOMETRIC') then
+                        oik = sqrt(overlapi*overlapk)
+                     else if (exmix .eq."W-H1") then
+                        termi = 2.0d0*(alphai**3)*(alphak**3)
+                        termk = (alphai**6) + (alphak**6)
+                        oik = sqrt(overlapi*overlapk)*termi/termk
+                     end if
+                     elepoti = oik*elepoti
+                     elepotk = oik*elepotk
+                     elefieldi = oik*elefieldi
+                     elefieldk = oik*elefieldk
+                     elegradfieldi = oik*elegradfieldi
+                     elegradfieldk = oik*elegradfieldk
+c
+c     accumulate fields in global variables
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+                     if (molcule(i).ne.molcule(k)) then
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+                     potm_goverlap(i) = potm_goverlap(i) + 
+     &                       elepoti*mscale(kk)
+                     potm_goverlap(k) = potm_goverlap(k) + 
+     &                    elepotk*mscale(kk)
+                     do j = 1, 3
+                        fieldm_goverlap(j,i) = fieldm_goverlap(j,i) +
+     &                       elefieldi(j)*mscale(kk)
+                        fieldm_goverlap(j,k) = fieldm_goverlap(j,k) +
+     &                       elefieldk(j)*mscale(kk)
+                        do l = 1, 3
+                           gradfieldm_goverlap(l,j,i) =
+     &                          gradfieldm_goverlap(l,j,i) +
+     &                          elegradfieldi(l,j)*mscale(kk)
+                           gradfieldm_goverlap(l,j,k) =
+     &                          gradfieldm_goverlap(l,j,k) +
+     &                          elegradfieldk(l,j)*mscale(kk)
+                        end do
+                     end do
+ccccccccccccccccccccccccccccccc
+                     end if
+ccccccccccccccccccccccccccccccc
                   end if
 c
 c     one center piquemal damping

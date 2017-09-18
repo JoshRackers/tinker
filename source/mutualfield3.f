@@ -200,6 +200,7 @@ c
       use potderivs
       use shunt
       use usage
+      use chgpen
       implicit none
       integer i,j,k,l,m,h
       integer ii,kk
@@ -433,6 +434,14 @@ c
                   call t4matrixrr5(xr,yr,zr,rr5,t4rr5)
                   call t4matrixrr7(xr,yr,zr,rr7,t4rr7)
                   call t4matrixrr9(xr,yr,zr,rr9,t4rr9)
+cccccccccccccccccccccccccccccc HACK TO 1-2 INTERACTIONS
+                  if (alphaf .ne. 1.0d0) then
+                     do j = 1, n12(ii)
+                        muscale(i12(j,ii)) = 1.0d0 - exp(-alphaf*r)
+                     end do
+                  end if
+c     THIS WILL NOT WORK FOR FORCES!!!!!!!!!!!!!!
+cccccccccccccccccccccccccccccccccccccccccccc
 c
 c     call routines that produce potential, field, field gradient
 c     for types of damping

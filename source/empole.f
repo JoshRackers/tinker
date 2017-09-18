@@ -218,6 +218,48 @@ c
                if (atomic(i) .gt. 10)  zi = zi - 8.0d0
                if (atomic(i) .gt. 18)  zi = zi - 8.0d0
                if (atomic(i) .gt. 20)  zi = zi - 10.0d0
+               if (zi .eq. ci) then
+                  if (atomic(i) .lt. 10) then
+                     zi = 2.0d0 + ci
+                  else
+                     zi = 8.0d0 + ci
+                  end if
+               end if
+               if (use_vdwclass) then
+                  if (val_ele(vdwclass(i)).ne.0.0d0) 
+     &                 zi = val_ele(vdwclass(i))
+               else
+                  if (val_ele(cpclass(i)).ne.0.0d0) 
+     &                 zi = val_ele(cpclass(i))
+               end if
+            else if (num_ele .eq. "TWO") then
+               if (atomic(i) .ne. 1) zi = ci + 2.0d0
+            else if (num_ele .eq. "TWOPLUS") then
+               if (atomic(i) .ne. 1) zi = 2.0d0
+            else if (num_ele .eq. "TWO-VARIABLE") then
+               if (use_vdwclass) then
+                  zi = ci + val_ele(vdwclass(i))
+               else
+                  zi = ci + val_ele(cpclass(i))
+               end if
+            else if (num_ele .eq. "TWO-VARIABLE-H") then
+               if (use_vdwclass) then
+                  if (atomic(i) .ne. 1) zi = ci + val_ele(vdwclass(i))
+               else
+                  if (atomic(i) .ne. 1) zi = ci + val_ele(cpclass(i))
+               end if
+            else if (num_ele .eq. "VARIABLE") then
+               if (use_vdwclass) then
+                  zi = ci + val_ele(vdwclass(i))
+               else
+                  zi = ci + val_ele(cpclass(i))
+               end if
+            else if (num_ele .eq. "VARIABLE-H") then
+               if (use_vdwclass) then
+                  if (atomic(i) .ne. 1) zi = ci + val_ele(vdwclass(i))
+               else
+                  if (atomic(i) .ne. 1) zi = ci + val_ele(cpclass(i))
+               end if
             end if
             qi = ci - zi
          end if
@@ -399,6 +441,34 @@ c
                if (atomic(i) .gt. 10)  zi = zi - 8.0d0
                if (atomic(i) .gt. 18)  zi = zi - 8.0d0
                if (atomic(i) .gt. 20)  zi = zi - 10.0d0
+            else if (num_ele .eq. "TWO") then
+               if (atomic(i) .ne. 1) zi = ci + 2.0d0
+            else if (num_ele .eq. "TWOPLUS") then
+               if (atomic(i) .ne. 1) zi = 2.0d0
+            else if (num_ele .eq. "TWO-VARIABLE") then
+               if (use_vdwclass) then
+                  zi = ci + val_ele(vdwclass(i))
+               else
+                  zi = ci + val_ele(cpclass(i))
+               end if
+            else if (num_ele .eq. "TWO-VARIABLE-H") then
+               if (use_vdwclass) then
+                  if (atomic(i) .ne. 1) zi = ci + val_ele(vdwclass(i))
+               else
+                  if (atomic(i) .ne. 1) zi = ci + val_ele(cpclass(i))
+               end if
+            else if (num_ele .eq. "VARIABLE") then
+               if (use_vdwclass) then
+                  zi = ci + val_ele(vdwclass(i))
+               else
+                  zi = ci + val_ele(cpclass(i))
+               end if
+            else if (num_ele .eq. "VARIABLE-H") then
+               if (use_vdwclass) then
+                  if (atomic(i) .ne. 1) zi = ci + val_ele(vdwclass(i))
+               else
+                  if (atomic(i) .ne. 1) zi = ci + val_ele(cpclass(i))
+               end if
             end if
             qi = ci - zi
          end if

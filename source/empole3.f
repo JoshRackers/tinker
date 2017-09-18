@@ -52,6 +52,9 @@ c
       end if
       if (penetration .eq. "GORDON") damp_gordon = .true.
       if (penetration .eq. "PIQUEMAL") damp_piquemal = .true.
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      if (cptype .eq. "EX-DAMPING") damp_goverlap = .true.
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 c     choose the method for summing over multipole interactions 
 c
@@ -124,7 +127,7 @@ c
       integer i
       integer ii
       integer ix,iy,iz
-      real*8 e,fgrp
+      real*8 e,fgrp,ex2
       real*8 eold
       real*8 f,fm,fp
       real*8 ci,zi,qi
@@ -153,6 +156,11 @@ c
       end do
       header = .true.
       if (npole .eq. 0)  return
+cccccccccccccccccccccccccccc
+      necp = 0
+      ecp = 0.0d0
+      ex2 = 0.0d0
+cccccccccccccccccccccccccccc
 c
 c     perform dynamic allocation of some local arrays
 c
@@ -227,11 +235,57 @@ c
                if (atomic(i) .gt. 10)  zi = zi - 8.0d0
                if (atomic(i) .gt. 18)  zi = zi - 8.0d0
                if (atomic(i) .gt. 20)  zi = zi - 10.0d0
+               if (zi .eq. ci) then
+                  if (atomic(i) .lt. 10) then
+                     zi = 2.0d0 + ci
+                  else
+                     zi = 8.0d0 + ci
+                  end if
+               end if
+               if (use_vdwclass) then
+                  if (val_ele(vdwclass(i)).ne.0.0d0)
+     &                 zi = val_ele(vdwclass(i))
+               else
+                  if (val_ele(cpclass(i)).ne.0.0d0)
+     &                 zi = val_ele(cpclass(i))
+               end if
+            else if (num_ele .eq. "TWO") then
+               if (atomic(i) .ne. 1) zi = ci + 2.0d0
+            else if (num_ele .eq. "TWOPLUS") then
+               if (atomic(i) .ne. 1) zi = 2.0d0
+            else if (num_ele .eq. "TWO-VARIABLE") then
+               if (use_vdwclass) then
+                  zi = ci + val_ele(vdwclass(i))
+               else
+                  zi = ci + val_ele(cpclass(i))
+               end if
+            else if (num_ele .eq. "TWO-VARIABLE-H") then
+               if (use_vdwclass) then
+                  if (atomic(i) .ne. 1) zi = ci + val_ele(vdwclass(i))
+               else
+                  if (atomic(i) .ne. 1) zi = ci + val_ele(cpclass(i))
+               end if
+            else if (num_ele .eq. "VARIABLE") then
+               if (use_vdwclass) then
+                  zi = ci + val_ele(vdwclass(i))
+               else
+                  zi = ci + val_ele(cpclass(i))
+               end if
+            else if (num_ele .eq. "VARIABLE-H") then
+               if (use_vdwclass) then
+                  if (atomic(i) .ne. 1) zi = ci + val_ele(vdwclass(i))
+               else
+                  if (atomic(i) .ne. 1) zi = ci + val_ele(cpclass(i))
+               end if
             end if
             qi = ci - zi
          end if
 c     
 c     contract multipoles with permanent potential, field and field gradient
+c     note: these are not true fields
+c     ie. the field here is the gradient of the potential
+c     not the negative gradient of the potential
+c    
 c
 c     the field here is NOT 2x too big, I'm just double counting
 c
@@ -269,6 +323,22 @@ c     quadrupole
      &        qiyz*gradfieldm_damp(3,2,ii) + 
      &        qizz*gradfieldm_damp(3,3,ii))
 c
+c     compute exchange repulsion energy
+c
+         if (cptype .eq. "EX-DAMPING") then
+            ex2 = ex2 + 0.5d0*qi*potm_goverlap(ii)
+            ex2 = ex2 + 0.5d0*
+     &           (dix*fieldm_goverlap(1,ii)+diy*fieldm_goverlap(2,ii)+
+     &           diz*fieldm_goverlap(3,ii))
+            ex2 = ex2 + 0.5d0*
+     &           (qixx*gradfieldm_goverlap(1,1,ii) +
+     &           qixy*gradfieldm_goverlap(2,1,ii) +
+     &           qixz*gradfieldm_goverlap(3,1,ii) +
+     &           qiyy*gradfieldm_goverlap(2,2,ii) +
+     &           qiyz*gradfieldm_goverlap(3,2,ii) +
+     &           qizz*gradfieldm_goverlap(3,3,ii))
+         end if
+c
 c     apply f constant
 c
          e = f * e
@@ -278,11 +348,18 @@ c
          em = em + e
          nem = nem + 1
          aem(ii) = aem(ii) + e
+cccccccccccccccccccccccccccccccc
+c         ecp = ecp + e - eold
+c         necp = necp + 1
+cccccccccccccccccccccccccccccccc
 c
 c     intermolecular energy good for water ONLY!!!!
 c
          einter = einter + e
       end do
+ccccccccccccccccccccccccccccccccccccccccccccc
+c      print *,"Exchange Energy:  ",ex2
+cccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 c
@@ -435,6 +512,34 @@ c
                if (atomic(i) .gt. 10)  zi = zi - 8.0d0
                if (atomic(i) .gt. 18)  zi = zi - 8.0d0
                if (atomic(i) .gt. 20)  zi = zi - 10.0d0
+            else if (num_ele .eq. "TWO") then
+               if (atomic(i) .ne. 1) zi = ci + 2.0d0
+            else if (num_ele .eq. "TWOPLUS") then
+               if (atomic(i) .ne. 1) zi = 2.0d0
+            else if (num_ele .eq. "TWO-VARIABLE") then
+               if (use_vdwclass) then
+                  zi = ci + val_ele(vdwclass(i))
+               else
+                  zi = ci + val_ele(cpclass(i))
+               end if
+            else if (num_ele .eq. "TWO-VARIABLE-H") then
+               if (use_vdwclass) then
+                  if (atomic(i) .ne. 1) zi = ci + val_ele(vdwclass(i))
+               else
+                  if (atomic(i) .ne. 1) zi = ci + val_ele(cpclass(i))
+               end if
+            else if (num_ele .eq. "VARIABLE") then
+               if (use_vdwclass) then
+                  zi = ci + val_ele(vdwclass(i))
+               else
+                  zi = ci + val_ele(cpclass(i))
+               end if
+            else if (num_ele .eq. "VARIABLE-H") then
+               if (use_vdwclass) then
+                  if (atomic(i) .ne. 1) zi = ci + val_ele(vdwclass(i))
+               else
+                  if (atomic(i) .ne. 1) zi = ci + val_ele(cpclass(i))
+               end if
             end if
             qi = ci - zi
          end if

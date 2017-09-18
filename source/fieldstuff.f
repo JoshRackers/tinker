@@ -153,6 +153,65 @@ c
          if (atomic(k) .gt. 10)  zk = zk - 8.0d0
          if (atomic(k) .gt. 18)  zk = zk - 8.0d0
          if (atomic(k) .gt. 20)  zk = zk - 10.0d0
+         if (zi .eq. ci) then
+            if (atomic(i) .lt. 10) then 
+               zi = 2.0d0 + ci
+            else
+               zi = 8.0d0 + ci
+            end if
+         end if
+         if (zk .eq. ck) then
+            if (atomic(k) .lt. 10) then
+               zk = 2.0d0 + ck
+            else
+               zk = 8.0d0 + ck
+            end if
+         end if
+         if (use_vdwclass) then
+            if (val_ele(vdwclass(i)).ne.0.0d0) zi = val_ele(vdwclass(i))
+            if (val_ele(vdwclass(k)).ne.0.0d0) zk = val_ele(vdwclass(k))
+         else
+            if (val_ele(cpclass(i)).ne.0.0d0) zi = val_ele(cpclass(i))
+            if (val_ele(cpclass(k)).ne.0.0d0) zk = val_ele(cpclass(k))
+         end if
+      else if (num_ele .eq. "TWO") then
+         if (atomic(i) .ne. 1) zi = ci + 2.0d0
+         if (atomic(k) .ne. 1) zk = ck + 2.0d0
+      else if (num_ele .eq. "TWOPLUS") then
+         if (atomic(i) .ne. 1) zi = 2.0d0
+         if (atomic(k) .ne. 1) zk = 2.0d0
+      else if (num_ele .eq. "TWO-VARIABLE") then
+         if (use_vdwclass) then
+            zi = ci + val_ele(vdwclass(i))
+            zk = ck + val_ele(vdwclass(k))
+         else
+            zi = ci + val_ele(cpclass(i))
+            zk = ck + val_ele(cpclass(k))
+         end if
+      else if (num_ele .eq. "TWO-VARIABLE-H") then
+         if (use_vdwclass) then
+            if (atomic(i) .ne. 1) zi = ci + val_ele(vdwclass(i))
+            if (atomic(k) .ne. 1) zk = ck + val_ele(vdwclass(k))
+         else
+            if (atomic(i) .ne. 1) zi = ci + val_ele(cpclass(i))
+            if (atomic(k) .ne. 1) zk = ck + val_ele(cpclass(k))
+         end if
+      else if (num_ele .eq. "VARIABLE") then
+         if (use_vdwclass) then
+            zi = ci + val_ele(vdwclass(i))
+            zk = ck + val_ele(vdwclass(k))
+         else
+            zi = ci + val_ele(cpclass(i))
+            zk = ck + val_ele(cpclass(k))
+         end if
+      else if (num_ele .eq. "VARIABLE-H") then
+         if (use_vdwclass) then
+            if (atomic(i) .ne. 1) zi = ci + val_ele(vdwclass(i))
+            if (atomic(k) .ne. 1) zk = ck + val_ele(vdwclass(k))
+         else
+            if (atomic(i) .ne. 1) zi = ci + val_ele(cpclass(i))
+            if (atomic(k) .ne. 1) zk = ck + val_ele(cpclass(k))
+         end if
       end if
       qi = ci - zi
       qk = ck - zk
@@ -409,6 +468,65 @@ c
          if (atomic(k) .gt. 10)  zk = zk - 8.0d0
          if (atomic(k) .gt. 18)  zk = zk - 8.0d0
          if (atomic(k) .gt. 20)  zk = zk - 10.0d0
+         if (zi .eq. ci) then
+            if (atomic(i) .lt. 10) then
+               zi = 2.0d0 + ci
+            else
+               zi = 8.0d0 + ci
+            end if
+         endif
+         if (zk .eq. ck) then
+            if (atomic(k) .lt. 10) then
+               zk = 2.0d0 + ck
+            else
+               zk = 8.0d0 + ck
+            end if
+         end if
+         if (use_vdwclass) then
+            if (val_ele(vdwclass(i)).ne.0.0d0) zi = val_ele(vdwclass(i))
+            if (val_ele(vdwclass(k)).ne.0.0d0) zk = val_ele(vdwclass(k))
+         else
+            if (val_ele(cpclass(i)).ne.0.0d0) zi = val_ele(cpclass(i))
+            if (val_ele(cpclass(k)).ne.0.0d0) zk = val_ele(cpclass(k))
+         end if
+      else if (num_ele .eq. "TWO") then
+         if (atomic(i) .ne. 1) zi = ci + 2.0d0
+         if (atomic(k) .ne. 1) zk = ck + 2.0d0
+      else if (num_ele .eq. "TWOPLUS") then
+         if (atomic(i) .ne. 1) zi = 2.0d0
+         if (atomic(k) .ne. 1) zk = 2.0d0
+      else if (num_ele .eq. "TWO-VARIABLE") then
+         if (use_vdwclass) then
+            zi = ci + val_ele(vdwclass(i))
+            zk = ck + val_ele(vdwclass(k))
+         else
+            zi = ci + val_ele(cpclass(i))
+            zk = ck + val_ele(cpclass(k))
+         end if
+      else if (num_ele .eq. "TWO-VARIABLE-H") then
+         if (use_vdwclass) then
+            if (atomic(i) .ne. 1) zi = ci + val_ele(vdwclass(i))
+            if (atomic(k) .ne. 1) zk = ck + val_ele(vdwclass(k))
+         else
+            if (atomic(i) .ne. 1) zi = ci + val_ele(cpclass(i))
+            if (atomic(k) .ne. 1) zk = ck + val_ele(cpclass(k))
+         end if
+      else if (num_ele .eq. "VARIABLE") then
+         if (use_vdwclass) then
+            zi = ci + val_ele(vdwclass(i))
+            zk = ck + val_ele(vdwclass(k))
+         else
+            zi = ci + val_ele(cpclass(i))
+            zk = ck + val_ele(cpclass(k))
+         end if
+      else if (num_ele .eq. "VARIABLE-H") then
+         if (use_vdwclass) then
+            if (atomic(i) .ne. 1) zi = ci + val_ele(vdwclass(i))
+            if (atomic(k) .ne. 1) zk = ck + val_ele(vdwclass(k))
+         else
+            if (atomic(i) .ne. 1) zi = ci + val_ele(cpclass(i))
+            if (atomic(k) .ne. 1) zk = ck + val_ele(cpclass(k))
+         end if
       end if
       qi = ci - zi
       qk = ck - zk
@@ -954,6 +1072,65 @@ c
          if (atomic(k) .gt. 10)  zk = zk - 8.0d0
          if (atomic(k) .gt. 18)  zk = zk - 8.0d0
          if (atomic(k) .gt. 20)  zk = zk - 10.0d0
+         if (zi .eq. ci) then
+            if (atomic(i) .lt. 10) then
+               zi = 2.0d0 + ci
+            else
+               zi = 8.0d0 + ci
+            end if
+         endif
+         if (zk .eq. ck) then
+            if (atomic(k) .lt. 10) then
+               zk = 2.0d0 + ck
+            else
+               zk = 8.0d0 + ck
+            end if
+         end if
+         if (use_vdwclass) then
+            if (val_ele(vdwclass(i)).ne.0.0d0) zi = val_ele(vdwclass(i))
+            if (val_ele(vdwclass(k)).ne.0.0d0) zk = val_ele(vdwclass(k))
+         else
+            if (val_ele(cpclass(i)).ne.0.0d0) zi = val_ele(cpclass(i))
+            if (val_ele(cpclass(k)).ne.0.0d0) zk = val_ele(cpclass(k))
+         end if
+      else if (num_ele .eq. "TWO") then
+         if (atomic(i) .ne. 1) zi = ci + 2.0d0
+         if (atomic(k) .ne. 1) zk = ck + 2.0d0
+      else if (num_ele .eq. "TWOPLUS") then
+         if (atomic(i) .ne. 1) zi = 2.0d0
+         if (atomic(k) .ne. 1) zk = 2.0d0
+      else if (num_ele .eq. "TWO-VARIABLE") then
+         if (use_vdwclass) then
+            zi = ci + val_ele(vdwclass(i))
+            zk = ck + val_ele(vdwclass(k))
+         else
+            zi = ci + val_ele(cpclass(i))
+            zk = ck + val_ele(cpclass(k))
+         end if
+      else if (num_ele .eq. "TWO-VARIABLE-H") then
+         if (use_vdwclass) then
+            if (atomic(i) .ne. 1) zi = ci + val_ele(vdwclass(i))
+            if (atomic(k) .ne. 1) zk = ck + val_ele(vdwclass(k))
+         else
+            if (atomic(i) .ne. 1) zi = ci + val_ele(cpclass(i))
+            if (atomic(k) .ne. 1) zk = ck + val_ele(cpclass(k))
+         end if
+      else if (num_ele .eq. "VARIABLE") then
+         if (use_vdwclass) then
+            zi = ci + val_ele(vdwclass(i))
+            zk = ck + val_ele(vdwclass(k))
+         else
+            zi = ci + val_ele(cpclass(i))
+            zk = ck + val_ele(cpclass(k))
+         end if
+      else if (num_ele .eq. "VARIABLE-H") then
+         if (use_vdwclass) then
+            if (atomic(i) .ne. 1) zi = ci + val_ele(vdwclass(i))
+            if (atomic(k) .ne. 1) zk = ck + val_ele(vdwclass(k))
+         else
+            if (atomic(i) .ne. 1) zi = ci + val_ele(cpclass(i))
+            if (atomic(k) .ne. 1) zk = ck + val_ele(cpclass(k))
+         end if
       end if
       qi = ci - zi
       qk = ck - zk
@@ -1691,6 +1868,65 @@ c
          if (atomic(k) .gt. 10)  zk = zk - 8.0d0
          if (atomic(k) .gt. 18)  zk = zk - 8.0d0
          if (atomic(k) .gt. 20)  zk = zk - 10.0d0
+         if (zi .eq. ci) then
+            if (atomic(i) .lt. 10) then
+               zi = 2.0d0 + ci
+            else
+               zi = 8.0d0 + ci
+            end if
+         endif
+         if (zk .eq. ck) then
+            if (atomic(k) .lt. 10) then
+               zk = 2.0d0 + ck
+            else
+               zk = 8.0d0 + ck
+            end if
+         end if
+         if (use_vdwclass) then
+            if (val_ele(vdwclass(i)).ne.0.0d0) zi = val_ele(vdwclass(i))
+            if (val_ele(vdwclass(k)).ne.0.0d0) zk = val_ele(vdwclass(k))
+         else
+            if (val_ele(cpclass(i)).ne.0.0d0) zi = val_ele(cpclass(i))
+            if (val_ele(cpclass(k)).ne.0.0d0) zk = val_ele(cpclass(k))
+         end if
+      else if (num_ele .eq. "TWO") then
+         if (atomic(i) .ne. 1) zi = ci + 2.0d0
+         if (atomic(k) .ne. 1) zk = ck + 2.0d0
+      else if (num_ele .eq. "TWOPLUS") then
+         if (atomic(i) .ne. 1) zi = 2.0d0
+         if (atomic(k) .ne. 1) zk = 2.0d0
+      else if (num_ele .eq. "TWO-VARIABLE") then
+         if (use_vdwclass) then
+            zi = ci + val_ele(vdwclass(i))
+            zk = ck + val_ele(vdwclass(k))
+         else
+            zi = ci + val_ele(cpclass(i))
+            zk = ck + val_ele(cpclass(k))
+         end if
+      else if (num_ele .eq. "TWO-VARIABLE-H") then
+         if (use_vdwclass) then
+            if (atomic(i) .ne. 1) zi = ci + val_ele(vdwclass(i))
+            if (atomic(k) .ne. 1) zk = ck + val_ele(vdwclass(k))
+         else
+            if (atomic(i) .ne. 1) zi = ci + val_ele(cpclass(i))
+            if (atomic(k) .ne. 1) zk = ck + val_ele(cpclass(k))
+         end if
+      else if (num_ele .eq. "VARIABLE") then
+         if (use_vdwclass) then
+            zi = ci + val_ele(vdwclass(i))
+            zk = ck + val_ele(vdwclass(k))
+         else
+            zi = ci + val_ele(cpclass(i))
+            zk = ck + val_ele(cpclass(k))
+         end if
+      else if (num_ele .eq. "VARIABLE-H") then
+         if (use_vdwclass) then
+            if (atomic(i) .ne. 1) zi = ci + val_ele(vdwclass(i))
+            if (atomic(k) .ne. 1) zk = ck + val_ele(vdwclass(k))
+         else
+            if (atomic(i) .ne. 1) zi = ci + val_ele(cpclass(i))
+            if (atomic(k) .ne. 1) zk = ck + val_ele(cpclass(k))
+         end if
       end if
       qi = ci - zi
       qk = ck - zk

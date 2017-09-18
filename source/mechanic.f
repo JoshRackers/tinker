@@ -110,7 +110,7 @@ c
       if (use_metal)  call kmetal
       if (use_orbit)  call korbit
       if (use_geom)  call kgeom
-      if (use_extra)  call kextra
+      if ((use_extra).or.(use_xfer))  call kextra
 c
 c     set hybrid parameter values for free energy perturbation
 c

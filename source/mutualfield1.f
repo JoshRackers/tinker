@@ -97,6 +97,7 @@ c
       use potderivs
       use shunt
       use usage
+      use chgpen
       implicit none
       integer i,j,k,l,m
       integer ii,kk
@@ -214,6 +215,13 @@ ccccccccccccccc
                   rr7 = 5.0d0 * rr5 / r2
                   call t2matrixrr3(xr,yr,zr,rr3,t2rr3)
                   call t2matrixrr5(xr,yr,zr,rr5,t2rr5)
+cccccccccccccccccccccccccccc HACK TO 1-2 INTERACTIONS
+                  if (alphaf .ne. 1.0d0) then
+                     do j = 1, n12(ii)
+                        muscale(i12(j,ii)) = 1.0d0 - exp(-alphaf*r)
+                     end do
+                  end if
+cccccccccccccccccccccccccccccc
 c
 c     call routines that produce potential, field, field gradient
 c     for types of damping

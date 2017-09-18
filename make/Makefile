@@ -33,7 +33,7 @@
 ##  BINDIR       Hard Copies of TINKER Executables
 ##  LINKDIR      Linked Copies of TINKER Executables
 
-TINKERDIR = $(HOME)/tinker
+TINKERDIR = $(HOME)/tinker-git
 BINDIR = $(TINKERDIR)/bin
 LINKDIR = /usr/local/bin
 

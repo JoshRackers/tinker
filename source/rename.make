@@ -71,3 +71,4 @@ mv xyzsybyl.x  ../bin/xyzsybyl-git
 #
 mv fitpolsq.x  ../bin/fitpolsq-git
 mv exchfit.x   ../bin/exchfit-git
+mv forcefit.x  ../bin/forcefit-git

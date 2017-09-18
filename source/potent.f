@@ -57,5 +57,6 @@ c
       logical use_metal,use_geom
       logical use_extra,use_born
       logical use_orbit
+      logical use_xfer
       save
       end
