@@ -63,13 +63,17 @@ c
 c
 c     multipole and polarization are computed together in OpenMM
 c
-      if (use_mpole .and. .not.use_polar .or.
+      if (.not.use_chgtrn) then
+         print *,"WARNING: Overriding OpenMM rule to compute mpole
+     &               and polar together"
+         if (use_mpole .and. .not.use_polar .or.
      &       .not.use_mpole .and. use_polar) then
-         use_mpole = .true.
-         use_polar = .true.
-         call kmpole
-         call kpolar
-         call mutate
+            use_mpole = .true.
+            use_polar = .true.
+            call kmpole
+            call kpolar
+            call mutate
+         end if
       end if
 c
 c     initialize the temperature, pressure, integrator and GPU ID

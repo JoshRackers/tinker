@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <stdexcept>
 
 const int MAX_STRING = 240;
 
@@ -231,6 +232,13 @@ struct {
 } charge__;
 
 struct {
+   int ncp;
+   double* pcore;
+   double* pval;
+   double* palpha;
+} chgpen__;
+
+struct {
    double electric;
    double dielec;
    double ebuffer;
@@ -241,6 +249,12 @@ struct {
    int neutnbr;
    int neutcut;
 } chgpot__;
+
+struct {
+   int nct;
+   double* chgct;
+   double* dmpct;
+} chgtrn__;
 
 struct {
    int* n12;
@@ -284,6 +298,12 @@ struct {
    double* deg;
    double* dex;
 } deriv__;
+
+struct {
+   int* idisp;
+   double* csix;
+   double* adisp;
+} disp__;
 
 struct {
    double* esum;
@@ -557,7 +577,6 @@ struct {
 
 struct {
    int npolar;
-   int* ipolar;
    double* polarity;
    double* thole;
    double* pdamp;
@@ -618,10 +637,6 @@ struct {
    double u2scale;
    double u3scale;
    double u4scale;
-   double w2scale;
-   double w3scale;
-   double w4scale;
-   double w5scale;
    double udiag;
    int use_thole;
    char poltyp[MAX_STRING];
@@ -659,6 +674,13 @@ struct {
    int use_born;
    int use_orbit;
 } potent__;
+
+struct {
+   int nrep;
+   double* sizpr;
+   double* dmppr;
+   double* elepr;
+} repel__;
 
 struct {
    int npfix;
@@ -1013,6 +1035,19 @@ void set_bound_data_ (double* polycut, double* polycut2, int* use_bounds,
    bound__.use_polymer = *use_polymer;
 }
 
+void set_cell_data_ (int* ncell, int* icell, double* xcell, double* ycell,
+                     double* zcell, double* xcell2, double* ycell2,
+                     double* zcell2) {
+   cell__.ncell = *ncell;
+   cell__.icell = icell;
+   cell__.xcell = *xcell;
+   cell__.ycell = *ycell;
+   cell__.zcell = *zcell;
+   cell__.xcell2 = *xcell2;
+   cell__.ycell2 = *ycell2;
+   cell__.zcell2 = *zcell2;
+}
+
 void set_boxes_data_ (double* xbox, double* ybox, double* zbox,
                       double* alpha, double* beta, double* gamma,
                       double* xbox2, double* ybox2, double* zbox2,
@@ -1065,19 +1100,6 @@ void set_boxes_data_ (double* xbox, double* ybox, double* zbox,
    setNullTerminator (spacegrp, 10, boxes__.spacegrp);
 }
 
-void set_cell_data_ (int* ncell, int* icell, double* xcell, double* ycell,
-                     double* zcell, double* xcell2, double* ycell2,
-                     double* zcell2) {
-   cell__.ncell = *ncell;
-   cell__.icell = icell;
-   cell__.xcell = *xcell;
-   cell__.ycell = *ycell;
-   cell__.zcell = *zcell;
-   cell__.xcell2 = *xcell2;
-   cell__.ycell2 = *ycell2;
-   cell__.zcell2 = *zcell2;
-}
-
 void set_charge_data_ (int* nion, int* iion, int* jion,
                        int* kion, double* pchg) {
 
@@ -1086,6 +1108,14 @@ void set_charge_data_ (int* nion, int* iion, int* jion,
    charge__.jion = jion;
    charge__.kion = kion;
    charge__.pchg = pchg;
+}
+
+void set_chgpen_data_ (int* ncp, double* pcore, double* pval, double* palpha) {
+
+   chgpen__.ncp = *ncp;
+   chgpen__.pcore = pcore;
+   chgpen__.pval = pval;
+   chgpen__.palpha = palpha;
 }
 
 void set_chgpot_data_ (double* electric, double* dielec, double* ebuffer,
@@ -1101,6 +1131,13 @@ void set_chgpot_data_ (double* electric, double* dielec, double* ebuffer,
    chgpot__.c5scale = *c5scale;
    chgpot__.neutnbr = *neutnbr;
    chgpot__.neutcut = *neutcut;
+}
+
+void set_chgtrn_data_ (int* nct, double* chgct, double* dmpct) {
+
+   chgtrn__.nct = *nct;
+   chgtrn__.chgct = chgct;
+   chgtrn__.dmpct = dmpct;
 }
 
 void set_couple_data_ (int* n12, int* n13, int* n14, int* n15,
@@ -1156,6 +1193,13 @@ void set_deriv_data_ (double* desum, double* deb, double* dea,
    deriv__.delf = delf;
    deriv__.deg = deg;
    deriv__.dex = dex;
+}
+
+void set_disp_data_ (int* idisp, double* csix, double* adisp) {
+
+   disp__.idisp = idisp;
+   disp__.csix = csix;
+   disp__.adisp = adisp;
 }
 
 void set_energi_data_ (double* esum, double* eb, double* ea,
@@ -1468,7 +1512,7 @@ void set_pitors_data_ (int* npitors, int* ipit, double* kpit) {
 }
 
 void set_pme_data_ (int* nfft1, int* nfft2, int* nfft3, int* nefft1,
-                    int* nefft2, int* nefft3, int* ndfft1, int* ndfft2,
+                    int* nefft2, int* nefft3,int* ndfft1, int* ndfft2,
                     int* ndfft3, int* bsorder, int* bseorder, int* bsdorder,
                     int* igrid, double* bsmod1, double* bsmod2,
                     double* bsmod3, double* bsbuild, double*** thetai1,
@@ -1499,14 +1543,13 @@ void set_pme_data_ (int* nfft1, int* nfft2, int* nfft3, int* nefft1,
    pme__.qfac = qfac;
 }
 
-void set_polar_data_ (int* npolar, int* ipolar, double* polarity,
-                      double* thole, double* pdamp, double* udir,
-                      double* udirp, double* udirs, double* udirps,
-                      double* uind, double* uinp, double* uinds,
-                      double* uinps, double* uexact, int* douind) {
+void set_polar_data_ (int* npolar, double* polarity, double* thole,
+                      double* pdamp, double* udir, double* udirp,
+                      double* udirs, double* udirps, double* uind,
+                      double* uinp, double* uinds, double* uinps,
+                      double* uexact, int* douind) {
 
    polar__.npolar = *npolar;
-   polar__.ipolar = ipolar;
    polar__.polarity = polarity;
    polar__.thole = thole;
    polar__.pdamp = pdamp;
@@ -1540,7 +1583,7 @@ void set_polgrp_data_ (int* maxp11, int* maxp12, int* maxp13, int* maxp14,
    polgrp__.ip14 = ip14;
 }
 
-void set_polopt_data_ (int* maxopt, int* coptmax, int* optlevel,
+void set_polopt_data_ (int* maxopt, int* coptmax, int*optlevel,
                        double* copt, double* copm, double* uopt,
                        double* uoptp, double* uopts, double* uoptps,
                        double* fopt, double* foptp) {
@@ -1563,9 +1606,7 @@ void set_polpot_data_ (int* politer, double* poleps, double* p2scale,
                        double* p41scale, double* d1scale, double* d2scale,
                        double* d3scale, double* d4scale, double* u1scale,
                        double* u2scale, double* u3scale, double* u4scale,
-                       double* w2scale, double* w3scale, double* w4scale,
-                       double* w5scale, double* udiag, int* use_thole,
-                       char* poltyp) {
+                       double* udiag, int* use_thole, char* poltyp) {
 
    polpot__.politer = *politer;
    polpot__.poleps = *poleps;
@@ -1582,10 +1623,6 @@ void set_polpot_data_ (int* politer, double* poleps, double* p2scale,
    polpot__.u2scale = *u2scale;
    polpot__.u3scale = *u3scale;
    polpot__.u4scale = *u4scale;
-   polpot__.w2scale = *w2scale;
-   polpot__.w3scale = *w3scale;
-   polpot__.w4scale = *w4scale;
-   polpot__.w5scale = *w5scale;
    polpot__.use_thole = *use_thole;
    polpot__.udiag = *udiag;
    setNullTerminator (poltyp, 6, polpot__.poltyp);
@@ -1632,6 +1669,14 @@ void set_potent_data_ (int* use_bond, int* use_angle, int* use_strbnd,
    potent__.use_extra = *use_extra;
    potent__.use_born = *use_born;
    potent__.use_orbit = *use_orbit;
+}
+
+void set_repel_data_ (int* nrep, double* sizpr, double* dmppr, double* elepr) {
+
+   repel__.nrep = *nrep;
+   repel__.sizpr = sizpr;
+   repel__.dmppr = dmppr;
+   repel__.elepr = elepr;
 }
 
 void set_restrn_data_ (int* npfix, int* ndfix, int* nafix, int* ntfix,
@@ -1988,7 +2033,7 @@ static void mapConstraints (struct ConstraintMap* map, FILE* log) {
 static int checkForConstraint (struct ConstraintMap* map,
                                int p1, int p2, FILE* log) {
 
-   int ii;
+   int ii, jj;
    int offset;
    int match = 0;
 
@@ -1999,8 +2044,8 @@ static int checkForConstraint (struct ConstraintMap* map,
    }
 
    offset = map->constraintOffset[p1];
-   for (ii = 0; ii < map->constraintCount[p1] && match == 0; ii++) {
-      if (map->constraintList[offset+ii] == p2) {
+   for (jj = 0; jj < map->constraintCount[p1] && match == 0; jj++) {
+      if (map->constraintList[offset+jj] == p2) {
          match = 1;
       }
    }
@@ -2016,7 +2061,7 @@ static int checkForConstraint (struct ConstraintMap* map,
 static void setupAmoebaBondForce (OpenMM_System* system,
                                   int removeConstrainedBonds, FILE* log) {
 
-   int ii;
+   int ii, jj;
    int match;
    int* bondPtr;
    double kParameterConversion;
@@ -2060,7 +2105,7 @@ static void setupAmoebaBondForce (OpenMM_System* system,
 static void setupAmoebaAngleForce (OpenMM_System* system,
                                    int removeConstrainedAngles, FILE* log) {
 
-   int ii;
+   int ii, jj;
    int* angleIndexPtr;
    int match;
    char* angleTypPtr;
@@ -2110,7 +2155,7 @@ static void setupAmoebaAngleForce (OpenMM_System* system,
 static void setupAmoebaInPlaneAngleForce (OpenMM_System* system,
                                   int removeConstrainedBonds, FILE* log) {
 
-   int ii;
+   int ii, jj;
    int* angleIndexPtr;
    char* angleTypPtr;
    int match;
@@ -2161,7 +2206,7 @@ static void setupAmoebaInPlaneAngleForce (OpenMM_System* system,
 static void setupAmoebaStretchBendForce (OpenMM_System* system,
                                  int removeConstrainedBonds, FILE* log) {
 
-   int ii, index, abIndex, cbIndex;
+   int ii, jj, index, abIndex, cbIndex;
    int* angleIndexPtr;
    double bondLengthAB;
    double bondLengthCB;
@@ -2223,7 +2268,7 @@ static void setupAmoebaStretchBendForce (OpenMM_System* system,
 static void setupAmoebaUreyBradleyForce (OpenMM_System* system,
                                  int removeConstrainedBonds, FILE* log) {
 
-   int ii;
+   int ii, jj;
    int* angleIndexPtr;
    double kParameterConversion;
    int match;
@@ -2476,7 +2521,7 @@ static void setupAmoebaPiTorsionForce (OpenMM_System* system, FILE* log) {
 
 static void setupAmoebaStretchTorsionForce (OpenMM_System* system, FILE* log) {
 
-   int ii, index, baIndex, cbIndex, dcIndex;
+   int ii, jj, index, baIndex, cbIndex, dcIndex;
    double bondLengthBA, bondLengthCB, bondLengthDC;
    double* bondLengthPtr;
    int* torsionIndexPtr;
@@ -2541,7 +2586,7 @@ static void setupAmoebaStretchTorsionForce (OpenMM_System* system, FILE* log) {
 
 static void setupAmoebaAngleTorsionForce (OpenMM_System* system, FILE* log) {
 
-   int ii, index, cbaIndex, dcbIndex;
+   int ii, jj, index, cbaIndex, dcbIndex;
    double angleCBA, angleDCB;
    double* anglePtr;
    int* torsionIndexPtr;
@@ -2620,7 +2665,7 @@ static int getChiralIndex (int atomB, int atomC, int atomD) {
 
 static void setupAmoebaTorsionTorsionForce (OpenMM_System* system, FILE* log) {
 
-   int ii, jj, index, count;
+   int ii, jj, kk, index, count;
    int ia, ib, ic, id, ie, ichiral;
    int gridIndex;
    int xIndex, yIndex;
@@ -3053,8 +3098,8 @@ static void setupAmoebaMultipoleForce (OpenMM_System* system, FILE* log) {
 
    char buffer[128];
    char* axisPtr;
-   int ii, jj;
-   int errorReport;
+   int ii, jj, index;
+   int invalidAxis, errorReport;
    double* polePtr;
 
    OpenMM_AmoebaMultipoleForce_MultipoleAxisTypes axisType;
@@ -3375,6 +3420,203 @@ static void setupAmoebaGeneralizedKirkwoodForce (OpenMM_System* system,
       OpenMM_AmoebaGeneralizedKirkwoodForce_addParticle
                          (amoebaGeneralizedKirkwoodForce, *(polePtr),
                           OpenMM_NmPerAngstrom*solute__.rsolv[ii], shct);
+   }
+}
+
+static void setupHippoChargeTransferForce (OpenMM_System* system, FILE* log) {
+   OpenMM_HippoChargeTransferForce* hippoForce;
+   hippoForce = OpenMM_HippoChargeTransferForce_create();
+   OpenMM_System_addForce(system, (OpenMM_Force*) hippoForce);
+   OpenMM_Force_setForceGroup((OpenMM_Force*) hippoForce, 1);
+
+   if (chgtrn__.nct != atoms__.n || repel__.nrep != atoms__.n || chgpen__.ncp != atoms__.n) {
+      // FIXME: print out error
+   }
+
+   double dipoleConversion = OpenMM_NmPerAngstrom;
+   double quadrupoleConversion = OpenMM_NmPerAngstrom*OpenMM_NmPerAngstrom;
+
+   // multipole
+   OpenMM_DoubleArray* dipoles = OpenMM_DoubleArray_create(3);
+   OpenMM_DoubleArray* quadrupoles = OpenMM_DoubleArray_create(9);
+   for (int ii = 0; ii < atoms__.n; ++ii) {
+      OpenMM_HippoChargeTransferForce_MultipoleAxisTypes axisType = OpenMM_HippoChargeTransferForce_NoAxisType;
+      int atomz = 0;
+      int atomx = 0;
+      int atomy = 0;
+      double charge = 0.0;
+      for (int jj = 0; jj < 3; ++jj)
+         OpenMM_DoubleArray_set(dipoles, jj, 0.0);
+      for (int jj = 0; jj < 9; ++jj)
+         OpenMM_DoubleArray_set(quadrupoles, jj, 0.0);
+
+      if (potent__.use_repuls || true) {
+         // set axis type for this atom
+         char* axisPtr = mpole__.polaxe + ii*8;
+         if (strncasecmp (axisPtr, "Z-then-X", 8) == 0) {
+            axisType = OpenMM_HippoChargeTransferForce_ZThenX;
+         } else if (strncasecmp(axisPtr, "Bisector", 8) == 0) {
+            axisType = OpenMM_HippoChargeTransferForce_Bisector;
+         } else if (strncasecmp(axisPtr, "Z-Bisect", 8) == 0) {
+            axisType = OpenMM_HippoChargeTransferForce_ZBisect;
+         } else if (strncasecmp(axisPtr, "3-Fold", 6) == 0) {
+            axisType = OpenMM_HippoChargeTransferForce_ThreeFold;
+         } else if (strncasecmp(axisPtr, "Z-Only", 6) == 0) {
+            axisType = OpenMM_HippoChargeTransferForce_ZOnly;
+         } else if (strncasecmp(axisPtr, "None", 4) == 0 || strncasecmp( axisPtr, "    ",   4 ) == 0 ) {
+            axisType = OpenMM_HippoChargeTransferForce_NoAxisType;
+         } else {
+            // FIXME print error message
+         }
+         atomz = *(mpole__.zaxis+ii)-1;
+         atomx = *(mpole__.xaxis+ii)-1;
+         atomy = *(mpole__.yaxis+ii)-1;
+
+         // set permanent charge for this atom
+         charge = *(mpole__.pole + ii*mpole__.maxpole);
+         // set permanent dipole and quadrupole for this atom
+         double* polePtr = mpole__.pole + ii*mpole__.maxpole + 1;
+         for (int jj = 0; jj < 3; jj++) {
+            OpenMM_DoubleArray_set (dipoles, jj, (*(polePtr))*dipoleConversion);
+            polePtr++;
+         }
+         for (int jj = 0; jj < 9; jj++) {
+            OpenMM_DoubleArray_set (quadrupoles, jj, (*(polePtr))*quadrupoleConversion);
+            polePtr++;
+         }  
+      }
+
+      // pass parameters to OpenMM
+      OpenMM_HippoChargeTransferForce_addMultipole (hippoForce, charge, dipoles, quadrupoles,
+                                axisType, atomz, atomx, atomy);
+   }
+   OpenMM_DoubleArray_destroy (dipoles);
+   OpenMM_DoubleArray_destroy (quadrupoles);
+   
+   // charge transfer
+   for (int ii = 0; ii < atoms__.n; ++ii) {
+      double ct_alpha = 1.0;
+      double ct_chgval = 0.0;
+      if (potent__.use_chgtrn) {
+         ct_alpha = chgtrn__.dmpct[ii] / OpenMM_NmPerAngstrom; // Tinker unit: 1/angstrom
+         ct_chgval = chgtrn__.chgct[ii] * 4.184; // Tinker unit: kcal/mol
+      }
+      OpenMM_HippoChargeTransferForce_addCTSite (hippoForce, ct_alpha, ct_chgval);
+   }
+   double ct_cutoffdistance = 0.001;
+   double ct_taperdistance = 0.0001;
+   if (potent__.use_chgtrn) {
+      ct_cutoffdistance = limits__.ctrncut*OpenMM_NmPerAngstrom;
+      ct_taperdistance = limits__.ctrntaper*OpenMM_NmPerAngstrom;
+   }
+   OpenMM_HippoChargeTransferForce_setCTCutoffDistance (hippoForce, ct_taperdistance, ct_cutoffdistance);
+
+   // dispersion
+
+   for (int ii = 0; ii < atoms__.n; ++ii) {
+      double csixval = 0.0;
+
+      if (potent__.use_disp) {
+         csixval = disp__.csix[ii] * sqrt(4.184)*OpenMM_NmPerAngstrom*OpenMM_NmPerAngstrom*OpenMM_NmPerAngstrom; // Tinker unit: sqrt(ang^6*kcal/mol)
+      }
+
+      OpenMM_HippoChargeTransferForce_addDispSite (hippoForce, csixval);
+   }
+
+   double disp_cutoffdistance = 0.001;
+   double disp_taperdistance = 0.0001;
+   if (potent__.use_disp) {
+      disp_cutoffdistance = limits__.dispcut*OpenMM_NmPerAngstrom;
+      disp_taperdistance  = limits__.disptaper*OpenMM_NmPerAngstrom;
+   }
+   OpenMM_HippoChargeTransferForce_setDispCutoffDistance (hippoForce, disp_taperdistance, disp_cutoffdistance);
+
+   // repulsion
+   for (int ii = 0; ii < atoms__.n; ++ii) {
+      double sizpr = 0.0;
+      double dmppr = 1.0;
+      double elepr = 1;
+      if (potent__.use_repuls) {
+         // repulsion parameters for this atom
+         sizpr = repel__.sizpr[ii] * sqrt(4.184 * 0.1); // Tinker unit: kcal/mol
+         dmppr = repel__.dmppr[ii] / OpenMM_NmPerAngstrom; // Tinker unit: 1/angstrom
+         elepr = repel__.elepr[ii]; // Tinker unit: electron
+      }
+      OpenMM_HippoChargeTransferForce_addRepelSite (hippoForce, sizpr, dmppr, elepr);
+   }
+   double repel_cutoffdistance = 0.001;
+   double repel_taperdistance = 0.0001;
+   if (potent__.use_repuls) {
+      // set up cutoff distance
+      repel_cutoffdistance = limits__.repcut*OpenMM_NmPerAngstrom;
+      // set up taper distance
+      repel_taperdistance = limits__.reptaper*OpenMM_NmPerAngstrom;
+   }
+   OpenMM_HippoChargeTransferForce_setRepelCutoffDistance (hippoForce, repel_taperdistance, repel_cutoffdistance);
+
+   // charge penetration electrostatics
+   for (int ii = 0; ii < atoms__.n; ++ii) {
+      double pcore = 1.0;
+      double pval = -1.0;
+      double palpha = 1000.0;
+
+      if (mplpot__.use_chgpen) {
+         pcore = chgpen__.pcore[ii]; // Tinker unit: electron
+         pval = chgpen__.pval[ii]; // Tinker unit: electron
+         palpha = chgpen__.palpha[ii] / OpenMM_NmPerAngstrom; // Tinker unit: 1/angstrom
+      }
+      // hack to have parameters always
+      //(void) fprintf (log, "Warning! Charge Penetration Turned On!\n");
+      //pcore = chgpen__.pcore[ii]; // Tinker unit: electron                                                                   
+      //pval = chgpen__.pval[ii]; // Tinker unit: electron                                                                     
+      //palpha = chgpen__.palpha[ii] / OpenMM_NmPerAngstrom; // Tinker unit: 1/angstrom
+      // hack done
+      OpenMM_HippoChargeTransferForce_addCPMultipoleSite (hippoForce, pcore, pval, palpha);
+   }
+   double chgpen_cutoffdistance = 0.001;
+   if (mplpot__.use_chgpen) {
+      chgpen_cutoffdistance = limits__.mpolecut*OpenMM_NmPerAngstrom;
+   }
+   // hack to set cutoff
+   //chgpen_cutoffdistance = limits__.mpolecut*OpenMM_NmPerAngstrom;
+   OpenMM_HippoChargeTransferForce_setCPMultipoleCutoffDistance (hippoForce, chgpen_cutoffdistance);
+
+   // covalent map
+   OpenMM_IntArray* covalentMap;
+   covalentMap = OpenMM_IntArray_create (0);
+   for (int ii = 0; ii < atoms__.n; ii++) {
+      loadCovalentArray (*(couple__.n12 + ii),
+                         (couple__.i12 + sizes__.maxval*ii), covalentMap);
+      OpenMM_HippoChargeTransferForce_setCovalentMap (hippoForce, ii,
+                         OpenMM_HippoChargeTransferForce_Covalent12,
+                         covalentMap);
+
+      loadCovalentArray (*(couple__.n13 + ii),
+                         (couple__.i13 + 3*sizes__.maxval*ii), covalentMap);
+      OpenMM_HippoChargeTransferForce_setCovalentMap (hippoForce, ii,
+                         OpenMM_HippoChargeTransferForce_Covalent13,
+                         covalentMap);
+
+      loadCovalentArray (*(couple__.n14 + ii),
+                         (couple__.i14 + 9*sizes__.maxval*ii), covalentMap);
+      OpenMM_HippoChargeTransferForce_setCovalentMap (hippoForce, ii,
+                         OpenMM_HippoChargeTransferForce_Covalent14,
+                         covalentMap);
+
+      loadCovalentArray (*(couple__.n15 + ii),
+                         (couple__.i15 + 27*sizes__.maxval*ii), covalentMap);
+      OpenMM_HippoChargeTransferForce_setCovalentMap (hippoForce, ii,
+                         OpenMM_HippoChargeTransferForce_Covalent15,
+                         covalentMap);
+   }
+   OpenMM_IntArray_destroy (covalentMap);
+
+   // set up ct 1x scales
+   OpenMM_HippoChargeTransferForce_setCTScales (hippoForce, mplpot__.m3scale, mplpot__.m4scale, mplpot__.m5scale);
+
+   // set up PBC
+   if (limits__.use_ewald) {
+      setDefaultPeriodicBoxVectors (system, log);
    }
 }
 
@@ -3894,7 +4136,7 @@ extern "C" {
 
 extern void fatal_ ();
 
-void openmm_init_ (void** ommHandle, double* dt) {
+void openmm_init_ (void** ommHandle, double* dt) { 
 
    int ii;
    int mdMode = 0;
@@ -4007,7 +4249,11 @@ void openmm_init_ (void** ommHandle, double* dt) {
       setupAmoebaChargeForce (omm->system, log);
    }
 
-   if (potent__.use_mpole) {
+   if (potent__.use_chgtrn || potent__.use_repuls) {
+      setupHippoChargeTransferForce (omm->system, log);
+   }
+
+   if (potent__.use_mpole && !mplpot__.use_chgpen) {
       setupAmoebaMultipoleForce (omm->system, log);
       if (potent__.use_solv) {
          setupAmoebaGeneralizedKirkwoodForce (omm->system, 1, log);
@@ -4523,10 +4769,10 @@ int openmm_test_ (void) {
    const OpenMM_Vec3Array* openMMForces;
 
    int infoMask;
-   int ii;
+   int ii, jj;
    int countActiveForces;
    char const* testName;
-   double conversion, delta;
+   double conversion, delta, dot;
    double tinkerNorm, openMMNorm;
    double openMMPotentialEnergy;
    OpenMM_Vec3Array* tinkerForce;
@@ -4574,6 +4820,9 @@ int openmm_test_ (void) {
    if (potent__.use_charge)  countActiveForces++;
    if (potent__.use_chgdpl)  countActiveForces++;
    if (potent__.use_dipole)  countActiveForces++;
+   if (potent__.use_chgtrn)  countActiveForces++;
+   if (potent__.use_repuls)  countActiveForces++;
+   if (potent__.use_disp)  countActiveForces++;
    if (potent__.use_mpole)  countActiveForces++;
    if (potent__.use_polar)  countActiveForces++;
    if (potent__.use_rxnfld)  countActiveForces++;
@@ -4608,6 +4857,8 @@ int openmm_test_ (void) {
       (void) fprintf (log, "    LigFld=  %d", abs(potent__.use_metal));
       (void) fprintf (log, "    Restrn=  %d", abs(potent__.use_geom));
       (void) fprintf (log, "    Extra=   %d\n", abs(potent__.use_extra));
+      (void) fprintf (log, "\n    Repel=   %d\n", abs(potent__.use_repuls));
+      (void) fprintf (log, "    Disp=    %d\n", abs(potent__.use_disp));      
    }
 
    if (countActiveForces > 1) {
@@ -4655,7 +4906,10 @@ int openmm_test_ (void) {
       if (potent__.use_charge) {
          setupAmoebaChargeForce (system, log);
       }
-      if (potent__.use_mpole) {
+      if (potent__.use_chgtrn || potent__.use_repuls || potent__.use_disp) {
+         setupHippoChargeTransferForce (system, log);
+      }
+      if (potent__.use_mpole && !mplpot__.use_chgpen) {
          setupAmoebaMultipoleForce (system, log);
       }
       if (potent__.use_solv) {
@@ -4673,6 +4927,8 @@ int openmm_test_ (void) {
       loadTinkerForce (deriv__.desum, 0, tinkerForce);
       tinkerEnergy = *energi__.esum;
       testName = "PotentialsTest";
+
+      printf ("esum = %12.6f %4d \n", tinkerEnergy, potent__.use_polar);
 
       if (log) {
          (void) fprintf (log,
@@ -4694,7 +4950,7 @@ int openmm_test_ (void) {
                     *energi__.ec,   *energi__.ecd, *energi__.ed,
                     *energi__.em,   *energi__.ep,  *energi__.er,
                     *energi__.es,   *energi__.elf, *energi__.eg,
-                    *energi__.ex );
+                    *energi__.ed,   *energi__.ex );
          (void) fflush (log);
       }
 
@@ -4814,7 +5070,14 @@ int openmm_test_ (void) {
       tinkerEnergy = *energi__.ec;
       testName = "AmoebaChargeTest";
 
-   } else if (potent__.use_mpole && !potent__.use_solv) {
+   } else if (potent__.use_chgtrn || potent__.use_repuls || potent__.use_disp) {
+
+      setupHippoChargeTransferForce (system, log);
+      loadTinkerForce (deriv__.dect, 0, tinkerForce);
+      tinkerEnergy = *energi__.ect;
+      testName = "HippoChargeTransferTest";
+
+   } else if (potent__.use_mpole && !potent__.use_solv && !mplpot__.use_chgpen) {
 
       if (log) {
          (void) fprintf (log, "ImplicitSolventActive=%d\n",
@@ -4977,6 +5240,7 @@ int openmm_test_ (void) {
 
       maxFDelta = 0.0;
       for (ii = 0; ii < atoms__.n; ii++) {
+         double relxNrm;
          double dot;
          OpenMM_Vec3 force;
          const OpenMM_Vec3* tinkerF;
@@ -5038,12 +5302,9 @@ int openmm_test_ (void) {
    OpenMM_Context_destroy (context);
    OpenMM_Integrator_destroy (integrator);
    OpenMM_System_destroy (system);
-
-   return 1;
 }
 
 void openmm_bar_energy_ (void** ommHandle, double* energyInKcal) {
-
    OpenMMData_s* omm = (OpenMMData_s*) (*ommHandle);
 
    // copy periodic box from Tinker to OpenMM
@@ -5071,7 +5332,6 @@ void openmm_bar_energy_ (void** ommHandle, double* energyInKcal) {
       r.z = atoms__.z[ii] * OpenMM_NmPerAngstrom;
       OpenMM_Vec3Array_set (posInNm, ii, r);
    }
-
    OpenMM_Context_setPositions (omm->context, posInNm);
 
    // get OpenMM state

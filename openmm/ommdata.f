@@ -30,9 +30,12 @@ c
       use boxes
       use cell
       use charge
+      use chgpen
       use chgpot
+      use chgtrn
       use couple
       use deriv
+      use disp
       use energi
       use ewald
       use freeze
@@ -59,6 +62,7 @@ c
       use polopt
       use polpot
       use potent
+      use repel
       use restrn
       use sizes
       use solute
@@ -103,13 +107,16 @@ c
       call set_cell_data (ncell,icell,xcell,ycell,zcell,
      &                    xcell2,ycell2,zcell2)
       call set_charge_data (nion,iion,jion,kion,pchg)
+      call set_chgpen_data (ncp,pcore,pval,palpha)
       call set_chgpot_data (electric,dielec,ebuffer,c2scale,c3scale,
      &                      c4scale,c5scale,neutnbr,neutcut)
+      call set_chgtrn_data (nct,chgct,dmpct)
       call set_couple_data (n12,n13,n14,n15,i12,i13,i14,i15)
       call set_deriv_data (desum,deb,dea,deba,deub,deaa,deopb,deopd,
      &                     deid,deit,det,dept,debt,deat,dett,dev,der,
      &                     dedsp,dec,decd,ded,dem,dep,dect,derxf,
      &                     des,delf,deg,dex)
+      call set_disp_data (idisp, csix, adisp)
       call set_energi_data (esum,eb,ea,eba,eub,eaa,eopb,eopd,eid,eit,
      &                      et,ept,ebt,eat,ett,ev,er,edsp,ec,ecd,ed,
      &                      em,ep,ect,erxf,es,elf,eg,ex)
@@ -153,9 +160,8 @@ c
      &                   ndfft2,ndfft3,bsorder,bseorder,bsdorder,igrid,
      &                   bsmod1,bsmod2,bsmod3,bsbuild,thetai1,thetai2,
      &                   thetai3,qgrid,qfac)
-      call set_polar_data (npolar,ipolar,polarity,thole,pdamp,udir,
-     &                     udirp,udirs,udirps,uind,uinp,uinds,uinps,
-     &                     uexact,douind)
+      call set_polar_data (npolar,polarity,thole,pdamp,udir,udirp,udirs,
+     &                     udirps,uind,uinp,uinds,uinps,uexact,douind)
       call set_polgrp_data (maxp11,maxp12,maxp13,maxp14,np11,
      &                      np12,np13,np14,ip11,ip12,ip13,ip14)
       call set_polopt_data (maxopt,coptmax,optlevel,copt,copm,
@@ -163,8 +169,7 @@ c
       call set_polpot_data (politer,poleps,p2scale,p3scale,p4scale,
      &                      p5scale,p41scale,d1scale,d2scale,d3scale,
      &                      d4scale,u1scale,u2scale,u3scale,u4scale,
-     &                      w2scale,w3scale,w4scale,w5scale,udiag,
-     &                      use_thole,poltyp)
+     &                      udiag,use_thole,poltyp)
       call set_potent_data (use_bond,use_angle,use_strbnd,use_urey,
      &                      use_angang,use_opbend,use_opdist,use_improp,
      &                      use_imptor,use_tors,use_pitors,use_strtor,
@@ -173,6 +178,7 @@ c
      &                      use_mpole,use_polar,use_chgtrn,use_rxnfld,
      &                      use_solv,use_metal,use_geom,use_extra,
      &                      use_born,use_orbit)
+      call set_repel_data (nrep,sizpr,dmppr,elepr)
       call set_restrn_data (npfix,ndfix,nafix,ntfix,ngfix,nchir,ipfix,
      &                      kpfix,idfix,iafix,itfix,igfix,ichir,depth,
      &                      width,rwall,xpfix,ypfix,zpfix,pfix,dfix,

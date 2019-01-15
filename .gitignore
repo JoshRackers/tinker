@@ -1,3 +1,4 @@
+*~
 *.swp
 apbs
 bin
@@ -9,6 +10,12 @@ lib
 listing
 mscale
 osrw
+openmm/*.a
+openmm/*.mod
+openmm/*.o
+openmm/*.x
+openmm/*.make
+openmm/*-*
 source/*.a
 source/*.mod
 source/*.o
